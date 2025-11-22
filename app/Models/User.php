@@ -6,13 +6,14 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
-        'role_id',
+        // 'role_id',
         'name',
         'email',
         'phone',
@@ -32,9 +33,14 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_active' => 'boolean',
     ];
 
-    public function role()
+    // public function role()
+    // {
+    //     return $this->belongsTo(Role::class);
+    // }
+
+    public function getNamaRoleAttribute()
     {
-        return $this->belongsTo(Role::class);
+        return $this->getRoleNames()->first(); // "admin", "guru", "ortu"
     }
 
     // helper untuk badge status

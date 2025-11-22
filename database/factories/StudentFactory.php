@@ -13,7 +13,7 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         // pilih user yang role = ortu (kalau ada)
-        $parent = User::whereHas('role', fn($q) => $q->where('name', 'ortu'))
+        $parent = User::role('ortu')  // <-- scope dari Spatie HasRoles
             ->inRandomOrder()
             ->first();
 

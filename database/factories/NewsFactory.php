@@ -14,7 +14,7 @@ class NewsFactory extends Factory
     public function definition(): array
     {
         // ambil admin random (user role admin)
-        $admin = User::whereHas('role', fn($q) => $q->where('name', 'admin'))
+        $admin = User::role('admin')
             ->inRandomOrder()
             ->first();
 
@@ -31,7 +31,7 @@ class NewsFactory extends Factory
             'body'            => $konten,
             'type'            => $this->faker->randomElement($types),
             'event_date'      => $this->faker->optional()->dateTimeBetween('-1 year', 'now'),
-            'cover_image_path'=> $this->faker->optional()->imageUrl(640, 480, 'nature', true),
+            'cover_image_path' => $this->faker->optional()->imageUrl(640, 480, 'nature', true),
             'created_at'      => now()->subDays(rand(1, 90)),
             'updated_at'      => now(),
         ];
