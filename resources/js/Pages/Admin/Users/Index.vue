@@ -77,11 +77,25 @@ const pages = computed(() => {
     return result
 })
 
-const deleteUser = (id) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) return
+const showDeleteModal = ref(false)
+const userPendingDelete = ref(null)
 
-    router.delete(route('admin.users.destroy', id), {
+const openDeleteModal = (user) => {
+    userPendingDelete.value = user
+    showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false
+    userPendingDelete.value = null
+}
+
+const deleteUser = () => {
+    if (!userPendingDelete.value) return
+
+    router.delete(route('admin.users.destroy', userPendingDelete.value.id), {
         preserveScroll: true,
+        onFinish: () => closeDeleteModal(),
     })
 }
 
@@ -219,7 +233,7 @@ const formatTime = (time) => {
                                         class="inline-flex items-center rounded-full border border-amber-100 px-3 py-1 text-xs font-semibold text-amber-600 transition hover:bg-amber-50">
                                     Edit
                                     </Link>
-                                    <button @click="deleteUser(user.id)"
+                                    <button @click="openDeleteModal(user)"
                                         class="inline-flex items-center rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
                                         Hapus
                                     </button>
@@ -260,8 +274,52 @@ const formatTime = (time) => {
                 </div>
             </div>
         </section>
+
+        <transition name="fade">
+            <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                <div class="w-full max-w-md rounded-3xl bg-white shadow-2xl">
+                    <div class="rounded-t-3xl bg-rose-600 p-6 text-white">
+                        <p class="text-sm font-semibold uppercase tracking-widest">Hapus Data Pengguna</p>
+                        <p class="mt-1 text-xs text-rose-100">Hapus data pengguna sesuai beserta kredensial yang dimilikinya</p>
+                    </div>
+                    <div class="space-y-6 px-6 pb-6 pt-8">
+                        <div class="rounded-2xl border-2 border-rose-100 bg-rose-50 p-4 text-center text-rose-600">
+                            <p class="text-sm font-semibold">Apakah anda yakin untuk menghapus akun pengguna ini?</p>
+                        </div>
+                        <div class="space-y-3 rounded-2xl border border-rose-100 p-4 text-sm">
+                            <p class="font-semibold text-slate-800">Informasi Pengguna</p>
+                            <p class="text-slate-600">nama: <span class="font-medium text-slate-900">{{ userPendingDelete?.nama || userPendingDelete?.name }}</span></p>
+                            <p class="text-slate-600">peran: <span class="font-medium text-slate-900">{{ userPendingDelete?.role?.nama_role || 'Belum diset' }}</span></p>
+                            <p class="text-slate-600">status: <span class="font-medium text-slate-900">{{ userPendingDelete?.is_active ? 'aktif' : 'nonaktif' }}</span></p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" @click="closeDeleteModal"
+                                class="flex-1 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                Batal
+                            </button>
+                            <button type="button" @click="deleteUser"
+                                class="flex-1 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-200 transition hover:bg-rose-700">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
 
 
 

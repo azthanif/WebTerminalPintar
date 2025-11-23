@@ -43,24 +43,52 @@ class UserService
 
     public function create(array $data): User
     {
+        $roleId = $data['role_id'] ?? null;
+        unset($data['role_id']);
+
         $data['password'] = bcrypt($data['password']);
 
-        return $this->users->create($data);
+        $user = $this->users->create($data);
+
+        $this->syncRole($user, $roleId);
+
+        return $user->load('roles');
     }
 
     public function update(User $user, array $data): User
     {
+        $roleId = $data['role_id'] ?? null;
+        unset($data['role_id']);
+
         if (!empty($data['password'])) {
             $data['password'] = bcrypt($data['password']);
         } else {
             unset($data['password']);
         }
 
-        return $this->users->update($user, $data);
+        $updated = $this->users->update($user, $data);
+
+        $this->syncRole($updated, $roleId);
+
+        return $updated->load('roles');
     }
 
     public function delete(User $user): void
     {
         $this->users->delete($user);
+    }
+
+    protected function syncRole(User $user, ?int $roleId): void
+    {
+        if (! $roleId) {
+            $user->syncRoles([]);
+            return;
+        }
+
+        $role = Role::find($roleId);
+
+        if ($role) {
+            $user->syncRoles([$role->name]);
+        }
     }
 }

@@ -35,7 +35,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = Role::select('id', 'name', 'display_name')->get();
+        $roles = Role::select('id', 'name')->get();
 
         return Inertia::render('Admin/Users/Form', [
             'roles' => RoleResource::collection($roles)->resolve(),
@@ -54,11 +54,11 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = Role::select('id', 'name', 'display_name')->get();
+        $roles = Role::select('id', 'name')->get();
 
         return Inertia::render('Admin/Users/Form', [
             'roles' => RoleResource::collection($roles)->resolve(),
-            'user'  => new UserResource($user->load('role')),
+            'user'  => (new UserResource($user->load('roles')))->resolve(),
         ]);
     }
 
