@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 
 class NewsPublicResource extends JsonResource
 {
+    public static $wrap = null;
+
     /**
      * @param  Request  $request
      */
