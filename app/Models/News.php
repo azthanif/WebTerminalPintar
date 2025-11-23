@@ -31,4 +31,9 @@ class News extends Model
     {
         return $this->belongsTo(User::class, 'admin_id');
     }
+
+    public function penulis()
+    {
+        return $this->admin();
+    }
 }

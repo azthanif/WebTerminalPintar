@@ -52,6 +52,7 @@ class NewsController extends Controller
             'filters' => [
                 'search' => $search,
             ],
+            'title'   => 'Berita & Dokumentasi',
         ]);
     }
 

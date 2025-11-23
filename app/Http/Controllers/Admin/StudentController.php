@@ -60,6 +60,7 @@ class StudentController extends Controller
             'filters'  => [
                 'search' => $search,
             ],
+            'title'    => 'Manajemen Siswa',
         ]);
     }
 

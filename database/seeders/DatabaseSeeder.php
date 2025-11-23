@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
         // 4. Panggil seeder lain (yang sudah kamu punya)
         $this->call([
             StudentSeeder::class,
+            BookSeeder::class,
             NewsSeeder::class,
         ]);
     }

@@ -15,7 +15,7 @@ class UserService
 
     public function getIndexData(array $filters): array
     {
-        $query = User::query()->with('role');
+        $query = User::query()->with('roles');
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -30,8 +30,8 @@ class UserService
         $stats = [
             'total'      => User::count(),
             'aktif'      => User::where('is_active', true)->count(),
-            'admin_guru' => User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'guru']))->count(),
-            'orang_tua'  => User::whereHas('role', fn($q) => $q->where('name', 'ortu'))->count(),
+            'admin_guru' => User::role(['admin', 'guru'])->count(),
+            'orang_tua'  => User::role('ortu')->count(),
         ];
 
         return [

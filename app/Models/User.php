@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -33,11 +34,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_active' => 'boolean',
     ];
 
-    // public function role()
-    // {
-    //     return $this->belongsTo(Role::class);
-    // }
-
     public function getNamaRoleAttribute()
     {
         return $this->getRoleNames()->first(); // "admin", "guru", "ortu"
@@ -47,5 +43,30 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getStatusLabelAttribute(): string
     {
         return $this->is_active ? 'Aktif' : 'Nonaktif';
+    }
+
+    public function students(): HasMany
+    {
+        return $this->hasMany(Student::class, 'parent_id');
+    }
+
+    public function publishedNews(): HasMany
+    {
+        return $this->hasMany(News::class, 'admin_id');
+    }
+
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class, 'user_id');
+    }
+
+    public function issuedLoans(): HasMany
+    {
+        return $this->hasMany(Loan::class, 'issued_by');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }
