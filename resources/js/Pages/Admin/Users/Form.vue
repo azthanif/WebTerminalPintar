@@ -1,6 +1,7 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import { computed, ref } from 'vue'
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
+import { computed, ref, watch } from 'vue'
+import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
 const props = defineProps({
@@ -17,6 +18,44 @@ const props = defineProps({
 defineOptions({
 	layout: AdminLayout,
 })
+
+const page = usePage()
+const FLASH_NOTIFICATION_DURATION = 4000
+
+const pushFlashNotification = (type, message) => {
+	if (!message) {
+		return
+	}
+
+	const payload = {
+		title: type === 'success' ? 'Berhasil' : 'Terjadi Kesalahan',
+		message,
+		duration: FLASH_NOTIFICATION_DURATION,
+	}
+
+	if (type === 'success') {
+		push.success(payload)
+	} else {
+		push.error(payload)
+	}
+}
+
+watch(
+	() => ({
+		success: page.props.flash?.success ?? null,
+		error: page.props.flash?.error ?? null,
+	}),
+	({ success, error }) => {
+		if (success) {
+			pushFlashNotification('success', success)
+		}
+
+		if (error) {
+			pushFlashNotification('error', error)
+		}
+	},
+	{ immediate: true },
+)
 
 const isEdit = computed(() => Boolean(props.user?.id))
 const rolesArray = computed(() => (Array.isArray(props.roles) ? props.roles : []))
@@ -197,5 +236,8 @@ const togglePasswordVisibility = () => {
 				</div>
 			</form>
 		</section>
+		<Notivue v-slot="notification">
+			<Notification :item="notification" />
+		</Notivue>
 	</div>
 </template>
