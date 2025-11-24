@@ -54,14 +54,6 @@ const changeStatus = (value) => {
     loadBooks(1)
 }
 
-const deleteBook = (id) => {
-    if (!confirm('Hapus buku ini dari koleksi?')) return
-
-    router.delete(route('admin.books.destroy', id), {
-        preserveScroll: true,
-    })
-}
-
 const pages = computed(() => {
     if (!lastPage.value) return []
     const windowSize = Math.min(5, lastPage.value)
@@ -88,6 +80,28 @@ const statusColor = (value) => {
 }
 
 const formatNumber = (value) => new Intl.NumberFormat('id-ID').format(value || 0)
+
+const showDeleteModal = ref(false)
+const bookPendingDelete = ref(null)
+
+const openDeleteModal = (book) => {
+    bookPendingDelete.value = book
+    showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false
+    bookPendingDelete.value = null
+}
+
+const confirmDelete = () => {
+    if (!bookPendingDelete.value) return
+
+    router.delete(route('admin.books.destroy', bookPendingDelete.value.id), {
+        preserveScroll: true,
+        onFinish: () => closeDeleteModal(),
+    })
+}
 </script>
 
 <template>
@@ -204,7 +218,7 @@ const formatNumber = (value) => new Intl.NumberFormat('id-ID').format(value || 0
                                         class="inline-flex items-center rounded-full border border-amber-100 px-3 py-1 text-xs font-semibold text-amber-600 transition hover:bg-amber-50">
                                     Edit
                                     </Link>
-                                    <button @click="deleteBook(book.id)"
+                                    <button @click="openDeleteModal(book)"
                                         class="inline-flex items-center rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
                                         Hapus
                                     </button>
@@ -245,5 +259,70 @@ const formatNumber = (value) => new Intl.NumberFormat('id-ID').format(value || 0
                 </div>
             </div>
         </section>
+
+        <transition name="fade">
+            <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+                <div class="w-full max-w-lg rounded-[36px] bg-[#f8f8fb] p-6 text-slate-700 shadow-2xl">
+                    <div class="flex items-center gap-3 rounded-3xl bg-white px-5 py-4 shadow-sm">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6 text-emerald-600">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-emerald-400">Perpustakaan</p>
+                            <p class="text-lg font-semibold text-emerald-600">Perpustakaan Terminal Pintar</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 rounded-3xl bg-white p-6 shadow-inner">
+                        <h3 class="text-center text-xl font-semibold text-rose-600">Hapus Buku</h3>
+                        <div class="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-center text-rose-600">
+                            <p class="text-sm font-semibold">⚠️ Peringatan</p>
+                            <p class="mt-2 text-sm">Apakah Anda yakin ingin menghapus buku ini? Tindakan ini tidak dapat dibatalkan.</p>
+                        </div>
+
+                        <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm">
+                            <p class="text-base font-semibold text-slate-800">Informasi Buku</p>
+                            <div class="mt-4 grid grid-cols-2 gap-y-2 text-slate-700">
+                                <span class="font-medium">Kode</span>
+                                <span>: {{ bookPendingDelete?.code || '-' }}</span>
+                                <span class="font-medium">Judul</span>
+                                <span>: {{ bookPendingDelete?.title }}</span>
+                                <span class="font-medium">Kategori</span>
+                                <span>: {{ bookPendingDelete?.category || 'Umum' }}</span>
+                                <span class="font-medium">Status</span>
+                                <span>: {{ statuses[bookPendingDelete?.status] || 'Tidak diketahui' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                            <button type="button" @click="closeDeleteModal"
+                                class="rounded-2xl border border-slate-200 px-6 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">
+                                Batal
+                            </button>
+                            <button type="button" @click="confirmDelete"
+                                class="rounded-2xl bg-rose-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-200 transition hover:bg-rose-700">
+                                Hapus Buku
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
