@@ -1,6 +1,8 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { computed, ref, watch } from 'vue'
+import { Notivue, Notification, push } from 'notivue'
+import AdminLayout from '@/Layouts/AdminLayout.vue'
 
 const props = defineProps({
     users: {
@@ -16,6 +18,48 @@ const props = defineProps({
         default: () => ({}),
     },
 })
+
+defineOptions({
+    layout: AdminLayout,
+})
+
+const page = usePage()
+const FLASH_NOTIFICATION_DURATION = 4000
+
+const pushFlashNotification = (type, message) => {
+    if (!message) {
+        return
+    }
+
+    const payload = {
+        title: type === 'success' ? 'Berhasil' : 'Terjadi Kesalahan',
+        message,
+        duration: FLASH_NOTIFICATION_DURATION,
+    }
+
+    if (type === 'success') {
+        push.success(payload)
+    } else {
+        push.error(payload)
+    }
+}
+
+watch(
+    () => ({
+        success: page.props.flash?.success ?? null,
+        error: page.props.flash?.error ?? null,
+    }),
+    ({ success, error }) => {
+        if (success) {
+            pushFlashNotification('success', success)
+        }
+
+        if (error) {
+            pushFlashNotification('error', error)
+        }
+    },
+    { immediate: true },
+)
 
 // search state (default dari filter server)
 const search = ref(props.filters.search || '')
@@ -72,11 +116,25 @@ const pages = computed(() => {
     return result
 })
 
-const deleteUser = (id) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) return
+const showDeleteModal = ref(false)
+const userPendingDelete = ref(null)
 
-    router.delete(route('admin.users.destroy', id), {
+const openDeleteModal = (user) => {
+    userPendingDelete.value = user
+    showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false
+    userPendingDelete.value = null
+}
+
+const deleteUser = () => {
+    if (!userPendingDelete.value) return
+
+    router.delete(route('admin.users.destroy', userPendingDelete.value.id), {
         preserveScroll: true,
+        onFinish: () => closeDeleteModal(),
     })
 }
 
@@ -95,307 +153,214 @@ const formatTime = (time) => {
 </script>
 
 <template>
-    <div>
+    <div class="space-y-10">
+        <Head title="Kelola Pengguna" />
 
-        <Head title="Manajemen Pengguna" />
+        <section class="flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-slate-400">Pengguna</p>
+                <h1 class="mt-2 text-3xl font-semibold text-slate-900">Manajemen Pengguna</h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Kelola akun admin, guru, dan orang tua di Terminal Pintar.
+                </p>
+            </div>
+            <Link :href="route('admin.users.create')"
+                class="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-600">
+            + Tambah Pengguna
+            </Link>
+        </section>
 
-        <div class="min-h-screen bg-gray-100">
-            <!-- NAVBAR -->
-            <nav class="bg-white shadow-md sticky top-0 z-40">
-                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div class="text-2xl font-bold text-green-700">
-                        <Link href="/admin/users">Terminal Pintar</Link>
-                    </div>
+        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Total Pengguna</p>
+                <p class="mt-3 text-4xl font-semibold text-slate-900">{{ stats.total || 0 }}</p>
+                <p class="text-xs text-emerald-500">Semua akun terdaftar</p>
+            </div>
+            <div class="rounded-3xl border border-sky-100 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Pengguna Aktif</p>
+                <p class="mt-3 text-4xl font-semibold text-slate-900">{{ stats.aktif || 0 }}</p>
+                <p class="text-xs text-sky-500">Sudah terverifikasi</p>
+            </div>
+            <div class="rounded-3xl border border-amber-100 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Admin &amp; Guru</p>
+                <p class="mt-3 text-4xl font-semibold text-slate-900">{{ stats.admin_guru || 0 }}</p>
+                <p class="text-xs text-amber-500">Memiliki hak akses tinggi</p>
+            </div>
+            <div class="rounded-3xl border border-rose-100 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Orang Tua</p>
+                <p class="mt-3 text-4xl font-semibold text-slate-900">{{ stats.orang_tua || 0 }}</p>
+                <p class="text-xs text-rose-500">Pemantau perkembangan</p>
+            </div>
+        </section>
 
-                    <div class="hidden md:flex space-x-6 items-center">
-                        <span class="text-gray-600 hover:text-green-700 cursor-pointer">
-                            Dashboard
-                        </span>
-                        <span class="text-green-700 font-semibold border-b-2 border-green-700 pb-1">
-                            Kelola Pengguna
-                        </span>
-                        <Link href="/admin/students" class="text-gray-600 hover:text-green-700">
-                        Kelola Siswa
-                        </Link>
-                        <Link href="/admin/berita" class="text-gray-600 hover:text-green-700">
-                        Berita &amp; Dokumentasi
-                        </Link>
-                        <span class="text-gray-600 hover:text-green-700 cursor-pointer">
-                            Perpustakaan
-                        </span>
-                    </div>
-
-                    <div class="flex items-center space-x-4">
-                        <button class="text-gray-500 hover:text-gray-700">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341A6.002 6.002 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                                </path>
-                            </svg>
-                        </button>
-                        <div class="flex items-center space-x-2">
-                            <div class="w-8 h-8 rounded-full bg-gray-300"></div>
-                            <div class="text-sm">
-                                <div class="font-medium">Admin User</div>
-                                <div class="text-gray-500">Administrator</div>
-                            </div>
-                        </div>
-                    </div>
+        <section class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-slate-900">Daftar Pengguna</h2>
+                    <p class="text-sm text-slate-500">Cari dan kelola akun pengguna</p>
                 </div>
-            </nav>
-
-            <main class="container mx-auto px-6 py-8">
-                <!-- HEADER + TOMBOL -->
-                <div class="flex justify-between items-start mb-8">
-                    <div>
-                        <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                            Manajemen Pengguna
-                        </h1>
-                        <p class="text-gray-600">
-                            Kelola akun pengguna Terminal Pintar. Anda dapat menambah, mengedit,
-                            dan menghapus akun pengguna
-                        </p>
-                    </div>
-                    <Link :href="route('admin.users.create')"
-                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2 text-sm">
-                    <span>➕</span>
-                    Tambah Pengguna
-                    </Link>
+                <div class="relative w-full md:w-72">
+                    <span class="pointer-events-none absolute left-3 top-0 flex h-full items-center text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9 3.5a5.5 5.5 0 013.962 9.337l3.85 3.85a.75.75 0 11-1.06 1.06l-3.85-3.85A5.5 5.5 0 119 3.5zm0 1.5a4 4 0 100 8 4 4 0 000-8z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    <input v-model="search" type="text" @keyup.enter="searchUsers" placeholder="Cari nama atau email"
+                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-10 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none" />
                 </div>
+            </div>
 
-                <!-- STAT CARDS -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-600 text-sm mb-2">Total Pengguna</p>
-                                <p class="text-3xl font-bold text-green-500">
-                                    {{ stats.total || 0 }}
-                                </p>
-                            </div>
-                            <span class="text-3xl text-green-400">👥</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-600 text-sm mb-2">Pengguna Aktif</p>
-                                <p class="text-3xl font-bold text-yellow-500">
-                                    {{ stats.aktif || 0 }}
-                                </p>
-                            </div>
-                            <span class="text-3xl text-yellow-400">👤</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-600 text-sm mb-2">Admin &amp; Guru</p>
-                                <p class="text-3xl font-bold text-red-500">
-                                    {{ stats.admin_guru || 0 }}
-                                </p>
-                            </div>
-                            <span class="text-3xl text-red-400">🛡️</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-600 text-sm mb-2">Orang Tua</p>
-                                <p class="text-3xl font-bold text-blue-500">
-                                    {{ stats.orang_tua || 0 }}
-                                </p>
-                            </div>
-                            <span class="text-3xl text-blue-400">👨‍👩‍👧‍👦</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CARD DAFTAR PENGGUNA -->
-                <div class="bg-white rounded-2xl shadow-lg p-8">
-                    <!-- Header tabel + search -->
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-500 text-xl">👥</span>
-                            <h2 class="text-xl font-bold text-gray-800">Daftar Pengguna</h2>
-                        </div>
-                        <div class="relative w-full md:w-96">
-                            <input v-model="search" @keyup.enter="searchUsers" type="text"
-                                placeholder="Cari berdasarkan nama atau email"
-                                class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 text-sm" />
-                            <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
-                        </div>
-                    </div>
-
-                    <!-- Tabel -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                        Pengguna
-                                    </th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                        Kontak
-                                    </th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                        Peran
-                                    </th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                        Status
-                                    </th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                        Bergabung
-                                    </th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                        Login Terakhir
-                                    </th>
-                                    <th class="px-4 py-3 text-center font-semibold text-gray-700">
-                                        Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="user in users.data" :key="user.id"
-                                    class="border-b border-gray-100 hover:bg-gray-50 transition">
-                                    <!-- Pengguna -->
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-semibold">
-                                                {{ (user.nama || user.name).charAt(0).toUpperCase() }}
-                                            </div>
-                                            <span class="font-medium text-gray-800">
-                                                {{ user.nama || user.name }}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    <!-- Kontak -->
-                                    <td class="px-4 py-3">
-                                        <div class="text-gray-600 text-sm">
-                                            <div>{{ user.email }}</div>
-                                            <div class="text-xs text-gray-400">
-                                                {{ user.telepon || user.phone || '—' }}
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- Peran -->
-                                    <td class="px-4 py-3">
-                                        <span v-if="user.role" :class="[
-                                            'px-3 py-1 rounded-full text-xs font-semibold',
-                                            user.role.nama_role === 'Admin'
-                                                ? 'bg-red-100 text-red-700'
-                                                : user.role.nama_role === 'Guru'
-                                                    ? 'bg-yellow-100 text-yellow-700'
-                                                    : user.role.nama_role === 'Orang Tua'
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : 'bg-blue-100 text-blue-700',
-                                        ]">
-                                            {{ user.role.nama_role }}
-                                        </span>
-                                        <span v-else class="text-gray-400 text-xs">Tanpa Role</span>
-                                    </td>
-
-                                    <!-- Status -->
-                                    <td class="px-4 py-3">
-                                        <span :class="[
-                                            'px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-fit',
-                                            user.is_active
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-red-100 text-red-700',
-                                        ]">
-                                            <span v-if="user.is_active">✓</span>
-                                            <span v-else>✕</span>
-                                            {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
-                                        </span>
-                                    </td>
-
-                                    <!-- Bergabung -->
-                                    <td class="px-4 py-3 text-gray-600">
-                                        {{ formatDate(user.created_at) }}
-                                    </td>
-
-                                    <!-- Login terakhir -->
-                                    <td class="px-4 py-3 text-gray-600">
-                                        {{ formatTime(user.last_login_at) }}
-                                    </td>
-
-                                    <!-- Aksi -->
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-center gap-2">
-                                            <Link :href="route('admin.users.edit', user.id)"
-                                                class="p-2 bg-yellow-100 text-yellow-600 rounded hover:bg-yellow-200 transition text-xs"
-                                                title="Edit">
-                                            ✎
-                                            </Link>
-                                            <button @click="deleteUser(user.id)"
-                                                class="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200 transition text-xs"
-                                                title="Hapus">
-                                                🗑️
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr v-if="users.data.length === 0">
-                                    <td colspan="7" class="px-4 py-6 text-center text-sm text-gray-500">
-                                        Tidak ada data pengguna.
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- PAGINATION -->
-                    <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                        <p class="text-sm text-gray-600">
-                            Menampilkan {{ users.from }}-{{ users.to }} dari
-                            {{ users.total }} Pengguna
-                        </p>
-                        <div class="flex gap-2">
-                            <button @click="previousPage" :disabled="!users.prev_page_url"
-                                class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                                ← Sebelumnya
-                            </button>
-                            <div class="flex items-center gap-1">
-                                <span v-for="page in pages" :key="page" @click="loadUsers(page)"
-                                    class="px-2 py-1 border rounded cursor-pointer hover:bg-gray-50 text-sm" :class="{
-                                        'bg-green-500 text-white border-green-500':
-                                            page === currentPage,
-                                    }">
-                                    {{ page }}
+            <div class="mt-6 overflow-hidden rounded-2xl border border-slate-100">
+                <table class="min-w-full divide-y divide-slate-100 text-sm">
+                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th class="px-4 py-3">Pengguna</th>
+                            <th class="px-4 py-3">Kontak</th>
+                            <th class="px-4 py-3">Peran</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Bergabung</th>
+                            <th class="px-4 py-3">Login Terakhir</th>
+                            <th class="px-4 py-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50 bg-white">
+                        <tr v-for="user in users.data" :key="user.id" class="hover:bg-slate-50/50">
+                            <td class="px-4 py-4">
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-sm font-semibold text-emerald-600">
+                                        {{ (user.nama || user.name).charAt(0).toUpperCase() }}
+                                    </span>
+                                    <div>
+                                        <p class="font-semibold text-slate-900">{{ user.nama || user.name }}</p>
+                                        <p class="text-xs text-slate-500">ID: {{ user.id }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-4">
+                                <p class="font-medium text-slate-700">{{ user.email }}</p>
+                                <p class="text-xs text-slate-500">{{ user.telepon || user.phone || '—' }}</p>
+                            </td>
+                            <td class="px-4 py-4">
+                                <span
+                                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+                                    :class="user.role
+                                        ? 'bg-emerald-50 text-emerald-600'
+                                        : 'bg-slate-100 text-slate-500'">
+                                    {{ user.role?.nama_role || 'Belum diset' }}
                                 </span>
-                            </div>
-                            <button @click="nextPage" :disabled="!users.next_page_url"
-                                class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                                Selanjutnya →
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+                                    :class="user.is_active
+                                        ? 'bg-emerald-50 text-emerald-600'
+                                        : 'bg-rose-50 text-rose-600'">
+                                    <span>{{ user.is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-slate-600">
+                                {{ formatDate(user.created_at) }}
+                            </td>
+                            <td class="px-4 py-4 text-slate-600">
+                                {{ formatTime(user.last_login_at) }}
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <Link :href="route('admin.users.edit', user.id)"
+                                        class="inline-flex items-center rounded-full border border-amber-100 px-3 py-1 text-xs font-semibold text-amber-600 transition hover:bg-amber-50">
+                                    Edit
+                                    </Link>
+                                    <button @click="openDeleteModal(user)"
+                                        class="inline-flex items-center rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="users.data.length === 0">
+                            <td colspan="7" class="px-4 py-10 text-center text-sm text-slate-400">
+                                Belum ada data pengguna.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-6 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
+                <p>
+                    Menampilkan {{ users.from || 0 }}-{{ users.to || 0 }} dari {{ users.total || 0 }} pengguna
+                </p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button @click="previousPage" :disabled="!users.prev_page_url"
+                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
+                        :class="users.prev_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
+                        Sebelumnya
+                    </button>
+                    <button v-for="page in pages" :key="page" @click="loadUsers(page)"
+                        class="rounded-full px-3 py-1 text-xs font-semibold"
+                        :class="page === currentPage
+                            ? 'bg-emerald-500 text-white'
+                            : 'text-slate-600 hover:bg-slate-50'">
+                        {{ page }}
+                    </button>
+                    <button @click="nextPage" :disabled="!users.next_page_url"
+                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
+                        :class="users.next_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
+                        Selanjutnya
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <transition name="fade">
+            <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                <div class="w-full max-w-md rounded-3xl bg-white shadow-2xl">
+                    <div class="rounded-t-3xl bg-rose-600 p-6 text-white">
+                        <p class="text-sm font-semibold uppercase tracking-widest">Hapus Data Pengguna</p>
+                        <p class="mt-1 text-xs text-rose-100">Hapus data pengguna sesuai beserta kredensial yang dimilikinya</p>
+                    </div>
+                    <div class="space-y-6 px-6 pb-6 pt-8">
+                        <div class="rounded-2xl border-2 border-rose-100 bg-rose-50 p-4 text-center text-rose-600">
+                            <p class="text-sm font-semibold">Apakah anda yakin untuk menghapus akun pengguna ini?</p>
+                        </div>
+                        <div class="space-y-3 rounded-2xl border border-rose-100 p-4 text-sm">
+                            <p class="font-semibold text-slate-800">Informasi Pengguna</p>
+                            <p class="text-slate-600">nama: <span class="font-medium text-slate-900">{{ userPendingDelete?.nama || userPendingDelete?.name }}</span></p>
+                            <p class="text-slate-600">peran: <span class="font-medium text-slate-900">{{ userPendingDelete?.role?.nama_role || 'Belum diset' }}</span></p>
+                            <p class="text-slate-600">status: <span class="font-medium text-slate-900">{{ userPendingDelete?.is_active ? 'aktif' : 'nonaktif' }}</span></p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" @click="closeDeleteModal"
+                                class="flex-1 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                Batal
+                            </button>
+                            <button type="button" @click="deleteUser"
+                                class="flex-1 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-200 transition hover:bg-rose-700">
+                                Hapus
                             </button>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </transition>
+
+        <Notivue v-slot="notification">
+            <Notification :item="notification" />
+        </Notivue>
     </div>
 </template>
 
 <style scoped>
-::-webkit-scrollbar {
-    height: 8px;
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
 }
 
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>
 

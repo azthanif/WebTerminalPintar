@@ -8,7 +8,7 @@ class StoreNewsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->role?->name === 'admin';
+        return $this->user()?->hasRole('admin') ?? false;
     }
 
     public function rules(): array
@@ -18,7 +18,7 @@ class StoreNewsRequest extends FormRequest
             'konten'       => ['required', 'string'],
             'event_date'   => ['nullable', 'date'],
             'type'         => ['required', 'in:news,activity,gallery'],
-            // cover image bisa ditambah nanti: 'cover_image' => ['nullable','image',...]
+            'cover_image'  => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:8192'],
         ];
     }
 }

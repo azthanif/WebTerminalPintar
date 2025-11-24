@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\News\StoreNewsRequest;
 use App\Http\Requests\Admin\News\UpdateNewsRequest;
 use App\Models\News;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -33,11 +34,15 @@ class NewsController extends Controller
 
         // transform ke shape yang dipakai Vue (judul, konten, created_at)
         $berita->getCollection()->transform(function (News $item) {
+            $displayDate = $item->event_date ?? $item->created_at;
+
             return [
                 'id'         => $item->id,
                 'judul'      => $item->title,
                 'konten'     => $item->excerpt ?: Str::limit(strip_tags($item->body), 160),
-                'created_at' => ($item->event_date ?? $item->created_at)->toDateString(),
+                'created_at' => optional($displayDate)->toDateString(),
+                'event_date' => optional($item->event_date)->toDateString(),
+                'type'       => $item->type,
             ];
         });
 
@@ -52,6 +57,7 @@ class NewsController extends Controller
             'filters' => [
                 'search' => $search,
             ],
+            'title'   => 'Berita & Dokumentasi',
         ]);
     }
 
@@ -75,6 +81,11 @@ class NewsController extends Controller
         $news->event_date = $data['event_date'];
         $news->type      = $data['type'];
 
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('assets-berita', 'public');
+            $news->cover_image_path = $path;
+        }
+
         $news->save();
 
         return redirect()
@@ -91,6 +102,7 @@ class NewsController extends Controller
                 'konten'     => $news->body,
                 'event_date' => optional($news->event_date)->format('Y-m-d'),
                 'type'       => $news->type,
+                'cover_url'  => $news->cover_image_path ? Storage::url($news->cover_image_path) : null,
             ],
         ]);
     }
@@ -104,6 +116,16 @@ class NewsController extends Controller
         $news->body       = $data['konten'];
         $news->event_date = $data['event_date'];
         $news->type       = $data['type'];
+
+        if ($request->hasFile('cover_image')) {
+            $newPath = $request->file('cover_image')->store('assets-berita', 'public');
+
+            if ($news->cover_image_path) {
+                Storage::disk('public')->delete($news->cover_image_path);
+            }
+
+            $news->cover_image_path = $newPath;
+        }
 
         $news->save();
 

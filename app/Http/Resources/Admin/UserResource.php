@@ -8,6 +8,21 @@ class UserResource extends JsonResource
 {
     public function toArray($request): array
     {
+        $role = $this->whenLoaded('roles', function () {
+            return $this->roles->first();
+        });
+
+        if (! $role && isset($this->role)) {
+            $role = $this->role;
+        }
+
+        $roleData = $role ? [
+            'id'           => $role->id,
+            'name'         => $role->name,
+            'display_name' => $role->display_name ?? ucfirst($role->name),
+            'nama_role'    => $role->display_name ?? ucfirst($role->name),
+        ] : null;
+
         return [
             'id'       => $this->id,
 
@@ -21,12 +36,7 @@ class UserResource extends JsonResource
 
             'email'    => $this->email,
 
-            'role'     => $this->role ? [
-                'id'        => $this->role->id,
-                'name'      => $this->role->name,
-                'display_name' => $this->role->display_name ?? ucfirst($this->role->name),
-                'nama_role' => $this->role->display_name ?? ucfirst($this->role->name),
-            ] : null,
+            'role'     => $roleData,
 
             'is_active'     => (bool) $this->is_active,
 

@@ -45,8 +45,11 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
     ->group(function () {
 
-        // Route::get('/dashboard', [DashboardController::class, 'index'])
-        // ->name('dashboard');
+        Route::get('/', fn () => redirect()->route('admin.dashboard'))
+            ->name('home');
+
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
 
         Route::resource('users', UserController::class);
         // Route::get('students', [StudentController::class, 'index'])
@@ -60,10 +63,11 @@ Route::middleware(['auth', 'role:admin'])
             ->parameters(['berita' => 'news'])
             ->except(['show']);
 
-        // Route::resource('books', BookController::class);
+        Route::resource('books', BookController::class)
+            ->except(['show']);
 
-        // Route::resource('loans', LoanController::class)
-        // ->only(['index', 'store', 'update']);
+        Route::resource('loans', LoanController::class)
+            ->only(['index', 'store', 'update']);
 
         // Route::get('reports/attendance', [ReportController::class, 'attendance'])
         // ->name('reports.attendance');
