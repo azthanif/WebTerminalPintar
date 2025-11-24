@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
+import AdminLayout from '@/Layouts/AdminLayout.vue'
 
 const props = defineProps({
   news: {
@@ -9,135 +10,135 @@ const props = defineProps({
   },
 })
 
+defineOptions({
+  layout: AdminLayout,
+})
+
 const isEdit = computed(() => !!props.news)
+
+const existingCoverUrl = computed(() => props.news?.cover_url ?? null)
 
 const form = useForm({
   judul: props.news?.judul ?? '',
   konten: props.news?.konten ?? '',
   event_date: props.news?.event_date ?? '',
   type: props.news?.type ?? 'news',
+  cover_image: null,
 })
 
 const submit = () => {
-  if (isEdit.value) {
-    form.put(route('admin.berita.update', props.news.id))
-  } else {
-    form.post(route('admin.berita.store'))
+  const options = {
+    forceFormData: true,
+    preserveScroll: true,
+    onSuccess: () => form.reset('cover_image'),
   }
+
+  if (isEdit.value) {
+    form
+      .transform((data) => ({
+        ...data,
+        _method: 'put',
+      }))
+      .post(route('admin.berita.update', props.news.id), options)
+  } else {
+    form.transform((data) => data).post(route('admin.berita.store'), options)
+  }
+}
+
+const handleFileChange = (event) => {
+  const file = event.target.files?.[0]
+  form.cover_image = file ?? null
 }
 </script>
 
 <template>
-  <Head :title="isEdit ? 'Edit Berita' : 'Tambah Berita'" />
+  <div class="space-y-10">
+    <Head :title="isEdit ? 'Edit Berita' : 'Tambah Berita'" />
 
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div
-      class="w-full max-w-2xl bg-white rounded-xl shadow-md overflow-hidden border border-gray-200"
-    >
-      <!-- Header -->
-      <div class="bg-green-600 px-5 py-3 flex items-center justify-between">
-        <div>
-          <h1 class="text-sm font-semibold text-white">
-            {{ isEdit ? 'Edit Berita' : 'Tambah Berita Baru' }}
-          </h1>
-          <p class="text-[11px] text-white/80">
-            Isi judul, konten, dan tanggal kegiatan untuk berita ini.
-          </p>
-        </div>
-        <Link
-          :href="route('admin.berita.index')"
-          class="text-white/80 text-lg leading-none hover:text-white"
-        >
-          ×
-        </Link>
-      </div>
+    <section>
+      <Link :href="route('admin.berita.index')" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+        ← Kembali ke Daftar Berita
+      </Link>
+      <h1 class="mt-3 text-3xl font-bold text-emerald-600">
+        {{ isEdit ? 'Edit Konten Berita' : 'Tambah Berita & Dokumentasi' }}
+      </h1>
+      <p class="mt-1 text-sm text-slate-500">
+        {{ isEdit
+          ? 'Perbarui artikel agar informasi selalu relevan bagi orang tua dan siswa.'
+          : 'Publikasikan aktivitas terbaru lengkap dengan judul, konten, dan detail acara.' }}
+      </p>
+    </section>
 
-      <!-- Form -->
-      <form @submit.prevent="submit" class="px-5 py-4 space-y-4">
-        <!-- Judul -->
-        <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">
-            Judul
-          </label>
-          <input
-            v-model="form.judul"
-            type="text"
-            class="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-          />
-          <div v-if="form.errors.judul" class="text-[11px] text-red-600 mt-1">
-            {{ form.errors.judul }}
-          </div>
+    <section class="rounded-3xl border border-slate-100 bg-white shadow-sm">
+      <form @submit.prevent="submit" class="space-y-6 p-8">
+        <div class="rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-700">
+          <strong>Tips:</strong> Buat judul singkat, gunakan paragraf singkat pada konten, dan isi tanggal jika ini agenda tertentu.
         </div>
 
-        <!-- Tipe & Tanggal -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Judul Konten<span class="text-rose-500">*</span></label>
+          <input v-model="form.judul" type="text" placeholder="Contoh: Kegiatan Literasi Bersama Orang Tua"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            :class="{ 'border-rose-400': form.errors.judul }" />
+          <p v-if="form.errors.judul" class="mt-1 text-xs text-rose-500">{{ form.errors.judul }}</p>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">
-              Tipe Konten
-            </label>
-            <select
-              v-model="form.type"
-              class="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-            >
+            <label class="block text-sm font-medium text-slate-700">Tipe Konten</label>
+            <select v-model="form.type"
+              class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              :class="{ 'border-rose-400': form.errors.type }">
               <option value="news">Berita</option>
               <option value="activity">Kegiatan</option>
               <option value="gallery">Galeri</option>
             </select>
-            <div v-if="form.errors.type" class="text-[11px] text-red-600 mt-1">
-              {{ form.errors.type }}
-            </div>
+            <p class="mt-1 text-xs text-slate-500">Gunakan "Galeri" jika ingin menyorot foto/video.</p>
+            <p v-if="form.errors.type" class="mt-1 text-xs text-rose-500">{{ form.errors.type }}</p>
           </div>
-
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">
-              Tanggal Kegiatan (opsional)
-            </label>
-            <input
-              v-model="form.event_date"
-              type="date"
-              class="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-            />
-            <div
-              v-if="form.errors.event_date"
-              class="text-[11px] text-red-600 mt-1"
-            >
-              {{ form.errors.event_date }}
-            </div>
+            <label class="block text-sm font-medium text-slate-700">Tanggal Kegiatan (opsional)</label>
+            <input v-model="form.event_date" type="date"
+              class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              :class="{ 'border-rose-400': form.errors.event_date }" />
+            <p class="mt-1 text-xs text-slate-500">Isi jika artikel merujuk pada acara tertentu.</p>
+            <p v-if="form.errors.event_date" class="mt-1 text-xs text-rose-500">{{ form.errors.event_date }}</p>
           </div>
         </div>
 
-        <!-- Konten -->
         <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">
-            Konten Berita
-          </label>
-          <textarea
-            v-model="form.konten"
-            rows="8"
-            class="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-          />
-          <div v-if="form.errors.konten" class="text-[11px] text-red-600 mt-1">
-            {{ form.errors.konten }}
-          </div>
+          <label class="block text-sm font-medium text-slate-700">Konten / Deskripsi</label>
+          <textarea v-model="form.konten" rows="8" placeholder="Ceritakan jalannya kegiatan, dokumentasi, atau informasi penting lain..."
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm leading-relaxed focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            :class="{ 'border-rose-400': form.errors.konten }"></textarea>
+          <p class="mt-1 text-xs text-slate-500">Gunakan enter untuk paragraf baru agar mudah dibaca.</p>
+          <p v-if="form.errors.konten" class="mt-1 text-xs text-rose-500">{{ form.errors.konten }}</p>
         </div>
 
-        <!-- Tombol -->
-        <div class="pt-2 flex justify-end gap-3">
-          <Link
-            :href="route('admin.berita.index')"
-            class="px-4 py-1.5 rounded-full border border-gray-200 text-xs text-gray-700 bg-white hover:bg-gray-50"
-          >
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Sampul / Foto Utama</label>
+          <input type="file" accept=".jpg,.jpeg,.png" @change="handleFileChange"
+            class="mt-2 w-full rounded-2xl border border-dashed border-slate-300 px-4 py-2.5 text-sm text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            :class="{ 'border-rose-400': form.errors.cover_image }" />
+          <p class="mt-1 text-xs text-slate-500">Format yang didukung: .jpg, .jpeg, .png (maks. 8MB). Tidak ada pratinjau otomatis.</p>
+          <p v-if="existingCoverUrl" class="mt-1 text-xs text-slate-500">
+            File saat ini: <a :href="existingCoverUrl" target="_blank" class="font-semibold text-emerald-600">Lihat gambar</a>
+          </p>
+          <p v-if="form.errors.cover_image" class="mt-1 text-xs text-rose-500">{{ form.errors.cover_image }}</p>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <Link :href="route('admin.berita.index')"
+            class="rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
             Batal
           </Link>
-          <button
-            type="submit"
-            class="px-5 py-1.5 rounded-full bg-green-600 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-            :disabled="form.processing"
-          >
-            {{ isEdit ? 'Simpan Perubahan' : 'Simpan Berita' }}
+          <button type="submit"
+            class="rounded-2xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-600 disabled:opacity-60"
+            :disabled="form.processing">
+            {{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Publikasikan Berita' }}
           </button>
         </div>
       </form>
-    </div>
+    </section>
   </div>
 </template>

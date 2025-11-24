@@ -39,15 +39,6 @@ const goToPage = (url) => {
     if (!url) return
     router.get(url, {}, { preserveState: true, replace: true })
 }
-
-const deleteBerita = (id) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus berita ini?')) return
-
-    router.delete(route('admin.berita.destroy', id), {
-        preserveScroll: true,
-    })
-}
-
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A'
     const d = new Date(dateString)
@@ -62,6 +53,56 @@ const truncate = (text, length) => {
     if (!text) return ''
     return text.length > length ? text.substring(0, length) + '...' : text
 }
+
+const formatType = (type) => {
+    if (type === 'activity') return 'Kegiatan'
+    if (type === 'gallery') return 'Galeri'
+    return 'Berita'
+}
+
+const showDeleteModal = ref(false)
+const beritaPendingDelete = ref(null)
+
+const openDeleteModal = (item) => {
+    beritaPendingDelete.value = item
+    showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false
+    beritaPendingDelete.value = null
+}
+
+const confirmDelete = () => {
+    if (!beritaPendingDelete.value) return
+
+    router.delete(route('admin.berita.destroy', beritaPendingDelete.value.id), {
+        preserveScroll: true,
+        onFinish: () => closeDeleteModal(),
+    })
+}
+
+const isNewsType = computed(() => beritaPendingDelete.value?.type === 'news')
+
+const modalTitle = computed(() => {
+    const type = beritaPendingDelete.value?.type
+    if (type === 'activity') return 'Hapus Kegiatan'
+    if (type === 'gallery') return 'Hapus Dokumentasi'
+    return 'Hapus Berita'
+})
+
+const modalMessage = computed(() => {
+    const type = beritaPendingDelete.value?.type
+    if (type === 'news') return 'Apakah anda yakin untuk menghapus berita kegiatan ini?'
+    if (type === 'activity') return 'Apakah anda yakin untuk menghapus kegiatan ini?'
+    if (type === 'gallery') return 'Apakah anda yakin untuk menghapus dokumentasi ini?'
+    return 'Apakah anda yakin untuk menghapus konten ini?'
+})
+
+const modalInfoDate = computed(() => {
+    if (!beritaPendingDelete.value) return ''
+    return formatDate(beritaPendingDelete.value.event_date || beritaPendingDelete.value.created_at)
+})
 defineOptions({
     layout: AdminLayout,
 })
@@ -126,6 +167,7 @@ defineOptions({
                             <th class="px-4 py-3">ID</th>
                             <th class="px-4 py-3">Judul</th>
                             <th class="px-4 py-3">Deskripsi</th>
+                            <th class="px-4 py-3">Tipe Konten</th>
                             <th class="px-4 py-3">Tanggal</th>
                             <th class="px-4 py-3">Aksi</th>
                         </tr>
@@ -144,6 +186,16 @@ defineOptions({
                             <td class="px-4 py-4 text-slate-600">
                                 {{ truncate(item.konten, 80) }}
                             </td>
+                            <td class="px-4 py-4">
+                                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                                    :class="item.type === 'activity'
+                                        ? 'bg-indigo-50 text-indigo-600'
+                                        : item.type === 'gallery'
+                                            ? 'bg-amber-50 text-amber-600'
+                                            : 'bg-emerald-50 text-emerald-600'">
+                                    {{ formatType(item.type) }}
+                                </span>
+                            </td>
                             <td class="px-4 py-4 text-slate-600">
                                 {{ formatDate(item.created_at) }}
                             </td>
@@ -153,7 +205,7 @@ defineOptions({
                                         class="inline-flex items-center rounded-full border border-amber-100 px-3 py-1 text-xs font-semibold text-amber-600 transition hover:bg-amber-50">
                                     Edit
                                     </Link>
-                                    <button @click="deleteBerita(item.id)"
+                                    <button @click="openDeleteModal(item)"
                                         class="inline-flex items-center rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
                                         Hapus
                                     </button>
@@ -185,5 +237,53 @@ defineOptions({
                 </div>
             </div>
         </section>
+
+        <transition name="fade">
+            <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                <div class="w-full max-w-md rounded-3xl bg-white shadow-2xl">
+                    <div class="rounded-t-3xl bg-rose-600 p-6 text-white">
+                        <p class="text-sm font-semibold uppercase tracking-widest">{{ modalTitle }}</p>
+                    </div>
+                    <div class="space-y-6 px-6 pb-6 pt-8">
+                        <div class="rounded-2xl border-2 border-rose-100 bg-rose-50 p-4 text-center text-rose-600">
+                            <p class="text-sm font-semibold">{{ modalMessage }}</p>
+                        </div>
+                        <div v-if="isNewsType" class="space-y-3 rounded-2xl border border-rose-100 p-4 text-sm">
+                            <p class="font-semibold text-slate-800">Informasi Berita</p>
+                            <p class="text-slate-600">
+                                Judul berita:
+                                <span class="font-medium text-slate-900">{{ beritaPendingDelete?.judul }}</span>
+                            </p>
+                            <p class="text-slate-600">
+                                Tanggal:
+                                <span class="font-medium text-slate-900">{{ modalInfoDate }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" @click="closeDeleteModal"
+                                class="flex-1 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                Batal
+                            </button>
+                            <button type="button" @click="confirmDelete"
+                                class="flex-1 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-200 transition hover:bg-rose-700">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
