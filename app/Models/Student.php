@@ -54,4 +54,22 @@ class Student extends Model
     {
         return $this->status === 'active' ? 'Aktif' : 'Nonaktif';
     }
+
+    public static function generateStudentId(): string
+    {
+        $latest = self::withTrashed()
+            ->where('student_id', 'like', 'SW%')
+            ->orderByDesc('student_id')
+            ->first();
+
+        $lastNumber = 0;
+
+        if ($latest && preg_match('/SW(\d{3})$/', $latest->student_id, $matches)) {
+            $lastNumber = (int) $matches[1];
+        }
+
+        $nextNumber = $lastNumber + 1;
+
+        return 'SW' . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+    }
 }

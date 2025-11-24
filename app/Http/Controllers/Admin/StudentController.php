@@ -8,6 +8,8 @@ use App\Http\Requests\Admin\Student\UpdateStudentRequest;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class StudentController extends Controller
@@ -50,6 +52,7 @@ class StudentController extends Controller
                 'name'            => $student->name,
                 'education_level' => $student->education_level,
                 'parent_name'     => $student->parent->name ?? '-',
+                'school_name'     => $student->school_name,
                 'status'          => $student->status === 'active' ? 'Aktif' : 'Nonaktif',
             ];
         });
@@ -67,7 +70,7 @@ class StudentController extends Controller
     public function create()
     {
         // dropdown orang tua (role = ortu)
-        $parents = User::whereHas('role', fn ($q) => $q->where('name', 'ortu'))
+        $parents = User::role('ortu')
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
@@ -90,16 +93,19 @@ class StudentController extends Controller
 
     public function store(StoreStudentRequest $request)
     {
-        Student::create($request->validated());
+        $data = $request->validated();
+        $parentAccount = $this->createParentAccountIfNeeded($data);
+
+        Student::create($data);
 
         return redirect()
             ->route('admin.students.index')
-            ->with('success', 'Data siswa berhasil ditambahkan.');
+            ->with('success', $this->buildSuccessMessage('ditambahkan', $parentAccount));
     }
 
     public function edit(Student $student)
     {
-        $parents = User::whereHas('role', fn ($q) => $q->where('name', 'ortu'))
+        $parents = User::role('ortu')
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
@@ -132,11 +138,14 @@ class StudentController extends Controller
 
     public function update(UpdateStudentRequest $request, Student $student)
     {
-        $student->update($request->validated());
+        $data = $request->validated();
+        $parentAccount = $this->createParentAccountIfNeeded($data);
+
+        $student->update($data);
 
         return redirect()
             ->route('admin.students.index')
-            ->with('success', 'Data siswa berhasil diperbarui.');
+            ->with('success', $this->buildSuccessMessage('diperbarui', $parentAccount));
     }
 
     public function destroy(Student $student)
@@ -146,5 +155,58 @@ class StudentController extends Controller
         return redirect()
             ->route('admin.students.index')
             ->with('success', 'Data siswa berhasil dihapus.');
+    }
+
+    private function createParentAccountIfNeeded(array &$data): ?array
+    {
+        $shouldCreate = filter_var($data['create_parent_account'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        if (! $shouldCreate) {
+            $this->cleanupParentPayload($data);
+
+            return null;
+        }
+
+        $plainPassword = Str::random(10);
+
+        $parentUser = User::create([
+            'name'      => $data['new_parent_name'],
+            'email'     => $data['new_parent_email'],
+            'phone'     => $data['new_parent_phone'] ?? null,
+            'is_active' => true,
+            'password'  => Hash::make($plainPassword),
+        ]);
+
+        $parentUser->assignRole('ortu');
+
+        $data['parent_id'] = $parentUser->id;
+
+        $this->cleanupParentPayload($data);
+
+        return [
+            'email'    => $parentUser->email,
+            'password' => $plainPassword,
+        ];
+    }
+
+    private function cleanupParentPayload(array &$data): void
+    {
+        unset(
+            $data['create_parent_account'],
+            $data['new_parent_name'],
+            $data['new_parent_email'],
+            $data['new_parent_phone'],
+        );
+    }
+
+    private function buildSuccessMessage(string $action, ?array $parentAccount): string
+    {
+        $message = "Data siswa berhasil {$action}.";
+
+        if ($parentAccount) {
+            $message .= ' Akun orang tua ' . $parentAccount['email'] . ' dibuat dengan password: ' . $parentAccount['password'] . '.';
+        }
+
+        return $message;
     }
 }

@@ -146,7 +146,7 @@ const togglePasswordVisibility = () => {
 				</div>
 
 				<div v-if="!isOrtu" class="rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-700">
-					<strong>Info:</strong> Akun orang tua hanya dapat dibuat melalui modul Kelola Siswa karena harus terhubung dengan data anak.
+					<strong>Info:</strong> Akun orang tua dibuat dan dihubungkan langsung dari modul Kelola Siswa. Gunakan menu tersebut untuk menambahkan siswa sekaligus membuat akun orang tua baru.
 				</div>
 
 				<div class="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
