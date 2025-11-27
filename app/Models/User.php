@@ -65,6 +65,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Loan::class, 'issued_by');
     }
 
+    public function teachingSchedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class, 'teacher_id');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

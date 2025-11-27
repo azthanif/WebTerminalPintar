@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Attendance;
+use App\Models\Schedule;
 use App\Models\TeacherNote;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,6 +49,11 @@ class Student extends Model
     public function teacherNotes(): HasMany
     {
         return $this->hasMany(TeacherNote::class);
+    }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
     }
 
     public function getStatusLabelAttribute(): string

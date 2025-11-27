@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 // use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\EnsureParentHasStudent;
 
 use Spatie\Permission\Middleware\RoleMiddleware as SpatieRoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'               => SpatieRoleMiddleware::class,
             'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'parent.student'     => EnsureParentHasStudent::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -57,6 +57,10 @@ class LoginController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
+        if ($user->hasRole('ortu')) {
+            return redirect()->intended(route('orang-tua.dashboard'));
+        }
+
         return redirect()->intended('/');
     }
 

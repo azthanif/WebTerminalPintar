@@ -14,7 +14,10 @@ class TeacherNote extends Model
 	protected $fillable = [
 		'student_id',
 		'teacher_id',
+		'title',
 		'note',
+		'category',
+		'visibility',
 		'recorded_at',
 	];
 

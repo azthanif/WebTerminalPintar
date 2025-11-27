@@ -12,13 +12,15 @@ class Attendance extends Model
 
 	protected $fillable = [
 		'student_id',
-		'date',
+		'attendance_date',
 		'status',
+		'session_topic',
+		'session_time',
 		'notes',
 	];
 
 	protected $casts = [
-		'date' => 'date',
+		'attendance_date' => 'date',
 	];
 
 	public function student(): BelongsTo

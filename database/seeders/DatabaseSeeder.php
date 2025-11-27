@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder
             StudentSeeder::class,
             BookSeeder::class,
             NewsSeeder::class,
+            ParentModuleSeeder::class,
         ]);
     }
 }

@@ -94,3 +94,5 @@ Route::post('/login', [LoginController::class, 'store']);
 // Logout
 Route::post('/logout', [LoginController::class, 'destroy'])
     ->name('logout');
+
+require __DIR__ . '/orangtua.php';
