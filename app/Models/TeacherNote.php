@@ -13,17 +13,30 @@ class TeacherNote extends Model
 
 	protected $fillable = [
 		'student_id',
+		'schedule_id',
 		'teacher_id',
 		'title',
 		'note',
+		'attachments',
+		'follow_up_actions',
 		'category',
+		'tag_color',
+		'sentiment',
+		'is_flagged',
 		'visibility',
 		'recorded_at',
 	];
 
 	protected $casts = [
 		'recorded_at' => 'datetime',
+		'attachments' => 'array',
+		'is_flagged' => 'boolean',
 	];
+
+	public function schedule(): BelongsTo
+	{
+		return $this->belongsTo(Schedule::class);
+	}
 
 	public function student(): BelongsTo
 	{

@@ -55,6 +55,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(News::class, 'admin_id');
     }
 
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class, 'teacher_id');
+    }
+
     public function loans(): HasMany
     {
         return $this->hasMany(Loan::class, 'user_id');
@@ -68,6 +73,26 @@ class User extends Authenticatable implements MustVerifyEmail
     public function teachingSchedules(): HasMany
     {
         return $this->hasMany(Schedule::class, 'teacher_id');
+    }
+
+    public function recordedAttendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'recorded_by');
+    }
+
+    public function teacherNotes(): HasMany
+    {
+        return $this->hasMany(TeacherNote::class, 'teacher_id');
+    }
+
+    public function isGuru(): bool
+    {
+        return $this->hasRole('guru');
+    }
+
+    public function scopeGuru($query)
+    {
+        return $query->role('guru');
     }
 
     public function scopeActive($query)

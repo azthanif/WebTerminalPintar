@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
             BookSeeder::class,
             NewsSeeder::class,
             ParentModuleSeeder::class,
+            GuruModuleSeeder::class,
         ]);
     }
 }

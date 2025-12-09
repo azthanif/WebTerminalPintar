@@ -97,7 +97,7 @@ class ParentModuleSeeder extends Seeder
                 'attendance_date' => Carbon::now()->subDay()->toDateString(),
             ],
             [
-                'status' => 'present',
+                'status' => 'Hadir',
                 'session_topic' => 'Sains Dasar',
                 'session_time' => '08:00 - 09:00',
                 'notes' => 'Mengikuti kelas dengan antusias',

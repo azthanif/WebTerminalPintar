@@ -18,15 +18,33 @@ class Material extends Model
         'file_type',
         'file_size',
         'download_url',
+        'status',
+        'downloads_count',
+        'uploaded_by',
+        'visibility',
+        'expires_at',
+        'labels',
         'published_at',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'labels' => 'array',
     ];
 
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class);
+    }
+
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function incrementDownloads(): void
+    {
+        $this->increment('downloads_count');
     }
 }
