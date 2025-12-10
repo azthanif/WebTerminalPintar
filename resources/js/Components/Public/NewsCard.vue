@@ -26,7 +26,7 @@ const props = defineProps({
         {{ berita.judul }}
       </h3>
       <p class="text-sm text-gray-600 flex-1 line-clamp-3">
-        {{ berita.deskripsi_singkat }}
+        {{ berita.deskripsi ?? berita.deskripsi_singkat }}
       </p>
       <div class="mt-3">
         <Link

@@ -217,7 +217,7 @@ const handleImageError = (event) => {
                     </span>
                   </div>
                   <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                    {{ item.deskripsi_singkat }}
+                    {{ item.deskripsi ?? item.deskripsi_singkat }}
                   </p>
                 </div>
                 <div class="p-6 pt-0 mt-auto">

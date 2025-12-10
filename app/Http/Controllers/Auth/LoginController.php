@@ -29,6 +29,9 @@ class LoginController extends Controller
         $credentials = $request->validate([
             'email'    => ['required', 'string'],
             'password' => ['required', 'string'],
+        ], [
+            'email.required'    => 'Email atau nama pengguna wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
         ]);
 
         $loginValue = $credentials['email'];
@@ -38,9 +41,15 @@ class LoginController extends Controller
             ->orWhere('name', $loginValue)
             ->first();
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        if (! $user) {
             return back()->withErrors([
-                'email' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+                'email' => 'Email atau nama pengguna tidak ditemukan.',
+            ])->onlyInput('email');
+        }
+
+        if (! Hash::check($credentials['password'], $user->password)) {
+            return back()->withErrors([
+                'password' => 'Password yang Anda masukkan salah.',
             ])->onlyInput('email');
         }
 

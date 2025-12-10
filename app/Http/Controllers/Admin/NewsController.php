@@ -75,8 +75,9 @@ class NewsController extends Controller
         $news = new News();
         $news->admin_id  = $request->user()->id;
         $news->title     = $data['judul'];
+        $news->subtitle  = $data['sub_judul'] ?? null;
         $news->slug      = Str::slug($data['judul']) . '-' . Str::random(4);
-        $news->excerpt   = Str::limit(strip_tags($data['konten']), 160);
+        $news->excerpt   = $data['sub_judul'] ?? Str::limit(strip_tags($data['konten']), 160);
         $news->body      = $data['konten'];
         $news->event_date = $data['event_date'];
         $news->type      = $data['type'];
@@ -84,6 +85,11 @@ class NewsController extends Controller
         if ($request->hasFile('cover_image')) {
             $path = $request->file('cover_image')->store('assets-berita', 'public');
             $news->cover_image_path = $path;
+        }
+
+        if ($request->hasFile('cover_image_secondary')) {
+            $secondaryPath = $request->file('cover_image_secondary')->store('assets-berita', 'public');
+            $news->second_image_path = $secondaryPath;
         }
 
         $news->save();
@@ -99,10 +105,12 @@ class NewsController extends Controller
             'news' => [
                 'id'         => $news->id,
                 'judul'      => $news->title,
+                'sub_judul'  => $news->subtitle,
                 'konten'     => $news->body,
                 'event_date' => optional($news->event_date)->format('Y-m-d'),
                 'type'       => $news->type,
                 'cover_url'  => $news->cover_image_path ? Storage::url($news->cover_image_path) : null,
+                'cover_secondary_url' => $news->second_image_path ? Storage::url($news->second_image_path) : null,
             ],
         ]);
     }
@@ -112,7 +120,8 @@ class NewsController extends Controller
         $data = $request->validated();
 
         $news->title      = $data['judul'];
-        $news->excerpt    = Str::limit(strip_tags($data['konten']), 160);
+        $news->subtitle   = $data['sub_judul'] ?? null;
+        $news->excerpt    = $data['sub_judul'] ?? Str::limit(strip_tags($data['konten']), 160);
         $news->body       = $data['konten'];
         $news->event_date = $data['event_date'];
         $news->type       = $data['type'];
@@ -125,6 +134,16 @@ class NewsController extends Controller
             }
 
             $news->cover_image_path = $newPath;
+        }
+
+        if ($request->hasFile('cover_image_secondary')) {
+            $newSecondaryPath = $request->file('cover_image_secondary')->store('assets-berita', 'public');
+
+            if ($news->second_image_path) {
+                Storage::disk('public')->delete($news->second_image_path);
+            }
+
+            $news->second_image_path = $newSecondaryPath;
         }
 
         $news->save();

@@ -38,7 +38,7 @@ const heroImages = computed(() => {
   return [assets.placeholder]
 })
 
-const subtitle = computed(() => props.berita?.deskripsi_singkat ?? '')
+const subtitle = computed(() => props.berita?.sub_judul ?? props.berita?.deskripsi_singkat ?? '')
 const contentHtml = computed(() => props.berita?.konten ?? '')
 const isLoading = computed(() => !props.berita)
 
@@ -190,7 +190,10 @@ const handleImageError = (event) => {
               {{ subtitle }}
             </h2>
 
-            <div class="prose prose-lg max-w-none text-gray-600 prose-headings:text-gray-800 prose-a:text-[#76B340] hover:prose-a:text-[#5a8a30]" v-html="contentHtml" />
+            <div class="mt-6">
+              <h3 class="text-xl font-semibold text-gray-800 mb-3">Deskripsi</h3>
+              <div class="prose prose-lg max-w-none text-gray-600 prose-headings:text-gray-800 prose-a:text-[#76B340] hover:prose-a:text-[#5a8a30]" v-html="contentHtml" />
+            </div>
           </article>
         </div>
       </main>

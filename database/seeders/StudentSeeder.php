@@ -2,14 +2,19 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Student;
+use Illuminate\Database\Seeder;
 
 class StudentSeeder extends Seeder
 {
     public function run(): void
     {
-        // buat 50 siswa
-        Student::factory()->count(5)->create();
+        $ids = range(1, 5);
+
+        foreach ($ids as $number) {
+            Student::factory()->create([
+                'student_id' => sprintf('SW%03d', $number),
+            ]);
+        }
     }
 }

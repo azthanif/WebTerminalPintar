@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\Loan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,6 +22,7 @@ class BookController extends Controller
 
 		$books = Book::query()
 			->withCount('loans')
+			->with(['activeLoans.borrower'])
 			->when($filters['search'] ?? null, function ($query, $search) {
 				$query->where(function ($q) use ($search) {
 					$q->where('title', 'like', "%{$search}%")
@@ -37,6 +42,8 @@ class BookController extends Controller
 			'maintenance' => Book::where('status', Book::STATUS_MAINTENANCE)->count(),
 			'lost'        => Book::where('status', Book::STATUS_LOST)->count(),
 		];
+
+		$this->attachBorrowerMeta($books);
 
 		return Inertia::render('Admin/Books/Index', [
 			'books'      => $books,
@@ -138,6 +145,78 @@ class BookController extends Controller
 			'Fiksi',
 			'Non Fiksi',
 		];
+	}
+
+	private function attachBorrowerMeta(LengthAwarePaginator $books): void
+	{
+		$activeLoans = collect($books->items())
+			->flatMap(fn(Book $book) => $book->activeLoans)
+			->filter()
+			->values();
+
+		if ($activeLoans->isEmpty()) {
+			return;
+		}
+
+		$uniqueBorrowers = $activeLoans->unique(function ($loan) {
+			return $loan->user_id
+				? 'user-' . $loan->user_id
+				: 'guest-' . $loan->borrower_name . '-' . ($loan->borrower_email ?? '');
+		});
+
+		$counts = Loan::query()
+			->where('status', Loan::STATUS_BORROWED)
+			->where(function ($query) use ($uniqueBorrowers) {
+				foreach ($uniqueBorrowers as $loan) {
+					$query->orWhere(function ($subQuery) use ($loan) {
+						if ($loan->user_id) {
+							$subQuery->where('user_id', $loan->user_id);
+						} else {
+							$subQuery->whereNull('user_id')
+								->where('borrower_name', $loan->borrower_name)
+								->when(
+									$loan->borrower_email,
+									fn($q) => $q->where('borrower_email', $loan->borrower_email),
+									fn($q) => $q->whereNull('borrower_email')
+								);
+						}
+					});
+				}
+			})
+			->select('user_id', 'borrower_name', 'borrower_email', DB::raw('COUNT(*) as total'))
+			->groupBy('user_id', 'borrower_name', 'borrower_email')
+			->get();
+
+		$books->setCollection($books->getCollection()->map(function (Book $book) use ($counts) {
+			$book->setRelation('activeLoans', $book->activeLoans->map(function (Loan $loan) use ($counts) {
+				$loan->borrowed_books_total = $this->resolveBorrowCount($counts, $loan);
+
+				return $loan;
+			}));
+
+			return $book;
+		}));
+	}
+
+	private function resolveBorrowCount(Collection $counts, Loan $loan): int
+	{
+		$match = $counts->first(function ($item) use ($loan) {
+			if ($loan->user_id) {
+				return (int) $item->user_id === (int) $loan->user_id;
+			}
+
+			if (!is_null($item->user_id)) {
+				return false;
+			}
+
+			$emailMatches = $loan->borrower_email
+				? $item->borrower_email === $loan->borrower_email
+				: is_null($item->borrower_email);
+
+			return $item->borrower_name === $loan->borrower_name && $emailMatches;
+		});
+
+		return (int) ($match->total ?? 1);
 	}
 }
 

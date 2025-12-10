@@ -39,7 +39,7 @@ const navigation = [
 	{
 		label: 'Perpustakaan',
 		routeName: 'admin.books.index',
-		patterns: ['admin.books.*', 'admin.loans.*'],
+		patterns: ['admin.books.*', 'admin.loans.*', 'admin.perpustakaan.*'],
 		icon: 'M4.5 5.25h15v13.5H4.5zM9 8.25h6M9 12h6M9 15.75h4.5',
 	},
 ]

@@ -15,10 +15,12 @@ class UpdateNewsRequest extends FormRequest
     {
         return [
             'judul'        => ['required', 'string', 'max:255'],
+            'sub_judul'    => ['nullable', 'string', 'max:255'],
             'konten'       => ['required', 'string'],
             'event_date'   => ['nullable', 'date'],
             'type'         => ['required', 'in:news,activity,gallery'],
             'cover_image'  => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:8192'],
+            'cover_image_secondary' => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:8192'],
         ];
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\{
     NewsController,
     BookController,
     LoanController,
+    LibraryCirculationController,
     ReportController,
     DonationController,
     SettingController
@@ -68,6 +69,17 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('loans', LoanController::class)
             ->only(['index', 'store', 'update']);
+
+        Route::prefix('perpustakaan')
+            ->name('perpustakaan.')
+            ->group(function () {
+                Route::get('sirkulasi', [LibraryCirculationController::class, 'index'])
+                    ->name('sirkulasi');
+                Route::post('pinjam', [LibraryCirculationController::class, 'pinjam'])
+                    ->name('pinjam');
+                Route::post('kembalikan', [LibraryCirculationController::class, 'kembalikan'])
+                    ->name('kembalikan');
+            });
 
         // Route::get('reports/attendance', [ReportController::class, 'attendance'])
         // ->name('reports.attendance');

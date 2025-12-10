@@ -283,7 +283,9 @@ const submit = () => {
                         class="rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
                         Batal
                     </Link>
-                    <button type="submit"
+                    <button
+                        type="button"
+                        @click="submit"
                         class="rounded-2xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-600 disabled:opacity-60"
                         :disabled="form.processing">
                         {{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Siswa' }}

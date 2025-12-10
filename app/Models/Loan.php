@@ -26,6 +26,13 @@ class Loan extends Model
 		'returned_at',
 		'status',
 		'notes',
+		'borrower_name',
+		'borrower_email',
+	];
+
+	protected $appends = [
+		'borrower_display_name',
+		'borrower_display_email',
 	];
 
 	protected $casts = [
@@ -61,6 +68,16 @@ class Loan extends Model
 			self::STATUS_OVERDUE  => 'Terlambat',
 			default               => 'Dipinjam',
 		};
+	}
+
+	public function getBorrowerDisplayNameAttribute(): ?string
+	{
+		return $this->borrower?->name ?? $this->borrower_name;
+	}
+
+	public function getBorrowerDisplayEmailAttribute(): ?string
+	{
+		return $this->borrower?->email ?? $this->borrower_email;
 	}
 }
 

@@ -17,6 +17,10 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    currentUserId: {
+        type: Number,
+        required: true,
+    },
 })
 
 defineOptions({
@@ -124,6 +128,20 @@ const openDeleteModal = (user) => {
     showDeleteModal.value = true
 }
 
+const isCurrentUser = (user) => {
+    if (!user) return false
+    return user.id === props.currentUserId
+}
+
+const attemptDelete = (user) => {
+    if (isCurrentUser(user)) {
+        pushFlashNotification('error', 'Anda tidak dapat menghapus akun yang sedang digunakan.')
+        return
+    }
+
+    openDeleteModal(user)
+}
+
 const closeDeleteModal = () => {
     showDeleteModal.value = false
     userPendingDelete.value = null
@@ -131,6 +149,12 @@ const closeDeleteModal = () => {
 
 const deleteUser = () => {
     if (!userPendingDelete.value) return
+
+    if (isCurrentUser(userPendingDelete.value)) {
+        pushFlashNotification('error', 'Anda tidak dapat menghapus akun yang sedang digunakan.')
+        closeDeleteModal()
+        return
+    }
 
     router.delete(route('admin.users.destroy', userPendingDelete.value.id), {
         preserveScroll: true,
@@ -226,7 +250,14 @@ const formatTime = (time) => {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50 bg-white">
-                        <tr v-for="user in users.data" :key="user.id" class="hover:bg-slate-50/50">
+                        <tr
+                            v-for="user in users.data"
+                            :key="user.id"
+                            :class="[
+                                'hover:bg-slate-50/50 transition-colors',
+                                isCurrentUser(user) ? 'bg-emerald-50/60 ring-1 ring-emerald-100' : '',
+                            ]"
+                        >
                             <td class="px-4 py-4">
                                 <div class="flex items-center gap-3">
                                     <span
@@ -234,7 +265,15 @@ const formatTime = (time) => {
                                         {{ (user.nama || user.name).charAt(0).toUpperCase() }}
                                     </span>
                                     <div>
-                                        <p class="font-semibold text-slate-900">{{ user.nama || user.name }}</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="font-semibold text-slate-900">{{ user.nama || user.name }}</p>
+                                            <span
+                                                v-if="isCurrentUser(user)"
+                                                class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-emerald-700"
+                                            >
+                                                Akun Aktif
+                                            </span>
+                                        </div>
                                         <p class="text-xs text-slate-500">ID: {{ user.id }}</p>
                                     </div>
                                 </div>
@@ -272,8 +311,14 @@ const formatTime = (time) => {
                                         class="inline-flex items-center rounded-full border border-amber-100 px-3 py-1 text-xs font-semibold text-amber-600 transition hover:bg-amber-50">
                                     Edit
                                     </Link>
-                                    <button @click="openDeleteModal(user)"
-                                        class="inline-flex items-center rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
+                                    <button
+                                        @click="attemptDelete(user)"
+                                        :disabled="isCurrentUser(user)"
+                                        class="inline-flex items-center rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold transition"
+                                        :class="isCurrentUser(user)
+                                            ? 'cursor-not-allowed border-slate-100 text-slate-300'
+                                            : 'text-rose-600 hover:bg-rose-50'"
+                                    >
                                         Hapus
                                     </button>
                                 </div>

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Student extends Model
 {
@@ -65,16 +66,9 @@ class Student extends Model
 
     public static function generateStudentId(): string
     {
-        $latest = self::withTrashed()
-            ->where('student_id', 'like', 'SW%')
-            ->orderByDesc('student_id')
-            ->first();
-
-        $lastNumber = 0;
-
-        if ($latest && preg_match('/SW(\d{3})$/', $latest->student_id, $matches)) {
-            $lastNumber = (int) $matches[1];
-        }
+        $lastNumber = self::withTrashed()
+            ->whereRaw("student_id REGEXP '^SW[0-9]{3}$'")
+            ->max(DB::raw('CAST(SUBSTRING(student_id, 3) AS UNSIGNED)')) ?? 0;
 
         $nextNumber = $lastNumber + 1;
 

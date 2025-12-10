@@ -6,6 +6,7 @@ use App\Models\Loan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Book extends Model
 {
@@ -40,6 +41,20 @@ class Book extends Model
 	public function loans(): HasMany
 	{
 		return $this->hasMany(Loan::class);
+	}
+
+	public function activeLoan(): HasOne
+	{
+		return $this->hasOne(Loan::class)
+			->whereNull('returned_at')
+			->latestOfMany('borrowed_at');
+	}
+
+	public function activeLoans(): HasMany
+	{
+		return $this->hasMany(Loan::class)
+			->whereNull('returned_at')
+			->orderBy('borrowed_at');
 	}
 
 	public function scopeAvailable($query)

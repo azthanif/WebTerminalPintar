@@ -29,6 +29,7 @@ class UserController extends Controller
             'users'   => UserResource::collection($data['users']),
             'stats'   => $data['stats'],
             'filters' => $filters,
+            'currentUserId' => $request->user()->id,
             'title'   => 'Manajemen Pengguna',
         ]);
     }
@@ -71,8 +72,14 @@ class UserController extends Controller
             ->with('success', 'Pengguna berhasil diperbarui.');
     }
 
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
+        if ($request->user()->is($user)) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('error', 'Anda tidak dapat menghapus akun yang sedang digunakan.');
+        }
+
         $this->userService->delete($user);
 
         return redirect()

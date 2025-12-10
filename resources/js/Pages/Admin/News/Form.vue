@@ -56,20 +56,23 @@ watch(
 const isEdit = computed(() => !!props.news)
 
 const existingCoverUrl = computed(() => props.news?.cover_url ?? null)
+const existingSecondaryCoverUrl = computed(() => props.news?.cover_secondary_url ?? null)
 
 const form = useForm({
   judul: props.news?.judul ?? '',
+  sub_judul: props.news?.sub_judul ?? '',
   konten: props.news?.konten ?? '',
   event_date: props.news?.event_date ?? '',
   type: props.news?.type ?? 'news',
   cover_image: null,
+  cover_image_secondary: null,
 })
 
 const submit = () => {
   const options = {
     forceFormData: true,
     preserveScroll: true,
-    onSuccess: () => form.reset('cover_image'),
+    onSuccess: () => form.reset('cover_image', 'cover_image_secondary'),
   }
 
   if (isEdit.value) {
@@ -84,9 +87,9 @@ const submit = () => {
   }
 }
 
-const handleFileChange = (event) => {
+const handleFileChange = (event, field) => {
   const file = event.target.files?.[0]
-  form.cover_image = file ?? null
+  form[field] = file ?? null
 }
 </script>
 
@@ -122,6 +125,15 @@ const handleFileChange = (event) => {
           <p v-if="form.errors.judul" class="mt-1 text-xs text-rose-500">{{ form.errors.judul }}</p>
         </div>
 
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Sub Judul Konten</label>
+          <input v-model="form.sub_judul" type="text" placeholder="Ringkasan singkat yang menarik perhatian"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            :class="{ 'border-rose-400': form.errors.sub_judul }" />
+          <p class="mt-1 text-xs text-slate-500">Sub judul ini akan tampil sebagai highlight di detail berita.</p>
+          <p v-if="form.errors.sub_judul" class="mt-1 text-xs text-rose-500">{{ form.errors.sub_judul }}</p>
+        </div>
+
         <div class="grid gap-6 md:grid-cols-2">
           <div>
             <label class="block text-sm font-medium text-slate-700">Tipe Konten</label>
@@ -146,7 +158,7 @@ const handleFileChange = (event) => {
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-slate-700">Konten / Deskripsi</label>
+          <label class="block text-sm font-medium text-slate-700">Deskripsi<span class="text-rose-500">*</span></label>
           <textarea v-model="form.konten" rows="8" placeholder="Ceritakan jalannya kegiatan, dokumentasi, atau informasi penting lain..."
             class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm leading-relaxed focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             :class="{ 'border-rose-400': form.errors.konten }"></textarea>
@@ -156,7 +168,7 @@ const handleFileChange = (event) => {
 
         <div>
           <label class="block text-sm font-medium text-slate-700">Sampul / Foto Utama</label>
-          <input type="file" accept=".jpg,.jpeg,.png" @change="handleFileChange"
+          <input type="file" accept=".jpg,.jpeg,.png" @change="(e) => handleFileChange(e, 'cover_image')"
             class="mt-2 w-full rounded-2xl border border-dashed border-slate-300 px-4 py-2.5 text-sm text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             :class="{ 'border-rose-400': form.errors.cover_image }" />
           <p class="mt-1 text-xs text-slate-500">Format yang didukung: .jpg, .jpeg, .png (maks. 8MB). Tidak ada pratinjau otomatis.</p>
@@ -164,6 +176,18 @@ const handleFileChange = (event) => {
             File saat ini: <a :href="existingCoverUrl" target="_blank" class="font-semibold text-emerald-600">Lihat gambar</a>
           </p>
           <p v-if="form.errors.cover_image" class="mt-1 text-xs text-rose-500">{{ form.errors.cover_image }}</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Foto Tambahan</label>
+          <input type="file" accept=".jpg,.jpeg,.png" @change="(e) => handleFileChange(e, 'cover_image_secondary')"
+            class="mt-2 w-full rounded-2xl border border-dashed border-slate-300 px-4 py-2.5 text-sm text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            :class="{ 'border-rose-400': form.errors.cover_image_secondary }" />
+          <p class="mt-1 text-xs text-slate-500">Opsional: foto kedua untuk galeri di detail berita.</p>
+          <p v-if="existingSecondaryCoverUrl" class="mt-1 text-xs text-slate-500">
+            File saat ini: <a :href="existingSecondaryCoverUrl" target="_blank" class="font-semibold text-emerald-600">Lihat gambar</a>
+          </p>
+          <p v-if="form.errors.cover_image_secondary" class="mt-1 text-xs text-rose-500">{{ form.errors.cover_image_secondary }}</p>
         </div>
 
         <div class="flex justify-end gap-3">

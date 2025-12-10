@@ -16,28 +16,34 @@ class NewsPublicResource extends JsonResource
      */
     public function toArray($request): array
     {
+        $primaryImage = $this->resolveCoverImageUrl($this->cover_image_path);
+        $secondaryImage = $this->resolveCoverImageUrl($this->second_image_path);
+
         return [
             'id'                => $this->id,
             'judul'             => $this->title,
+            'sub_judul'         => $this->subtitle,
             'slug'              => $this->slug,
             'tanggal_publikasi' => optional($this->event_date ?? $this->created_at)->toDateString(),
             'deskripsi_singkat' => $this->excerpt,
+            'deskripsi'         => Str::limit(strip_tags($this->body), 200),
             'konten'            => $this->body,
-            'gambar_url'        => $this->resolveCoverImageUrl(),
+            'gambar_url'        => $primaryImage,
+            'gallery'           => array_values(array_filter([$primaryImage, $secondaryImage])),
             'waktu_lalu'        => $this->created_at?->diffForHumans(),
         ];
     }
 
-    protected function resolveCoverImageUrl(): ?string
+    protected function resolveCoverImageUrl(?string $path = null): ?string
     {
-        if (! $this->cover_image_path) {
+        if (! $path) {
             return null;
         }
 
-        if (Str::startsWith($this->cover_image_path, ['http://', 'https://'])) {
-            return $this->cover_image_path;
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
         }
 
-        return Storage::url($this->cover_image_path);
+        return Storage::url($path);
     }
 }

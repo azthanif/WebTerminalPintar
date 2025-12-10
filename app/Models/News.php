@@ -12,10 +12,12 @@ class News extends Model
     protected $fillable = [
         'admin_id',
         'title',
+        'subtitle',
         'slug',
         'excerpt',
         'body',
         'cover_image_path',
+        'second_image_path',
         'type',
         'event_date',
         'is_published',

@@ -120,6 +120,18 @@ const statusColor = (value) => {
 
 const formatNumber = (value) => new Intl.NumberFormat('id-ID').format(value || 0)
 
+const borrowerLabel = (loan) => {
+    if (!loan) {
+        return 'Tidak ada peminjam'
+    }
+
+    const name = loan.borrower_display_name || loan.borrower?.name || 'Tidak diketahui'
+    const total = loan.borrowed_books_total || 1
+    return `${name} - (${total} buku)`
+}
+
+const borrowerEmail = (loan) => loan?.borrower_display_email || loan?.borrower?.email || ''
+
 const showDeleteModal = ref(false)
 const bookPendingDelete = ref(null)
 
@@ -155,10 +167,16 @@ const confirmDelete = () => {
                     Pantau persediaan buku dan riwayat peminjaman di Terminal Pintar.
                 </p>
             </div>
-            <Link :href="route('admin.books.create')"
-                class="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-600">
-            + Tambah Buku
-            </Link>
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <Link :href="route('admin.perpustakaan.sirkulasi')"
+                    class="inline-flex items-center justify-center rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-200 transition hover:bg-sky-600">
+                    Sirkulasi Peminjaman dan Pengembalian Buku
+                </Link>
+                <Link :href="route('admin.books.create')"
+                    class="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-600">
+                + Tambah Buku
+                </Link>
+            </div>
         </section>
 
         <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -219,6 +237,7 @@ const confirmDelete = () => {
                             <th class="px-4 py-3">Buku</th>
                             <th class="px-4 py-3">Kategori</th>
                             <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Peminjam</th>
                             <th class="px-4 py-3">Stok</th>
                             <th class="px-4 py-3">Dipinjam</th>
                             <th class="px-4 py-3 text-center">Aksi</th>
@@ -241,6 +260,24 @@ const confirmDelete = () => {
                                     :class="statusColor(book.status)">
                                     {{ statuses[book.status] || 'Tidak diketahui' }}
                                 </span>
+                            </td>
+                            <td class="px-4 py-4 text-sm text-slate-700">
+                                <div v-if="book.active_loans && book.active_loans.length">
+                                    <div
+                                        v-for="loan in book.active_loans"
+                                        :key="loan.id"
+                                        class="mb-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 last:mb-0"
+                                    >
+                                        <p class="text-sm font-semibold text-slate-900">
+                                            {{ borrowerLabel(loan) }}
+                                        </p>
+                                        <p v-if="borrowerEmail(loan)" class="text-xs text-slate-500">
+                                            {{ borrowerEmail(loan) }}
+                                        </p>
+                                        <p v-else class="text-xs italic text-slate-400">Email belum tersedia</p>
+                                    </div>
+                                </div>
+                                <p v-else class="text-xs italic text-slate-400">Tidak ada peminjaman aktif</p>
                             </td>
                             <td class="px-4 py-4">
                                 <div class="text-sm font-semibold text-slate-800">
@@ -265,7 +302,7 @@ const confirmDelete = () => {
                             </td>
                         </tr>
                         <tr v-if="books.data.length === 0">
-                            <td colspan="6" class="px-4 py-10 text-center text-sm text-slate-400">
+                            <td colspan="7" class="px-4 py-10 text-center text-sm text-slate-400">
                                 Belum ada data buku.
                             </td>
                         </tr>
