@@ -38,6 +38,7 @@ class NoteController extends Controller
         $payload = $request->validated();
         $payload['teacher_id'] = $request->user()->id;
         $payload['recorded_at'] = $payload['recorded_at'] ?? now();
+        $payload['visibility'] = $payload['visibility'] ?? 'parent';
 
         $note = TeacherNote::create($payload)->load(['student', 'schedule']);
 

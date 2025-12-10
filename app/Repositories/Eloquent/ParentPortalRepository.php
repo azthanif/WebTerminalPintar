@@ -32,7 +32,10 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
     public function latestNotes(Student $student, int $limit = 5): Collection
     {
         return $student->teacherNotes()
-            ->where('visibility', 'parent')
+            ->where(function ($query) {
+                $query->where('visibility', 'parent')
+                    ->orWhereNull('visibility');
+            })
             ->latest('recorded_at')
             ->limit($limit)
             ->with('teacher')
@@ -68,7 +71,10 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
     public function noteFeed(Student $student, array $filters = []): LengthAwarePaginator
     {
         return $student->teacherNotes()
-            ->where('visibility', 'parent')
+            ->where(function ($query) {
+                $query->where('visibility', 'parent')
+                    ->orWhereNull('visibility');
+            })
             ->when($filters['category'] ?? null, fn ($query, $category) => $query->where('category', $category))
             ->when($filters['search'] ?? null, function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
