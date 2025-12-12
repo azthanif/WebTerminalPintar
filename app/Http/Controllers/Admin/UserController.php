@@ -21,7 +21,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only('search');
+        $filters = $request->only('search', 'per_page');
 
         $data = $this->userService->getIndexData($filters);
 

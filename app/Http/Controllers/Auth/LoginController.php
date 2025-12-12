@@ -62,6 +62,8 @@ class LoginController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
+        $user->forceFill(['last_login_at' => now()])->save();
+
         if ($user->hasRole('admin')) {
             return redirect()->intended(route('admin.dashboard'));
         }

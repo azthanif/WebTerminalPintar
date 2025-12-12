@@ -29,7 +29,7 @@ class NewsController extends Controller
         $berita = $query
             ->orderByDesc('event_date')
             ->orderByDesc('created_at')
-            ->paginate(8)
+            ->paginate(10)
             ->withQueryString();
 
         // transform ke shape yang dipakai Vue (judul, konten, created_at)

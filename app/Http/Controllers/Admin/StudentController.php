@@ -28,7 +28,7 @@ class StudentController extends Controller
             ->orderBy('name');
 
         $students = $studentsQuery
-            ->paginate(8)
+            ->paginate(10)
             ->withQueryString();
 
         // Statistik
@@ -80,7 +80,6 @@ class StudentController extends Controller
             'SD',
             'SMP',
             'SMA/SMK',
-            'Kuliah',
             'Lainnya',
         ];
 
@@ -115,7 +114,6 @@ class StudentController extends Controller
             'SD',
             'SMP',
             'SMA/SMK',
-            'Kuliah',
             'Lainnya',
         ];
 

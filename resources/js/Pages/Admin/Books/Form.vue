@@ -76,6 +76,20 @@ const form = useForm({
     description: props.book?.description ?? '',
 })
 
+const ensureValidStatus = () => {
+    const statusOptions = props.statuses || {}
+    if (!statusOptions || Object.keys(statusOptions).length === 0) {
+        return
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(statusOptions, form.status)) {
+        const fallback = Object.keys(statusOptions)[0] ?? ''
+        form.status = fallback
+    }
+}
+
+ensureValidStatus()
+
 watch(
     () => form.total_stock,
     (value) => {

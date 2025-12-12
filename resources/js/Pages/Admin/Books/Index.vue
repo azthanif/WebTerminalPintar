@@ -65,11 +65,35 @@ watch(
     { immediate: true },
 )
 
+const resolvePaginationMeta = (paginator) => {
+    if (!paginator) {
+        return { current_page: 1, last_page: 1, from: 0, to: 0, total: 0 }
+    }
+
+    const source = paginator.meta ?? paginator
+
+    return {
+        current_page: source.current_page ?? 1,
+        last_page: source.last_page ?? 1,
+        from: source.from ?? 0,
+        to: source.to ?? 0,
+        total: source.total ?? 0,
+    }
+}
+
 const search = ref(props.filters.search || '')
 const status = ref(props.filters.status || '')
 
-const currentPage = computed(() => props.books.current_page || 1)
-const lastPage = computed(() => props.books.last_page || 1)
+const paginationMeta = computed(() => resolvePaginationMeta(props.books))
+const currentPage = computed(() => paginationMeta.value.current_page)
+const lastPage = computed(() => paginationMeta.value.last_page)
+const paginationInfo = computed(() => {
+    const meta = paginationMeta.value
+    if (!meta.total) {
+        return 'Tidak ada data buku'
+    }
+    return `Menampilkan ${meta.from}-${meta.to} dari ${meta.total} buku`
+})
 
 const loadBooks = (page = 1) => {
     router.get(
@@ -86,12 +110,16 @@ const loadBooks = (page = 1) => {
     )
 }
 
-const searchBooks = () => loadBooks(1)
-
 const changeStatus = (value) => {
     status.value = value
     loadBooks(1)
 }
+
+let searchDebounceId
+watch(search, () => {
+    clearTimeout(searchDebounceId)
+    searchDebounceId = setTimeout(() => loadBooks(1), 400)
+})
 
 const pages = computed(() => {
     if (!lastPage.value) return []
@@ -217,7 +245,7 @@ const confirmDelete = () => {
                                     clip-rule="evenodd" />
                             </svg>
                         </span>
-                        <input v-model="search" type="text" @keyup.enter="searchBooks" placeholder="Cari judul / kode"
+                        <input v-model="search" type="text" placeholder="Cari judul / kode"
                             class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-10 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none" />
                     </div>
                     <select v-model="status" @change="changeStatus($event.target.value)"
@@ -311,13 +339,11 @@ const confirmDelete = () => {
             </div>
 
             <div class="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-6 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
-                <p>
-                    Menampilkan {{ books.from || 0 }}-{{ books.to || 0 }} dari {{ books.total || 0 }} buku
-                </p>
+                <p>{{ paginationInfo }}</p>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button @click="loadBooks(currentPage - 1)" :disabled="!books.prev_page_url"
+                    <button @click="loadBooks(currentPage - 1)" :disabled="currentPage === 1"
                         class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
-                        :class="books.prev_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
+                        :class="currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-slate-700 hover:bg-slate-50'">
                         Sebelumnya
                     </button>
                     <button v-for="page in pages" :key="page" @click="loadBooks(page)"
@@ -327,9 +353,9 @@ const confirmDelete = () => {
                             : 'text-slate-600 hover:bg-slate-50'">
                         {{ page }}
                     </button>
-                    <button @click="loadBooks(currentPage + 1)" :disabled="!books.next_page_url"
+                    <button @click="loadBooks(currentPage + 1)" :disabled="currentPage === lastPage"
                         class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
-                        :class="books.next_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
+                        :class="currentPage === lastPage ? 'cursor-not-allowed text-slate-300' : 'text-slate-700 hover:bg-slate-50'">
                         Selanjutnya
                     </button>
                 </div>
