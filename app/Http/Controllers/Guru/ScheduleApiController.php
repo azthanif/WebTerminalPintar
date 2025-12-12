@@ -15,9 +15,18 @@ class ScheduleApiController extends Controller
     {
         $teacher = $request->user();
 
+        $showOnlyDeleted = $request->boolean('only_trashed');
+
         $query = Schedule::forTeacher($teacher)
-            ->with(['students', 'materials'])
-            ->when($request->boolean('with_trashed'), fn ($q) => $q->withTrashed())
+            ->with(['students', 'materials']);
+
+        if ($showOnlyDeleted) {
+            $query->onlyTrashed();
+        } elseif ($request->boolean('with_trashed')) {
+            $query->withTrashed();
+        }
+
+        $query
             ->when($request->filled('status') && $request->status !== 'Semua', fn ($q) => $q->where('status_badge', $request->string('status')))
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where(function ($inner) use ($request) {
@@ -146,12 +155,20 @@ class ScheduleApiController extends Controller
                     'attendance_date' => $attendanceDate,
                     'recorded_by' => $teacherId,
                     'recorded_at' => $schedule->start_time ?? now(),
-                    'status' => 'Hadir',
-                    'session_topic' => $schedule->topic,
+                    'status' => null,
+                    'session_topic' => $this->buildSessionTopicLabel($schedule),
                     'session_time' => $this->buildSessionTimeLabel($schedule),
                 ]
             );
         }
+    }
+
+    protected function buildSessionTopicLabel(Schedule $schedule): ?string
+    {
+        $parts = collect([$schedule->subject, $schedule->topic])
+            ->filter(fn ($value) => filled($value));
+
+        return $parts->isEmpty() ? null : $parts->unique()->implode('-');
     }
 
     protected function buildSessionTimeLabel(Schedule $schedule): ?string
