@@ -605,48 +605,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="mt-6 grid gap-3 md:grid-cols-4">
-        <div class="rounded-2xl border border-gray-100 px-4 py-3">
-          <label class="text-xs font-semibold text-gray-500">Dari Tanggal</label>
-          <input 
-            v-model="startDate" 
-            type="date" 
-            class="mt-1 w-full border-none bg-transparent text-sm text-gray-800 focus:outline-none focus:ring-0 p-0"
-          />
-        </div>
-
-        <div class="rounded-2xl border border-gray-100 px-4 py-3">
-          <label class="text-xs font-semibold text-gray-500">Sampai Tanggal</label>
-          <input 
-            v-model="endDate" 
-            type="date" 
-            class="mt-1 w-full border-none bg-transparent text-sm text-gray-800 focus:outline-none focus:ring-0 p-0"
-          />
-        </div>
-
-        <div class="rounded-2xl border border-gray-100 px-4 py-3">
-          <label class="text-xs font-semibold text-gray-500">Status</label>
-          <select
-            v-model="status"
-            class="mt-1 w-full border-none bg-transparent text-sm text-gray-800 focus:outline-none focus:ring-0 p-0"
-          >
-            <option value="">Semua Status</option>
-            <option v-for="opt in statusOptions" :key="opt" :value="opt">
-              {{ statusLabel(opt) }}
-            </option>
-          </select>
-        </div>
-
-        <div class="rounded-2xl border border-gray-100 px-4 py-3">
-          <label class="text-xs font-semibold text-gray-500">Cari</label>
-          <input
-            v-model="search"
-            type="search"
-            placeholder="Topik / Mapel..."
-            class="mt-1 w-full border-none bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 p-0"
-          />
-        </div>
-      </div>
+      
     </section>
 
     <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -716,7 +675,8 @@ onMounted(() => {
               class="flex flex-col rounded-2xl border bg-[#fdfcf9] p-3 text-left transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78AE4E] focus-visible:ring-offset-2"
               :class="[
                 cell.key === selectedDate ? 'border-[#78AE4E] shadow-sm' : 'border-gray-100 hover:border-[#78AE4E]/40',
-                calendarMode === 'day' ? 'min-h-[160px]' : 'min-h-[140px]'
+                calendarMode === 'day' ? 'min-h-[160px]' : 'min-h-[140px]',
+                cell.key === selectedDate ? 'mt-2 mb-2' : ''
               ]"
               @click="selectDate(cell.key)"
             >
@@ -783,7 +743,7 @@ onMounted(() => {
         <article
           v-for="schedule in activeSessions"
           :key="schedule.id"
-          class="rounded-3xl border border-gray-100 bg-[#fdfcf9] p-5 shadow-sm transition hover:shadow-md"
+          class="rounded-3xl border border-gray-100 bg-[#fdfcf9] p-5 shadow-sm transition hover:shadow-md mb-4"
         >
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div class="flex-1 space-y-3">
