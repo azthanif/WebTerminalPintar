@@ -678,7 +678,7 @@
 import { Head, router } from '@inertiajs/vue3'
 import GuruLayout from '@/Layouts/GuruLayout.vue'
 import axios from 'axios'
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { route } from 'ziggy-js'
 import {
   ArrowPathIcon,
@@ -694,14 +694,30 @@ defineOptions({ layout: GuruLayout })
 const props = defineProps({
   statusOptions: {
     type: Array,
-    default: () => ['Semua', 'Akan Datang', 'Berlangsung', 'Selesai', 'Dibatalkan'],
+    default: () => ['Semua', 'Akan Datang', 'Berlangsung', 'Selesai'],
   },
   students: {
     type: Array,
     default: () => [],
   },
+  timezone: {
+    type: String,
+    default: 'Asia/Jakarta',
+  },
 })
 
+const defaultTimezone = 'Asia/Jakarta'
+const detectBrowserTimezone = () => {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return typeof tz === 'string' && tz.length ? tz : null
+  } catch (error) {
+    return null
+  }
+}
+
+const timezoneOverride = ref(props.timezone || defaultTimezone)
+const timezone = computed(() => timezoneOverride.value || props.timezone || defaultTimezone)
 const hasStudents = computed(() => props.students.length > 0)
 
 const jadwalMateri = ref([])
@@ -710,7 +726,17 @@ const successMessage = ref('')
 const errorMessage = ref('')
 const uploadProgress = ref(0)
 const materialUploadProgress = ref(0)
-const minScheduleDate = new Date().toISOString().slice(0, 10)
+const formatDateForInput = (value) => {
+  if (!value) return ''
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone.value,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  return formatter.format(typeof value === 'string' ? new Date(value) : value)
+}
+const minScheduleDate = computed(() => formatDateForInput(new Date()))
 
 const filters = reactive({
   status: props.statusOptions?.[0] ?? 'Semua',
@@ -787,12 +813,13 @@ const badgeClass = (status) => {
 
 const formatFullDate = (value) => {
   if (!value) return '-'
-  return new Date(value).toLocaleDateString('id-ID', {
+  return new Intl.DateTimeFormat('id-ID', {
     weekday: 'long',
     day: '2-digit',
     month: 'long',
     year: 'numeric',
-  })
+    timeZone: timezone.value,
+  }).format(new Date(value))
 }
 
 const formatTimeRange = (start, end) => {
@@ -800,6 +827,7 @@ const formatTimeRange = (start, end) => {
   const timeFormatter = new Intl.DateTimeFormat('id-ID', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: timezone.value,
   })
   const startLabel = timeFormatter.format(new Date(start))
   const endLabel = end ? timeFormatter.format(new Date(end)) : '—'
@@ -891,6 +919,7 @@ const fetchSchedules = async () => {
         search: filters.search,
         only_trashed: filters.withTrashed ? 1 : undefined,
         per_page: 50,
+        timezone: timezone.value,
       },
     })
     jadwalMateri.value = data.data.map(mapSchedule)
@@ -948,8 +977,7 @@ const resetMateriForm = () => {
 
 const combineDateTime = (date, time) => {
   if (!date || !time) return null
-  const composed = new Date(`${date}T${time}`)
-  return composed.toISOString()
+  return `${date} ${time}:00`
 }
 
 const validateTimeRange = (start, end) => {
@@ -967,6 +995,7 @@ const buildSchedulePayload = (form) => ({
   end_time: combineDateTime(form.tanggal, form.jam_selesai),
   location: form.location,
   max_participants: form.max_participants || form.student_ids.length || null,
+  timezone: timezone.value,
 })
 
 const uploadMaterialsForSchedule = async (scheduleId, files, description, progressRef) => {
@@ -1209,11 +1238,22 @@ const openMaterialPreview = (file) => {
 const splitDateTime = (value) => {
   if (!value) return { date: '', time: '' }
   const date = new Date(value)
-  const iso = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16)
-  const [d, t] = iso.split('T')
-  return { date: d, time: t }
+  const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone.value,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: timezone.value,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return {
+    date: dateFormatter.format(date),
+    time: timeFormatter.format(date),
+  }
 }
 
 watch(
@@ -1251,9 +1291,24 @@ watch(
   }
 )
 
+watch(
+  () => timezone.value,
+  (current, previous) => {
+    if (previous && current !== previous) {
+      fetchSchedules()
+    }
+  }
+)
+
 onBeforeUnmount(() => {
   clearTimeout(searchDebounce)
 })
 
-fetchSchedules()
+onMounted(() => {
+  const browserTimezone = detectBrowserTimezone()
+  if (browserTimezone && browserTimezone !== timezoneOverride.value) {
+    timezoneOverride.value = browserTimezone
+  }
+  fetchSchedules()
+})
 </script>
