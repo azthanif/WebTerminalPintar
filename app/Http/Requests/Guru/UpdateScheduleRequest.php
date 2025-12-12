@@ -8,6 +8,7 @@ class UpdateScheduleRequest extends StoreScheduleRequest
     {
         $rules = parent::rules();
         $rules['student_ids'][0] = 'sometimes';
+        $rules['timezone'][0] = 'sometimes';
 
         return $rules;
     }

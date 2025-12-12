@@ -27,6 +27,7 @@ class StoreScheduleRequest extends FormRequest
             'max_participants' => ['nullable', 'integer', 'min:1', 'max:100'],
             'status_badge' => ['nullable', 'in:Akan Datang,Berlangsung,Selesai,Dibatalkan'],
             'attachments_meta' => ['nullable', 'array'],
+            'timezone' => ['nullable', 'timezone'],
         ];
     }
 }
