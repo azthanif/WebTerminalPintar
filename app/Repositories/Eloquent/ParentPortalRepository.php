@@ -13,9 +13,10 @@ use Illuminate\Database\Eloquent\Collection;
 
 class ParentPortalRepository implements ParentPortalRepositoryInterface
 {
-    public function findStudentFor(User $user): ?Student
+    public function findStudentFor(User $user, ?int $studentId = null): ?Student
     {
         return $user->students()
+            ->when($studentId, fn ($query) => $query->where('id', $studentId))
             ->with(['attendances' => fn ($query) => $query->latest('attendance_date')->limit(10)])
             ->with(['teacherNotes' => fn ($query) => $query->latest('recorded_at')->limit(10)])
             ->first();
@@ -55,13 +56,28 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
     public function scheduleFeed(Student $student, array $filters = []): LengthAwarePaginator
     {
         return $student->schedules()
-            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            // --- PERBAIKAN LOGIKA STATUS ---
+            ->when($filters['status'] ?? null, function ($query, $status) {
+                // Map status Bahasa Inggris (dari Request) ke Bahasa Indonesia (di Database)
+                $dbStatus = match ($status) {
+                    'scheduled' => 'Akan Datang',
+                    'completed' => 'Selesai',
+                    'canceled'  => 'Dibatalkan',
+                    'ongoing'   => 'Berlangsung', // Opsional, jaga-jaga jika nanti ada filter ongoing
+                    default     => $status,       // Fallback jika tidak ada di map
+                };
+
+                $query->where('status', $dbStatus);
+            })
+            // --------------------------------
             ->when($filters['search'] ?? null, function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
                     $q->where('topic', 'like', "%{$keyword}%")
                         ->orWhere('subject', 'like', "%{$keyword}%");
                 });
             })
+            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->whereDate('start_time', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->whereDate('start_time', '<=', $date))
             ->orderByDesc('start_time')
             ->with(['teacher', 'materials'])
             ->paginate($filters['per_page'] ?? 10)
@@ -82,6 +98,8 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
                         ->orWhere('note', 'like', "%{$keyword}%");
                 });
             })
+            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->whereDate('recorded_at', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->whereDate('recorded_at', '<=', $date))
             ->latest('recorded_at')
             ->with('teacher')
             ->paginate($filters['per_page'] ?? 10)

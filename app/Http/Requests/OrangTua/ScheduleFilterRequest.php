@@ -16,6 +16,8 @@ class ScheduleFilterRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:120'],
             'status' => ['nullable', 'in:scheduled,completed,canceled'],
+            'start_date' => ['nullable', 'date'],
+            'end_date'   => ['nullable', 'date', 'after_or_equal:start_date'],
             'per_page' => ['nullable', 'integer', 'min:5', 'max:50'],
         ];
     }

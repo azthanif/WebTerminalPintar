@@ -22,7 +22,11 @@ class ScheduleController extends Controller
 
     public function index(ScheduleFilterRequest $request): Response
     {
-        $student = $this->dashboardService->resolveStudent($request->user());
+        // AMBIL ID DARI SESSION
+        $activeStudentId = $request->session()->get('parent_portal_student_id');
+
+        // KIRIM KE SERVICE
+        $student = $this->dashboardService->resolveStudent($request->user(), $activeStudentId);
 
         abort_if(is_null($student), 404, 'Data siswa tidak ditemukan untuk akun ini.');
 
@@ -39,7 +43,9 @@ class ScheduleController extends Controller
 
     public function data(ScheduleFilterRequest $request): AnonymousResourceCollection
     {
-        $student = $this->dashboardService->resolveStudent($request->user());
+        // JANGAN LUPA UPDATE DI SINI JUGA (untuk API/Pagination)
+        $activeStudentId = $request->session()->get('parent_portal_student_id');
+        $student = $this->dashboardService->resolveStudent($request->user(), $activeStudentId);
 
         abort_if(is_null($student), 404);
 

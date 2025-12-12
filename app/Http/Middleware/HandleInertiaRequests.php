@@ -48,6 +48,15 @@ class HandleInertiaRequests extends Middleware
                     'is_active'   => $user->is_active,
                     'roles'       => $user->getRoleNames(),
                     'permissions' => $user->getPermissionNames(),
+                    
+                    'students'    => $user->hasRole('ortu') 
+                                        ? $user->students()->orderBy('name')->get(['id', 'name']) 
+                                        : [],
+                                        
+                    // Mengirim ID anak yang sedang dipilih dari session
+                    'active_student_id' => $request->session()->get('parent_portal_student_id'),
+                    // -----------------------------------
+                    
                 ] : null,
             ],
             'flash' => [

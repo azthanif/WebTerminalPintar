@@ -117,6 +117,13 @@ return [
     | Supported drivers: "file", "cache"
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Application Timezone
+    |--------------------------------------------------------------------------
+    */
+
+    // 'timezone' => 'Asia/Jakarta', // Ubah dari 'UTC' menjadi 'Asia/Jakarta'
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),

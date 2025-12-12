@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ParentPortalRepositoryInterface
 {
-    public function findStudentFor(User $user): ?Student;
+    // Tambahkan parameter ?int $studentId = null
+    public function findStudentFor(User $user, ?int $studentId = null): ?Student;
 
     public function latestAttendances(Student $student, int $limit = 5): Collection;
 
