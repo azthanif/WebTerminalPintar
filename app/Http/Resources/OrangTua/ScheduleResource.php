@@ -18,7 +18,9 @@ class ScheduleResource extends JsonResource
             'description' => $this->description,
             'start_time' => optional($this->start_time)->toIsoString(),
             'end_time' => optional($this->end_time)->toIsoString(),
-            'start_time_readable' => optional($this->start_time)->translatedFormat('l, d M Y H:i'),
+            'start_time_readable' => optional($this->start_time)
+                ->timezone('Asia/Jakarta') 
+                ->translatedFormat('l, d M Y H:i'),
             'location' => $this->location,
             'status' => $this->status,
             'meeting_url' => $this->meeting_url,

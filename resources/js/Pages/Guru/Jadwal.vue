@@ -102,7 +102,7 @@
               <p class="text-sm text-gray-600">
                 Peserta:
                 <span v-if="schedule.peserta.length">
-                  {{ schedule.peserta.map((student) => student.name).join(', ') }}
+                  {{ `${schedule.peserta.length} Peserta` }}
                 </span>
                 <span v-else>Belum ditetapkan</span>
               </p>
@@ -125,6 +125,13 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-3 self-start">
+              <button
+                class="rounded-full border border-[#78AE4E]/80 bg-white px-4 py-2 text-sm font-semibold text-[#78AE4E] transition hover:bg-[#f1f8e9] disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="schedule.is_deleted"
+                @click="goToAttendance(schedule)"
+              >
+                Edit Kehadiran
+              </button>
               <button
                 class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
                 :disabled="schedule.is_deleted"
@@ -339,10 +346,17 @@
               <div
                 v-for="file in addForm.materi_uploads"
                 :key="file.name"
-                class="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
+                class="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
               >
                 <span class="text-gray-700">{{ file.name }}</span>
                 <span class="text-xs text-gray-500">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
+                <button
+                  type="button"
+                  class="rounded-full border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                  @click="removeMaterialFile(addForm, file)"
+                >
+                  ×
+                </button>
               </div>
             </div>
             <div v-if="uploadProgress > 0" class="h-2 w-full overflow-hidden rounded-full bg-gray-100">
@@ -576,10 +590,17 @@
               <div
                 v-for="file in materiForm.materi_uploads"
                 :key="file.name"
-                class="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
+                class="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
               >
                 <span class="text-gray-700">{{ file.name }}</span>
                 <span class="text-xs text-gray-500">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
+                <button
+                  type="button"
+                  class="rounded-full border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                  @click="removeMaterialFile(materiForm, file)"
+                >
+                  ×
+                </button>
               </div>
             </div>
             <div>
@@ -654,10 +675,10 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import GuruLayout from '@/Layouts/GuruLayout.vue'
 import axios from 'axios'
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { route } from 'ziggy-js'
 import {
   ArrowPathIcon,
@@ -673,14 +694,30 @@ defineOptions({ layout: GuruLayout })
 const props = defineProps({
   statusOptions: {
     type: Array,
-    default: () => ['Semua', 'Akan Datang', 'Berlangsung', 'Selesai', 'Dibatalkan'],
+    default: () => ['Semua', 'Akan Datang', 'Berlangsung', 'Selesai'],
   },
   students: {
     type: Array,
     default: () => [],
   },
+  timezone: {
+    type: String,
+    default: 'Asia/Jakarta',
+  },
 })
 
+const defaultTimezone = 'Asia/Jakarta'
+const detectBrowserTimezone = () => {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return typeof tz === 'string' && tz.length ? tz : null
+  } catch (error) {
+    return null
+  }
+}
+
+const timezoneOverride = ref(props.timezone || defaultTimezone)
+const timezone = computed(() => timezoneOverride.value || props.timezone || defaultTimezone)
 const hasStudents = computed(() => props.students.length > 0)
 
 const jadwalMateri = ref([])
@@ -689,7 +726,17 @@ const successMessage = ref('')
 const errorMessage = ref('')
 const uploadProgress = ref(0)
 const materialUploadProgress = ref(0)
-const minScheduleDate = new Date().toISOString().slice(0, 10)
+const formatDateForInput = (value) => {
+  if (!value) return ''
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone.value,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  return formatter.format(typeof value === 'string' ? new Date(value) : value)
+}
+const minScheduleDate = computed(() => formatDateForInput(new Date()))
 
 const filters = reactive({
   status: props.statusOptions?.[0] ?? 'Semua',
@@ -766,12 +813,13 @@ const badgeClass = (status) => {
 
 const formatFullDate = (value) => {
   if (!value) return '-'
-  return new Date(value).toLocaleDateString('id-ID', {
+  return new Intl.DateTimeFormat('id-ID', {
     weekday: 'long',
     day: '2-digit',
     month: 'long',
     year: 'numeric',
-  })
+    timeZone: timezone.value,
+  }).format(new Date(value))
 }
 
 const formatTimeRange = (start, end) => {
@@ -779,6 +827,7 @@ const formatTimeRange = (start, end) => {
   const timeFormatter = new Intl.DateTimeFormat('id-ID', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: timezone.value,
   })
   const startLabel = timeFormatter.format(new Date(start))
   const endLabel = end ? timeFormatter.format(new Date(end)) : '—'
@@ -846,6 +895,13 @@ const setErrorMessage = (message) => {
   }
 }
 
+const buildSubjectFilterKey = (subject, topic) => {
+  const parts = [subject, topic]
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter((value, index, array) => value.length && array.indexOf(value) === index)
+  return parts.length ? parts.join('-') : ''
+}
+
 const handleApiError = (error) => {
   if (error.response?.data?.message) {
     setErrorMessage(error.response.data.message)
@@ -861,8 +917,9 @@ const fetchSchedules = async () => {
       params: {
         status: filters.status,
         search: filters.search,
-        with_trashed: filters.withTrashed,
+        only_trashed: filters.withTrashed ? 1 : undefined,
         per_page: 50,
+        timezone: timezone.value,
       },
     })
     jadwalMateri.value = data.data.map(mapSchedule)
@@ -920,8 +977,7 @@ const resetMateriForm = () => {
 
 const combineDateTime = (date, time) => {
   if (!date || !time) return null
-  const composed = new Date(`${date}T${time}`)
-  return composed.toISOString()
+  return `${date} ${time}:00`
 }
 
 const validateTimeRange = (start, end) => {
@@ -939,6 +995,7 @@ const buildSchedulePayload = (form) => ({
   end_time: combineDateTime(form.tanggal, form.jam_selesai),
   location: form.location,
   max_participants: form.max_participants || form.student_ids.length || null,
+  timezone: timezone.value,
 })
 
 const uploadMaterialsForSchedule = async (scheduleId, files, description, progressRef) => {
@@ -989,6 +1046,20 @@ const submitAddSchedule = async () => {
   } catch (error) {
     handleApiError(error)
   }
+}
+
+const goToAttendance = (schedule) => {
+  if (!schedule?.raw) return
+  const subjectKey = buildSubjectFilterKey(schedule.raw.subject, schedule.raw.topic)
+  const { date } = splitDateTime(schedule.raw.start_time)
+  const query = {}
+  if (subjectKey) {
+    query.subject = subjectKey
+  }
+  if (date) {
+    query.date = date
+  }
+  router.visit(route('guru.attendance', query))
 }
 
 const openEditSchedule = (schedule) => {
@@ -1119,6 +1190,10 @@ const handleMaterialFiles = (event, target) => {
   event.target.value = ''
 }
 
+const removeMaterialFile = (target, file) => {
+  target.materi_uploads = target.materi_uploads.filter((item) => item !== file)
+}
+
 const onReplaceFile = (event, material) => {
   const [file] = event.target.files || []
   if (file) {
@@ -1163,11 +1238,22 @@ const openMaterialPreview = (file) => {
 const splitDateTime = (value) => {
   if (!value) return { date: '', time: '' }
   const date = new Date(value)
-  const iso = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16)
-  const [d, t] = iso.split('T')
-  return { date: d, time: t }
+  const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone.value,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: timezone.value,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return {
+    date: dateFormatter.format(date),
+    time: timeFormatter.format(date),
+  }
 }
 
 watch(
@@ -1205,9 +1291,24 @@ watch(
   }
 )
 
+watch(
+  () => timezone.value,
+  (current, previous) => {
+    if (previous && current !== previous) {
+      fetchSchedules()
+    }
+  }
+)
+
 onBeforeUnmount(() => {
   clearTimeout(searchDebounce)
 })
 
-fetchSchedules()
+onMounted(() => {
+  const browserTimezone = detectBrowserTimezone()
+  if (browserTimezone && browserTimezone !== timezoneOverride.value) {
+    timezoneOverride.value = browserTimezone
+  }
+  fetchSchedules()
+})
 </script>

@@ -48,27 +48,72 @@ watch(
     { immediate: true },
 )
 
+const resolvePaginationMeta = (paginator) => {
+    if (!paginator) {
+        return { current_page: 1, last_page: 1, from: 0, to: 0, total: 0 }
+    }
+
+    const source = paginator.meta ?? paginator
+
+    return {
+        current_page: source.current_page ?? 1,
+        last_page: source.last_page ?? 1,
+        from: source.from ?? 0,
+        to: source.to ?? 0,
+        total: source.total ?? 0,
+    }
+}
+
 const searchQuery = ref(props.filters.search || '')
 
+const paginationMeta = computed(() => resolvePaginationMeta(props.students))
+
 const paginationInfo = computed(() => {
-    if (!props.students || props.students.total === 0) {
+    const meta = paginationMeta.value
+    if (!meta.total) {
         return 'Tidak ada data siswa'
     }
-    return `Menampilkan ${props.students.from} - ${props.students.to} dari ${props.students.total} siswa`
+    return `Menampilkan ${meta.from} - ${meta.to} dari ${meta.total} siswa`
 })
 
-const searchData = () => {
+const currentPage = computed(() => paginationMeta.value.current_page)
+const lastPage = computed(() => paginationMeta.value.last_page)
+
+const pages = computed(() => {
+    if (!lastPage.value) return []
+
+    const limit = Math.min(5, lastPage.value)
+    const numbers = []
+    let start = Math.max(1, currentPage.value - Math.floor(limit / 2))
+    let end = Math.min(lastPage.value, start + limit - 1)
+
+    if (end - start + 1 < limit) {
+        start = Math.max(1, end - limit + 1)
+    }
+
+    for (let page = start; page <= end; page++) {
+        numbers.push(page)
+    }
+
+    return numbers
+})
+
+const loadStudents = (page = 1) => {
     router.get(
         route('admin.students.index'),
-        { search: searchQuery.value },
+        {
+            page,
+            search: searchQuery.value || undefined,
+        },
         { preserveState: true, replace: true },
     )
 }
 
-const goToPage = (url) => {
-    if (!url) return
-    router.get(url, {}, { preserveState: true, replace: true })
-}
+let searchDebounceId
+watch(searchQuery, () => {
+    clearTimeout(searchDebounceId)
+    searchDebounceId = setTimeout(() => loadStudents(1), 400)
+})
 
 defineOptions({
     layout: AdminLayout,
@@ -132,7 +177,7 @@ defineOptions({
                                 clip-rule="evenodd" />
                         </svg>
                     </span>
-                    <input v-model="searchQuery" type="text" @keyup.enter="searchData"
+                    <input v-model="searchQuery" type="text"
                         placeholder="Cari ID, nama, pendidikan"
                         class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-10 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none" />
                 </div>
@@ -192,18 +237,23 @@ defineOptions({
                 </table>
             </div>
 
-            <div class="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-6 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
+            <div class="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-6 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
                 <span>{{ paginationInfo }}</span>
-                <div class="flex items-center gap-2">
-                    <button @click="goToPage(students.prev_page_url)" :disabled="!students.prev_page_url"
-                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold"
-                        :class="students.prev_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button @click="loadStudents(currentPage - 1)" :disabled="currentPage === 1"
+                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
+                        :class="currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-slate-700 hover:bg-slate-50'">
                         Sebelumnya
                     </button>
-                    <button @click="goToPage(students.next_page_url)" :disabled="!students.next_page_url"
-                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold"
-                        :class="students.next_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
-                        Berikutnya
+                    <button v-for="pageNumber in pages" :key="`students-page-${pageNumber}`" @click="loadStudents(pageNumber)"
+                        class="rounded-full px-3 py-1 text-xs font-semibold"
+                        :class="pageNumber === currentPage ? 'bg-emerald-500 text-white' : 'text-slate-600 hover:bg-slate-50'">
+                        {{ pageNumber }}
+                    </button>
+                    <button @click="loadStudents(currentPage + 1)" :disabled="currentPage === lastPage"
+                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
+                        :class="currentPage === lastPage ? 'cursor-not-allowed text-slate-300' : 'text-slate-700 hover:bg-slate-50'">
+                        Selanjutnya
                     </button>
                 </div>
             </div>

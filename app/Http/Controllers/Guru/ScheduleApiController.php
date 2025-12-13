@@ -7,18 +7,37 @@ use App\Http\Requests\Guru\StoreScheduleRequest;
 use App\Http\Requests\Guru\UpdateScheduleRequest;
 use App\Models\Attendance;
 use App\Models\Schedule;
+use DateTimeZone;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class ScheduleApiController extends Controller
 {
     public function index(Request $request)
     {
         $teacher = $request->user();
+        $timezone = $this->resolveTimezone($request->input('timezone'));
+        $now = Carbon::now($timezone);
+
+        $showOnlyDeleted = $request->boolean('only_trashed');
 
         $query = Schedule::forTeacher($teacher)
-            ->with(['students', 'materials'])
-            ->when($request->boolean('with_trashed'), fn ($q) => $q->withTrashed())
-            ->when($request->filled('status') && $request->status !== 'Semua', fn ($q) => $q->where('status_badge', $request->string('status')))
+            ->with(['students', 'materials']);
+
+        if ($showOnlyDeleted) {
+            $query->onlyTrashed();
+        } elseif ($request->boolean('with_trashed')) {
+            $query->withTrashed();
+        }
+
+        $status = $request->input('status');
+
+        if ($status && $status !== 'Semua') {
+            $this->applyStatusFilter($query, $status, $now);
+        }
+
+        $query
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where(function ($inner) use ($request) {
                     $inner->where('topic', 'like', "%{$request->search}%")
@@ -30,10 +49,13 @@ class ScheduleApiController extends Controller
         $perPage = $request->integer('per_page', 10);
         $paginated = $query->paginate($perPage);
 
+        $statusExpression = $this->statusCaseExpression();
+        $statusBindings = $this->statusCaseBindings($now);
+
         $summary = Schedule::forTeacher($teacher)
-            ->selectRaw('status_badge, COUNT(*) as total')
-            ->groupBy('status_badge')
-            ->pluck('total', 'status_badge');
+            ->selectRaw("{$statusExpression} as computed_status, COUNT(*) as total", $statusBindings)
+            ->groupBy('computed_status')
+            ->pluck('total', 'computed_status');
 
         return response()->json([
             'data' => $paginated->items(),
@@ -49,6 +71,9 @@ class ScheduleApiController extends Controller
     public function store(StoreScheduleRequest $request)
     {
         $payload = $request->validated();
+        $timezone = $this->resolveTimezone($payload['timezone'] ?? null);
+        $payload = $this->normalizeSchedulePayloadTimes($payload, $timezone);
+        unset($payload['timezone']);
         $studentIds = collect($payload['student_ids'] ?? [])
             ->filter()
             ->unique()
@@ -74,6 +99,9 @@ class ScheduleApiController extends Controller
         $this->authorizeSchedule($schedule, $request->user()->id);
 
         $payload = $request->validated();
+        $timezone = $this->resolveTimezone($payload['timezone'] ?? null);
+        $payload = $this->normalizeSchedulePayloadTimes($payload, $timezone);
+        unset($payload['timezone']);
         $studentIds = null;
 
         if (array_key_exists('student_ids', $payload)) {
@@ -115,6 +143,67 @@ class ScheduleApiController extends Controller
         return response()->json($model->fresh(['students', 'materials']));
     }
 
+    protected function applyStatusFilter(Builder $query, string $status, Carbon $now): void
+    {
+        $expression = $this->statusCaseExpression();
+        $bindings = array_merge($this->statusCaseBindings($now), [$status]);
+
+        $query->whereRaw("{$expression} = ?", $bindings);
+    }
+
+    protected function statusCaseExpression(): string
+    {
+        return <<<'SQL'
+(CASE
+    WHEN status_badge = 'Dibatalkan' THEN 'Dibatalkan'
+    WHEN start_time IS NULL THEN COALESCE(NULLIF(status_badge, ''), 'Akan Datang')
+    WHEN start_time > ? THEN 'Akan Datang'
+    WHEN start_time <= ? AND (
+        (end_time IS NOT NULL AND end_time >= ?)
+        OR (end_time IS NULL AND start_time = ?)
+    ) THEN 'Berlangsung'
+    ELSE 'Selesai'
+END)
+SQL;
+    }
+
+    protected function statusCaseBindings(Carbon $now): array
+    {
+        return [
+            $now->copy(),
+            $now->copy(),
+            $now->copy(),
+            $now->copy(),
+        ];
+    }
+
+    protected function resolveTimezone(?string $timezone): string
+    {
+        if (! $timezone) {
+            return config('app.timezone', 'UTC');
+        }
+
+        try {
+            return (new DateTimeZone($timezone))->getName();
+        } catch (\Throwable $e) {
+            return config('app.timezone', 'UTC');
+        }
+    }
+
+    protected function normalizeSchedulePayloadTimes(array $payload, string $timezone): array
+    {
+        $appTimezone = config('app.timezone', 'UTC');
+
+        foreach (['start_time', 'end_time'] as $field) {
+            if (! empty($payload[$field])) {
+                $payload[$field] = Carbon::parse($payload[$field], $timezone)
+                    ->setTimezone($appTimezone);
+            }
+        }
+
+        return $payload;
+    }
+
     protected function syncAttendanceSessions(Schedule $schedule, ?array $studentIds, int $teacherId): void
     {
         $ids = $studentIds ?? $schedule->students()->pluck('students.id')->all();
@@ -146,12 +235,20 @@ class ScheduleApiController extends Controller
                     'attendance_date' => $attendanceDate,
                     'recorded_by' => $teacherId,
                     'recorded_at' => $schedule->start_time ?? now(),
-                    'status' => 'Hadir',
-                    'session_topic' => $schedule->topic,
+                    'status' => null,
+                    'session_topic' => $this->buildSessionTopicLabel($schedule),
                     'session_time' => $this->buildSessionTimeLabel($schedule),
                 ]
             );
         }
+    }
+
+    protected function buildSessionTopicLabel(Schedule $schedule): ?string
+    {
+        $parts = collect([$schedule->subject, $schedule->topic])
+            ->filter(fn ($value) => filled($value));
+
+        return $parts->isEmpty() ? null : $parts->unique()->implode('-');
     }
 
     protected function buildSessionTimeLabel(Schedule $schedule): ?string

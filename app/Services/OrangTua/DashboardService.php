@@ -5,6 +5,7 @@ namespace App\Services\OrangTua;
 use App\Models\Student;
 use App\Models\User;
 use App\Repositories\Contracts\ParentPortalRepositoryInterface;
+use App\Http\Resources\OrangTua\ScheduleResource; // Pastikan ini ada jika dipakai
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -15,9 +16,11 @@ class DashboardService
     ) {
     }
 
-    public function resolveStudent(User $user): ?Student
+    // UBAH BAGIAN INI: Tambahkan parameter $studentId
+    public function resolveStudent(User $user, ?int $studentId = null): ?Student
     {
-        return $this->repository->findStudentFor($user);
+        // Teruskan ID tersebut ke repository
+        return $this->repository->findStudentFor($user, $studentId);
     }
 
     public function buildSummary(Student $student): array
@@ -42,7 +45,7 @@ class DashboardService
             'attendance_rate' => $attendanceRate,
             'sessions_this_month' => $sessionsThisMonth,
             'notes_this_month' => $notesCount,
-            'next_schedule' => $nextSchedule,
+            'next_schedule' => $nextSchedule ? ScheduleResource::make($nextSchedule)->resolve() : null,
         ];
     }
 

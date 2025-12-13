@@ -25,7 +25,9 @@ class UserService
             });
         }
 
-        $users = $query->orderBy('name')->paginate(10)->withQueryString();
+        $perPage = 10;
+
+        $users = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
         $stats = [
             'total'      => User::count(),
@@ -37,7 +39,7 @@ class UserService
         return [
             'users'   => $users,
             'stats'   => $stats,
-            'filters' => $filters,
+            'filters' => array_merge($filters, ['per_page' => $perPage]),
         ];
     }
 

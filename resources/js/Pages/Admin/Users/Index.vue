@@ -65,12 +65,22 @@ watch(
     { immediate: true },
 )
 
-// search state (default dari filter server)
+const PER_PAGE_LIMIT = 10
 const search = ref(props.filters.search || '')
 
+const paginationMeta = computed(() => props.users?.meta ?? {})
+
 // current page & last page dari paginator Laravel
-const currentPage = computed(() => props.users.current_page || 1)
-const lastPage = computed(() => props.users.last_page || 1)
+const currentPage = computed(() => paginationMeta.value.current_page || 1)
+const lastPage = computed(() => paginationMeta.value.last_page || 1)
+
+const paginationInfo = computed(() => {
+    const meta = paginationMeta.value
+    const from = meta.from ?? 0
+    const to = meta.to ?? 0
+    const total = meta.total ?? 0
+    return `Menampilkan ${from}-${to} dari ${total} pengguna · ${PER_PAGE_LIMIT} data per halaman`
+})
 
 // hit API Inertia untuk ganti halaman / filter
 const loadUsers = (page = 1) => {
@@ -79,28 +89,13 @@ const loadUsers = (page = 1) => {
         {
             page,
             search: search.value,
+            per_page: PER_PAGE_LIMIT,
         },
         {
             preserveState: true,
             replace: true,
         },
     )
-}
-
-const searchUsers = () => {
-    loadUsers(1)
-}
-
-const nextPage = () => {
-    if (props.users.next_page_url) {
-        loadUsers(currentPage.value + 1)
-    }
-}
-
-const previousPage = () => {
-    if (props.users.prev_page_url) {
-        loadUsers(currentPage.value - 1)
-    }
 }
 
 const pages = computed(() => {
@@ -118,6 +113,12 @@ const pages = computed(() => {
         result.push(i)
     }
     return result
+})
+
+let searchDebounceId
+watch(search, () => {
+    clearTimeout(searchDebounceId)
+    searchDebounceId = setTimeout(() => loadUsers(1), 400)
 })
 
 const showDeleteModal = ref(false)
@@ -164,14 +165,29 @@ const deleteUser = () => {
 
 const formatDate = (date) => {
     if (!date) return '—'
-    return new Date(date).toLocaleDateString('id-ID')
+    return new Date(date).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Asia/Jakarta',
+    })
 }
 
-const formatTime = (time) => {
-    if (!time) return '—'
-    return new Date(time).toLocaleTimeString('id-ID', {
+const formatDateTime = (value) => {
+    if (!value) {
+        return 'Belum pernah login'
+    }
+
+    return new Date(value).toLocaleString('id-ID', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Jakarta',
     })
 }
 </script>
@@ -223,16 +239,18 @@ const formatTime = (time) => {
                     <h2 class="text-xl font-semibold text-slate-900">Daftar Pengguna</h2>
                     <p class="text-sm text-slate-500">Cari dan kelola akun pengguna</p>
                 </div>
-                <div class="relative w-full md:w-72">
-                    <span class="pointer-events-none absolute left-3 top-0 flex h-full items-center text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M9 3.5a5.5 5.5 0 013.962 9.337l3.85 3.85a.75.75 0 11-1.06 1.06l-3.85-3.85A5.5 5.5 0 119 3.5zm0 1.5a4 4 0 100 8 4 4 0 000-8z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </span>
-                    <input v-model="search" type="text" @keyup.enter="searchUsers" placeholder="Cari nama atau email"
-                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-10 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none" />
+                <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+                    <div class="relative flex-1 md:w-72">
+                        <span class="pointer-events-none absolute left-3 top-0 flex h-full items-center text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9 3.5a5.5 5.5 0 013.962 9.337l3.85 3.85a.75.75 0 11-1.06 1.06l-3.85-3.85A5.5 5.5 0 119 3.5zm0 1.5a4 4 0 100 8 4 4 0 000-8z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                        <input v-model="search" type="text" placeholder="Cari nama atau email"
+                            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-10 py-2 text-sm focus:border-emerald-500 focus:bg-white focus:outline-none" />
+                    </div>
                 </div>
             </div>
 
@@ -303,7 +321,7 @@ const formatTime = (time) => {
                                 {{ formatDate(user.created_at) }}
                             </td>
                             <td class="px-4 py-4 text-slate-600">
-                                {{ formatTime(user.last_login_at) }}
+                                {{ formatDateTime(user.last_login_at) }}
                             </td>
                             <td class="px-4 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
@@ -334,13 +352,11 @@ const formatTime = (time) => {
             </div>
 
             <div class="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-6 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
-                <p>
-                    Menampilkan {{ users.from || 0 }}-{{ users.to || 0 }} dari {{ users.total || 0 }} pengguna
-                </p>
+                <p>{{ paginationInfo }}</p>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button @click="previousPage" :disabled="!users.prev_page_url"
+                    <button @click="loadUsers(currentPage - 1)" :disabled="currentPage === 1"
                         class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
-                        :class="users.prev_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
+                        :class="currentPage === 1 ? 'cursor-not-allowed text-slate-300' : 'text-slate-700 hover:bg-slate-50'">
                         Sebelumnya
                     </button>
                     <button v-for="page in pages" :key="page" @click="loadUsers(page)"
@@ -350,9 +366,9 @@ const formatTime = (time) => {
                             : 'text-slate-600 hover:bg-slate-50'">
                         {{ page }}
                     </button>
-                    <button @click="nextPage" :disabled="!users.next_page_url"
+                    <button @click="loadUsers(currentPage + 1)" :disabled="currentPage === lastPage"
                         class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold transition"
-                        :class="users.next_page_url ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-300'">
+                        :class="currentPage === lastPage ? 'cursor-not-allowed text-slate-300' : 'text-slate-700 hover:bg-slate-50'">
                         Selanjutnya
                     </button>
                 </div>

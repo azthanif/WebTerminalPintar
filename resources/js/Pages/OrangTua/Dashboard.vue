@@ -6,33 +6,36 @@ import SummaryCard from '@/Components/Parent/SummaryCard.vue'
 import { useParentDashboard } from '@/Composables/useParentDashboard'
 
 const props = defineProps({
-  student: {
-    type: Object,
-    required: true,
-  },
-  summary: {
-    type: Object,
-    default: () => ({}),
-  },
-  notes: {
-    type: Array,
-    default: () => [],
-  },
-  schedules: {
-    type: Array,
-    default: () => [],
-  },
-  attendances: {
-    type: Array,
-    default: () => [],
-  },
+  student: { type: Object, required: true },
+  summary: { type: Object, default: () => ({}) },
+  notes: { type: Array, default: () => [] },
+  schedules: { type: Array, default: () => [] },
+  attendances: { type: Array, default: () => [] },
 })
 
 const { attendanceRate, sessionsThisMonth, notesThisMonth, nextSchedule } = useParentDashboard(props.summary)
 
-defineOptions({
-  layout: ParentLayout,
-})
+defineOptions({ layout: ParentLayout })
+
+// --- FUNGSI FORMAT WAKTU (CLIENT SIDE) ---
+const formatTime = (isoString) => {
+  if (!isoString) return '-'
+  return new Date(isoString).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const formatDate = (isoString) => {
+  if (!isoString) return '-'
+  return new Date(isoString).toLocaleDateString('id-ID', {
+    weekday: 'long', 
+    day: 'numeric', 
+    month: 'long',
+    year: 'numeric'
+  })
+}
+// -----------------------------------------
 
 const noteFallback = computed(() => props.notes.length ? props.notes : [
   {
@@ -49,7 +52,7 @@ const scheduleFallback = computed(() => props.schedules.length ? props.schedules
     id: 'fallback-schedule',
     subject: 'Belum ada jadwal',
     topic: 'Jadwal mendatang akan tampil di sini',
-    start_time_readable: '-',
+    start_time: null, // Ubah dari readable ke raw
     location: '-',
     status: 'scheduled',
   },
@@ -78,24 +81,9 @@ const scheduleFallback = computed(() => props.schedules.length ? props.schedules
     </section>
 
     <section class="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <SummaryCard
-        title="Persentase Kehadiran"
-        subtitle="30 Hari Terakhir"
-        :value="`${attendanceRate}%`"
-        accent="emerald"
-      />
-      <SummaryCard
-        title="Sesi Bulan Ini"
-        subtitle="Total Pembelajaran"
-        :value="sessionsThisMonth"
-        accent="amber"
-      />
-      <SummaryCard
-        title="Catatan Baru"
-        subtitle="Feedback Guru"
-        :value="notesThisMonth"
-        accent="sky"
-      />
+      <SummaryCard title="Persentase Kehadiran" subtitle="30 Hari Terakhir" :value="`${attendanceRate}%`" accent="emerald" />
+      <SummaryCard title="Sesi Bulan Ini" subtitle="Total Pembelajaran" :value="sessionsThisMonth" accent="amber" />
+      <SummaryCard title="Catatan Baru" subtitle="Feedback Guru" :value="notesThisMonth" accent="sky" />
     </section>
 
     <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -128,13 +116,23 @@ const scheduleFallback = computed(() => props.schedules.length ? props.schedules
           <article v-for="schedule in scheduleFallback" :key="schedule.id" class="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
             <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{{ schedule.subject }}</p>
             <h4 class="mt-2 text-lg font-bold text-slate-900">{{ schedule.topic }}</h4>
-            <p class="mt-1 text-xs text-slate-500">{{ schedule.start_time_readable }}</p>
+            
+            <p class="mt-1 text-xs text-slate-500 font-medium">
+               {{ schedule.start_time ? formatDate(schedule.start_time) : '-' }} • 
+               <span class="text-emerald-600">
+                 {{ schedule.start_time ? formatTime(schedule.start_time) : '-' }}
+               </span>
+            </p>
+            
             <p class="mt-2 text-sm text-slate-600">Lokasi: {{ schedule.location ?? '-' }}</p>
           </article>
         </div>
+        
         <div v-if="nextSchedule" class="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 text-sm text-emerald-700">
-          Jadwal terdekat: {{ nextSchedule.topic }} • {{ nextSchedule.start_time_readable }}
+          Jadwal terdekat: {{ nextSchedule.topic }} • 
+          {{ nextSchedule.start_time ? formatTime(nextSchedule.start_time) : '' }}
         </div>
+        
         <Link :href="route('orang-tua.schedules.index')" class="mt-6 block text-center text-sm font-semibold text-emerald-600">
           Lihat Jadwal Lengkap →
         </Link>
@@ -153,13 +151,22 @@ const scheduleFallback = computed(() => props.schedules.length ? props.schedules
           class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4"
         >
           <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em]">
-            <span>{{ attendance.attendance_date_readable }}</span>
+            <span>{{ attendance.attendance_date ? formatDate(attendance.attendance_date) : '-' }}</span>
             <span :class="attendance.status === 'present' ? 'text-emerald-500' : 'text-rose-500'">
-              {{ attendance.status }}
+              {{ attendance.status === 'present' ? 'HADIR' : attendance.status }}
             </span>
           </div>
           <p class="mt-2 text-lg font-bold text-slate-900">{{ attendance.session_topic ?? 'Pertemuan' }}</p>
-          <p class="text-sm text-slate-600">{{ attendance.session_time }}</p>
+          
+          <p class="text-sm text-slate-600 mt-1">
+             <span v-if="attendance.start_time_raw">
+                {{ formatTime(attendance.start_time_raw) }} - {{ attendance.end_time_raw ? formatTime(attendance.end_time_raw) : 'Selesai' }}
+             </span>
+             <span v-else>
+                {{ attendance.session_time }}
+             </span>
+          </p>
+          
           <p class="mt-3 text-sm text-slate-500">{{ attendance.notes }}</p>
         </article>
       </div>

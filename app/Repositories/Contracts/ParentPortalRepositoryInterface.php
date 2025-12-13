@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ParentPortalRepositoryInterface
 {
-    public function findStudentFor(User $user): ?Student;
+    // Tambahkan parameter ?int $studentId = null
+    public function findStudentFor(User $user, ?int $studentId = null): ?Student;
 
     public function latestAttendances(Student $student, int $limit = 5): Collection;
 
@@ -18,6 +19,8 @@ interface ParentPortalRepositoryInterface
     public function upcomingSchedules(Student $student, int $limit = 3): Collection;
 
     public function scheduleFeed(Student $student, array $filters = []): LengthAwarePaginator;
+
+    public function scheduleCalendar(Student $student, array $filters = []): Collection;
 
     public function noteFeed(Student $student, array $filters = []): LengthAwarePaginator;
 }

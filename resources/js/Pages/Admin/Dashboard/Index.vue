@@ -127,7 +127,7 @@ const daftarAktivitas = computed(() => {
             <div class="rounded-3xl bg-white p-6 shadow-md">
                 <div class="mb-4 flex items-start justify-between">
                     <div>
-                        <p class="text-sm font-medium text-slate-600">Artikel Published</p>
+                        <p class="text-sm font-medium text-slate-600">Artikel Terbit</p>
                         <p class="mt-1 text-5xl font-bold text-emerald-600">{{ summaryStats.totalBerita }}</p>
                         <p class="mt-2 text-xs text-slate-400">+{{ summaryStats.totalBerita ? 5 : 0 }} minggu ini</p>
                     </div>

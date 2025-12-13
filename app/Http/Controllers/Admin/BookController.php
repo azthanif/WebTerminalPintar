@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Arr;
 
 class BookController extends Controller
 {
@@ -59,7 +60,7 @@ class BookController extends Controller
 	{
 		return Inertia::render('Admin/Books/Create', [
 			'book'       => null,
-			'statuses'   => $this->statuses(),
+			'statuses'   => $this->createFormStatuses(),
 			'categories' => $this->categories(),
 			'title'      => 'Tambah Buku',
 		]);
@@ -82,7 +83,7 @@ class BookController extends Controller
 	{
 		return Inertia::render('Admin/Books/Edit', [
 			'book'       => $book,
-			'statuses'   => $this->statuses(),
+			'statuses'   => $this->editFormStatuses($book),
 			'categories' => $this->categories(),
 			'title'      => 'Ubah Data Buku',
 		]);
@@ -134,6 +135,18 @@ class BookController extends Controller
 			Book::STATUS_MAINTENANCE => 'Perawatan',
 			Book::STATUS_LOST        => 'Hilang',
 		];
+	}
+
+	private function createFormStatuses(): array
+	{
+		return Arr::except($this->statuses(), [Book::STATUS_BORROWED]);
+	}
+
+	private function editFormStatuses(Book $book): array
+	{
+		$statuses = Arr::only($this->statuses(), [Book::STATUS_MAINTENANCE, Book::STATUS_LOST]);
+
+		return $statuses;
 	}
 
 	private function categories(): array

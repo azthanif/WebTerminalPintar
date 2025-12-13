@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
@@ -64,6 +64,19 @@ watch(
 const isEdit = computed(() => Boolean(props.student?.id))
 const parentsList = computed(() => (Array.isArray(props.parents) ? props.parents : []))
 const educationList = computed(() => (Array.isArray(props.educationOptions) ? props.educationOptions : []))
+const parentSearchTerm = ref('')
+const selectedParentName = ref('')
+const hasParentSearch = computed(() => parentSearchTerm.value.trim().length > 0)
+const filteredParents = computed(() => {
+    const source = parentsList.value
+    const term = parentSearchTerm.value.trim().toLowerCase()
+
+    if (!term) {
+        return []
+    }
+
+    return source.filter((parent) => parent.name.toLowerCase().includes(term)).slice(0, 8)
+})
 
 const form = useForm({
     student_id: props.student?.student_id ?? '',
@@ -80,8 +93,48 @@ const form = useForm({
     new_parent_phone: '',
 })
 
+const findParentById = (id) => parentsList.value.find((parent) => String(parent.id) === String(id))
+
+const initialParent = findParentById(form.parent_id)
+if (initialParent) {
+    parentSearchTerm.value = initialParent.name
+    selectedParentName.value = initialParent.name
+}
+
 if (!parentsList.value.length && !props.student?.parent_id) {
     form.create_parent_account = true
+}
+
+const isParentSelected = (parentId) => String(form.parent_id ?? '') === String(parentId ?? '')
+
+watch(parentSearchTerm, (value) => {
+    const normalizedValue = value.trim()
+
+    if (!normalizedValue) {
+        if (form.parent_id) {
+            form.parent_id = ''
+        }
+        selectedParentName.value = ''
+        return
+    }
+
+    if (selectedParentName.value && normalizedValue !== selectedParentName.value) {
+        selectedParentName.value = ''
+        form.parent_id = ''
+    }
+})
+
+const selectParent = (parent) => {
+    if (!parent) return
+    selectedParentName.value = parent.name
+    parentSearchTerm.value = parent.name
+    form.parent_id = parent.id
+}
+
+const clearParentSelection = () => {
+    selectedParentName.value = ''
+    parentSearchTerm.value = ''
+    form.parent_id = ''
 }
 
 const useExistingParent = () => {
@@ -93,7 +146,7 @@ const useExistingParent = () => {
 
 const useNewParent = () => {
     form.create_parent_account = true
-    form.parent_id = ''
+    clearParentSelection()
 }
 
 watch(
@@ -201,20 +254,36 @@ const submit = () => {
                 </div>
 
                 <div v-if="!form.create_parent_account" class="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                    <label class="block text-sm font-medium text-slate-700">Pilih Akun Orang Tua</label>
-                    <select v-model="form.parent_id"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        :disabled="!parentsList.length"
-                        :class="{
-                            'border-rose-400': form.errors.parent_id,
-                            'bg-slate-100 text-slate-400': !parentsList.length,
-                        }">
-                        <option value="">Tanpa akun orang tua</option>
-                        <option v-for="parent in parentsList" :key="parent.id" :value="parent.id">
-                            {{ parent.name }}
-                        </option>
-                    </select>
-                    <p class="text-xs text-slate-500">Hubungkan jika akun orang tua sudah tersedia di sistem.</p>
+                    <label class="block text-sm font-medium text-slate-700">Cari / Pilih Akun Orang Tua</label>
+                    <div class="relative">
+                        <input v-model="parentSearchTerm" type="text" :disabled="!parentsList.length"
+                            placeholder="Ketik nama orang tua"
+                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            :class="[
+                                form.errors.parent_id ? 'border-rose-400' : '',
+                                !parentsList.length ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : '',
+                            ]" />
+                        <button v-if="parentSearchTerm" type="button"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-widest text-slate-400 hover:text-rose-500"
+                            @click="clearParentSelection">
+                            Hapus
+                        </button>
+                    </div>
+                    <div v-if="parentsList.length" class="max-h-56 overflow-y-auto rounded-2xl border border-slate-200 bg-white">
+                        <template v-if="hasParentSearch">
+                            <button type="button" v-for="parent in filteredParents" :key="parent.id"
+                                class="flex w-full items-center justify-between border-b border-slate-50 px-4 py-2 text-left text-sm text-slate-700 last:border-b-0 hover:bg-emerald-50"
+                                :class="{ 'bg-emerald-50 text-emerald-700': isParentSelected(parent.id) }"
+                                @click="selectParent(parent)">
+                                <span>{{ parent.name }}</span>
+                                <span v-if="isParentSelected(parent.id)" class="text-xs font-semibold uppercase tracking-widest text-emerald-500">Dipilih</span>
+                            </button>
+                            <p v-if="hasParentSearch && !filteredParents.length" class="px-4 py-3 text-center text-xs text-slate-400">Nama orang tua tidak ditemukan.</p>
+                        </template>
+                        <p v-else class="px-4 py-3 text-center text-xs text-slate-400">Ketik nama orang tua untuk menampilkan hasil pencarian.</p>
+                    </div>
+                    <p v-else class="text-xs text-slate-400">Belum ada akun orang tua terdaftar.</p>
+                    <p class="text-xs text-slate-500">Biarkan kolom kosong apabila siswa belum memiliki akun orang tua.</p>
                     <p v-if="form.errors.parent_id" class="text-xs text-rose-500">{{ form.errors.parent_id }}</p>
                 </div>
 
