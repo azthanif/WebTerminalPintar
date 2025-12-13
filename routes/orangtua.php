@@ -26,6 +26,9 @@ Route::middleware(['auth', 'verified', 'role:ortu', 'parent.student'])
         Route::get('/jadwal/data', [ScheduleController::class, 'data'])
             ->middleware('permission:parent.dashboard.schedules')
             ->name('schedules.data');
+        Route::get('/jadwal/calendar', [ScheduleController::class, 'calendar'])
+            ->middleware('permission:parent.dashboard.schedules')
+            ->name('schedules.calendar');
 
         Route::get('/catatan', [TeacherNoteController::class, 'index'])
             ->middleware('permission:parent.dashboard.notes')

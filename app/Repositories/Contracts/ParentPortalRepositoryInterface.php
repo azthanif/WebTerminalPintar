@@ -20,5 +20,7 @@ interface ParentPortalRepositoryInterface
 
     public function scheduleFeed(Student $student, array $filters = []): LengthAwarePaginator;
 
+    public function scheduleCalendar(Student $student, array $filters = []): Collection;
+
     public function noteFeed(Student $student, array $filters = []): LengthAwarePaginator;
 }

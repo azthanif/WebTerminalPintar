@@ -84,6 +84,35 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
             ->withQueryString();
     }
 
+    public function scheduleCalendar(Student $student, array $filters = []): Collection
+    {
+        $start = Carbon::parse($filters['start_date'] ?? now()->startOfWeek())->startOfDay();
+        $end = Carbon::parse($filters['end_date'] ?? now()->endOfWeek())->endOfDay();
+
+        return $student->schedules()
+            ->whereBetween('start_time', [$start, $end])
+            ->when($filters['status'] ?? null, function ($query, $status) {
+                $dbStatus = match ($status) {
+                    'scheduled' => 'Akan Datang',
+                    'completed' => 'Selesai',
+                    'canceled'  => 'Dibatalkan',
+                    'ongoing'   => 'Berlangsung',
+                    default     => $status,
+                };
+
+                $query->where('status', $dbStatus);
+            })
+            ->when($filters['search'] ?? null, function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('topic', 'like', "%{$keyword}%")
+                        ->orWhere('subject', 'like', "%{$keyword}%");
+                });
+            })
+            ->orderBy('start_time')
+            ->with(['teacher', 'materials'])
+            ->get();
+    }
+
     public function noteFeed(Student $student, array $filters = []): LengthAwarePaginator
     {
         return $student->teacherNotes()

@@ -13,15 +13,10 @@ const props = defineProps({
     type: Object,
     default: () => ({ data: [] }),
   },
-  categoryOptions: {
-    type: Array,
-    default: () => ['behavior', 'academic', 'communication', 'general'],
-  },
 })
 
 // State untuk filter
 const search = ref(props.filters.search ?? '')
-const category = ref(props.filters.category ?? '')
 
 defineOptions({
   layout: ParentLayout,
@@ -29,14 +24,13 @@ defineOptions({
 
 // Logika Debounce untuk pencarian otomatis saat mengetik
 let debounceId
-watch([search, category], () => {
+watch(search, () => {
   clearTimeout(debounceId)
   debounceId = setTimeout(() => {
     router.get(
       route('orang-tua.notes.index'),
       {
         search: search.value || undefined,
-        category: category.value || undefined,
       },
       {
         replace: true, // Jangan buat history browser baru
@@ -47,13 +41,6 @@ watch([search, category], () => {
   }, 300)
 })
 
-const categoryLabel = (value) => ({
-  behavior: 'Perilaku',
-  academic: 'Akademik',
-  communication: 'Komunikasi',
-  general: 'Umum',
-}[value] ?? value)
-
 const pagination = computed(() => props.notes?.meta ?? null)
 
 const goToPage = (url) => {
@@ -62,6 +49,31 @@ const goToPage = (url) => {
     preserveScroll: true,
     preserveState: true,
   })
+}
+
+const formatNoteTitle = (title) => {
+  if (!title) {
+    return '-'
+  }
+
+  const [primary, secondary] = title.split('·').map((part) => part.trim())
+
+  if (!secondary) {
+    return primary
+  }
+
+  const uniqueSubjects = Array.from(
+    new Set(
+      secondary
+        .split('-')
+        .map((part) => part.trim())
+        .filter(Boolean)
+    )
+  )
+
+  return uniqueSubjects.length
+    ? `${primary} · ${uniqueSubjects.join(' - ')}`
+    : primary
 }
 </script>
 
@@ -102,11 +114,8 @@ const goToPage = (url) => {
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{{ note.recorded_at_readable }}</p>
-            <h3 class="text-2xl font-bold text-slate-900">{{ note.title }}</h3>
+            <h3 class="text-2xl font-bold text-slate-900">{{ formatNoteTitle(note.title) }}</h3>
           </div>
-          <span class="inline-flex items-center rounded-full bg-slate-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            {{ categoryLabel(note.category) }}
-          </span>
         </div>
         
         <p class="mt-4 text-sm leading-relaxed text-slate-600 whitespace-pre-line">{{ note.note }}</p>
@@ -125,8 +134,8 @@ const goToPage = (url) => {
         </svg>
         <p class="text-sm">Tidak ada catatan yang ditemukan.</p>
         <button 
-            v-if="search || category" 
-            @click="search = ''; category = ''"
+          v-if="search"
+          @click="search = ''"
             class="mt-2 text-sm text-emerald-600 hover:underline"
         >
             Reset filter
