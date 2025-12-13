@@ -102,7 +102,7 @@
               <p class="text-sm text-gray-600">
                 Peserta:
                 <span v-if="schedule.peserta.length">
-                  {{ schedule.peserta.map((student) => student.name).join(', ') }}
+                  {{ `${schedule.peserta.length} Peserta` }}
                 </span>
                 <span v-else>Belum ditetapkan</span>
               </p>
@@ -125,6 +125,13 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-3 self-start">
+              <button
+                class="rounded-full border border-[#78AE4E]/80 bg-white px-4 py-2 text-sm font-semibold text-[#78AE4E] transition hover:bg-[#f1f8e9] disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="schedule.is_deleted"
+                @click="goToAttendance(schedule)"
+              >
+                Edit Kehadiran
+              </button>
               <button
                 class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
                 :disabled="schedule.is_deleted"
@@ -339,10 +346,17 @@
               <div
                 v-for="file in addForm.materi_uploads"
                 :key="file.name"
-                class="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
+                class="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
               >
                 <span class="text-gray-700">{{ file.name }}</span>
                 <span class="text-xs text-gray-500">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
+                <button
+                  type="button"
+                  class="rounded-full border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                  @click="removeMaterialFile(addForm, file)"
+                >
+                  ×
+                </button>
               </div>
             </div>
             <div v-if="uploadProgress > 0" class="h-2 w-full overflow-hidden rounded-full bg-gray-100">
@@ -576,10 +590,17 @@
               <div
                 v-for="file in materiForm.materi_uploads"
                 :key="file.name"
-                class="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
+                class="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-white px-3 py-2 text-sm"
               >
                 <span class="text-gray-700">{{ file.name }}</span>
                 <span class="text-xs text-gray-500">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
+                <button
+                  type="button"
+                  class="rounded-full border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                  @click="removeMaterialFile(materiForm, file)"
+                >
+                  ×
+                </button>
               </div>
             </div>
             <div>
@@ -654,7 +675,7 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import GuruLayout from '@/Layouts/GuruLayout.vue'
 import axios from 'axios'
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
@@ -846,6 +867,13 @@ const setErrorMessage = (message) => {
   }
 }
 
+const buildSubjectFilterKey = (subject, topic) => {
+  const parts = [subject, topic]
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter((value, index, array) => value.length && array.indexOf(value) === index)
+  return parts.length ? parts.join('-') : ''
+}
+
 const handleApiError = (error) => {
   if (error.response?.data?.message) {
     setErrorMessage(error.response.data.message)
@@ -861,7 +889,7 @@ const fetchSchedules = async () => {
       params: {
         status: filters.status,
         search: filters.search,
-        with_trashed: filters.withTrashed,
+        only_trashed: filters.withTrashed ? 1 : undefined,
         per_page: 50,
       },
     })
@@ -991,6 +1019,20 @@ const submitAddSchedule = async () => {
   }
 }
 
+const goToAttendance = (schedule) => {
+  if (!schedule?.raw) return
+  const subjectKey = buildSubjectFilterKey(schedule.raw.subject, schedule.raw.topic)
+  const { date } = splitDateTime(schedule.raw.start_time)
+  const query = {}
+  if (subjectKey) {
+    query.subject = subjectKey
+  }
+  if (date) {
+    query.date = date
+  }
+  router.visit(route('guru.attendance', query))
+}
+
 const openEditSchedule = (schedule) => {
   const raw = schedule.raw
   const { date, time } = splitDateTime(raw.start_time)
@@ -1117,6 +1159,10 @@ const handleMaterialFiles = (event, target) => {
   const files = Array.from(event.target.files || [])
   target.materi_uploads.push(...files)
   event.target.value = ''
+}
+
+const removeMaterialFile = (target, file) => {
+  target.materi_uploads = target.materi_uploads.filter((item) => item !== file)
 }
 
 const onReplaceFile = (event, material) => {

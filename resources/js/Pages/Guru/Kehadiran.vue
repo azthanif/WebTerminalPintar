@@ -2,7 +2,7 @@
 import { Head } from '@inertiajs/vue3'
 import GuruLayout from '@/Layouts/GuruLayout.vue'
 import axios from 'axios'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { route } from 'ziggy-js'
 import {
   DocumentTextIcon,
@@ -13,14 +13,31 @@ import {
 
 defineOptions({ layout: GuruLayout })
 
+const props = defineProps({
+  initialSubject: {
+    type: String,
+    default: null,
+  },
+  initialScheduleDate: {
+    type: String,
+    default: null,
+  },
+})
+
 const perPage = 10
 const attendanceStatusOptions = ['Semua', 'Hadir', 'Izin', 'Sakit', 'Alpha']
 const attendanceInputStatuses = ['Hadir', 'Izin', 'Sakit', 'Alpha']
 
+const normalizedInitialSubject =
+  typeof props.initialSubject === 'string' && props.initialSubject.trim().length ? props.initialSubject.trim() : 'Semua'
+const normalizedScheduleDate = props.initialScheduleDate ?? new Date().toISOString().slice(0, 10)
+
 const attendanceFilters = reactive({
   query: '',
   status: 'Semua',
+  subject: normalizedInitialSubject,
   page: 1,
+  scheduleDate: normalizedScheduleDate,
 })
 
 const attendanceSummary = reactive({ Hadir: 0, Izin: 0, Sakit: 0, Alpha: 0 })
@@ -28,6 +45,15 @@ const attendanceRecords = ref([])
 const pagination = reactive({ total: 0, lastPage: 1, currentPage: 1 })
 const isLoadingAttendance = ref(false)
 const successMessage = ref('')
+const subjectOptions = ref([])
+
+const scheduleLock = reactive({
+  isLocked: false,
+  secondsRemaining: 0,
+  startsAt: null,
+  label: '',
+})
+let countdownTimer = null
 
 const showNoteModal = ref(false)
 const activeNoteRecord = ref(null)
@@ -82,10 +108,12 @@ const statusBadgeClass = (status) => {
     Sakit: 'bg-amber-100 text-amber-800',
     Alpha: 'bg-red-100 text-red-700',
   }
-  return map[status] ?? 'bg-gray-100 text-gray-600'
+  return map[status] ?? 'bg-gray-200 text-gray-500'
 }
 
-const isRecordDirty = (record) => record.selectedStatus !== record.status
+const normalizeStatusValue = (value) => value ?? ''
+
+const isRecordDirty = (record) => normalizeStatusValue(record.draftStatus) !== normalizeStatusValue(record.status)
 
 const truncateNote = (text, limit = 80) => {
   if (!text) return ''
@@ -100,6 +128,75 @@ const setSuccessMessage = (message) => {
   }, 3000)
 }
 
+const clearCountdownTimer = () => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+}
+
+const startCountdownTimer = () => {
+  clearCountdownTimer()
+  if (scheduleLock.secondsRemaining <= 0) return
+  countdownTimer = setInterval(() => {
+    if (scheduleLock.secondsRemaining <= 1) {
+      scheduleLock.secondsRemaining = 0
+      scheduleLock.isLocked = false
+      clearCountdownTimer()
+      fetchAttendance()
+    } else {
+      scheduleLock.secondsRemaining -= 1
+    }
+  }, 1000)
+}
+
+const applyScheduleWindow = (windowData) => {
+  if (!windowData) {
+    clearCountdownTimer()
+    scheduleLock.isLocked = false
+    scheduleLock.secondsRemaining = 0
+    scheduleLock.startsAt = null
+    scheduleLock.label = ''
+    return
+  }
+
+  scheduleLock.startsAt = windowData.starts_at ?? null
+  const rawSeconds = Number(windowData.seconds_until ?? 0)
+  scheduleLock.secondsRemaining = Math.max(0, Math.floor(isNaN(rawSeconds) ? 0 : rawSeconds))
+  scheduleLock.isLocked = scheduleLock.secondsRemaining > 0
+  scheduleLock.label = windowData.schedule_label ?? attendanceFilters.subject
+
+  if (scheduleLock.isLocked) {
+    startCountdownTimer()
+  } else {
+    clearCountdownTimer()
+  }
+}
+
+const formatCountdown = (seconds) => {
+  const total = Math.max(0, Number(seconds) || 0)
+  const hours = Math.floor(total / 3600)
+  const minutes = Math.floor((total % 3600) / 60)
+  const secs = total % 60
+  const segments = []
+  if (hours > 0) {
+    segments.push(String(hours).padStart(2, '0'))
+  }
+  segments.push(String(minutes).padStart(2, '0'))
+  segments.push(String(secs).padStart(2, '0'))
+  return segments.join(':')
+}
+
+const isScheduleLocked = computed(() => scheduleLock.isLocked)
+const scheduleCountdownLabel = computed(() => formatCountdown(scheduleLock.secondsRemaining))
+const scheduleStartTimeLabel = computed(() => {
+  if (!scheduleLock.startsAt) return ''
+  return new Date(scheduleLock.startsAt).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+})
+
 const normalizeRecord = (record) => {
   const sessionSubject = record.session_subject ?? record.schedule?.subject ?? ''
   const sessionTopic = record.session_topic ?? record.schedule?.topic ?? ''
@@ -112,8 +209,8 @@ const normalizeRecord = (record) => {
     schedule_id: record.schedule_id ?? record.schedule?.id,
     student_id: record.student_id ?? record.student?.id,
     attendance_date: record.attendance_date,
-    status: record.status,
-    selectedStatus: record.status,
+    status: record.status ?? null,
+    draftStatus: record.status ?? '',
     notes: record.notes ?? '',
     noteDraft: record.notes ?? '',
     session_label: sessionLabel,
@@ -129,6 +226,8 @@ const fetchAttendance = async () => {
       params: {
         search: attendanceFilters.query,
         status: attendanceFilters.status,
+        subject: attendanceFilters.subject === 'Semua' ? undefined : attendanceFilters.subject,
+        schedule_date: attendanceFilters.scheduleDate,
         page: attendanceFilters.page,
         per_page: perPage,
       },
@@ -144,6 +243,15 @@ const fetchAttendance = async () => {
     attendanceSummary.Izin = summary.Izin ?? 0
     attendanceSummary.Sakit = summary.Sakit ?? 0
     attendanceSummary.Alpha = summary.Alpha ?? 0
+
+    subjectOptions.value = data.subjects ?? []
+    if (data.schedule_date) {
+      attendanceFilters.scheduleDate = data.schedule_date
+    }
+    if (attendanceFilters.subject !== 'Semua' && !subjectOptions.value.includes(attendanceFilters.subject)) {
+      attendanceFilters.subject = 'Semua'
+    }
+    applyScheduleWindow(data.schedule_window ?? null)
   } finally {
     isLoadingAttendance.value = false
   }
@@ -174,8 +282,23 @@ watch(
   }
 )
 
+watch(
+  () => attendanceFilters.subject,
+  () => {
+    attendanceFilters.page = 1
+    applyScheduleWindow(null)
+    fetchAttendance()
+  }
+)
+
 const saveAttendance = async (record, overrides = {}) => {
+  if (isScheduleLocked.value) return
   if (!record?.schedule_id || !record?.student_id) {
+    return
+  }
+  const nextStatus = overrides.status ?? record.draftStatus ?? ''
+  if (!nextStatus) {
+    setSuccessMessage('Pilih status kehadiran terlebih dahulu.')
     return
   }
   record.saving = true
@@ -184,7 +307,7 @@ const saveAttendance = async (record, overrides = {}) => {
       schedule_id: record.schedule_id,
       student_id: record.student_id,
       attendance_date: record.attendance_date,
-      status: overrides.status ?? record.selectedStatus,
+      status: nextStatus,
       notes: overrides.notes ?? record.noteDraft ?? record.notes ?? '',
     }
 
@@ -198,13 +321,14 @@ const saveAttendance = async (record, overrides = {}) => {
 }
 
 const removeAttendance = async (record) => {
-  if (!record?.id) return
+  if (isScheduleLocked.value || !record?.id) return
   await axios.delete(route('guru.api.attendance.destroy', record.id))
   setSuccessMessage('Data kehadiran dihapus.')
   fetchAttendance()
 }
 
 const openNoteModal = (record) => {
+  if (isScheduleLocked.value) return
   activeNoteRecord.value = record
   noteForm.description = record.noteDraft ?? record.notes ?? ''
   showNoteModal.value = true
@@ -225,6 +349,10 @@ const saveNote = async () => {
 onMounted(() => {
   fetchAttendance()
 })
+onBeforeUnmount(() => {
+  clearTimeout(searchTimer)
+  clearCountdownTimer()
+})
 </script>
 
 <template>
@@ -238,7 +366,18 @@ onMounted(() => {
           <h2 class="text-2xl font-bold text-gray-900">Rekapitulasi Kehadiran</h2>
           <p class="text-sm text-gray-500">Pantau kehadiran siswa dan tambahkan catatan perkembangan langsung dari tabel.</p>
         </div>
-        <button class="rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600">Bahasa Indonesia</button>
+        <div class="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2">
+          <span class="text-xs font-semibold text-gray-500">Mapel</span>
+          <select
+            v-model="attendanceFilters.subject"
+            class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none"
+          >
+            <option value="Semua">Semua Mapel</option>
+            <option v-for="subject in subjectOptions" :key="subject" :value="subject">
+              {{ subject }}
+            </option>
+          </select>
+        </div>
       </header>
 
       <div class="grid grid-cols-2 gap-4 xl:grid-cols-4">
@@ -290,6 +429,17 @@ onMounted(() => {
           {{ successMessage }}
         </div>
 
+        <div
+          v-if="isScheduleLocked"
+          class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          <p class="font-semibold">Presensi terbuka sesuai jadwal mapel ini.</p>
+          <p class="mt-1 text-amber-700">
+            Hitung mundur: <span class="font-semibold">{{ scheduleCountdownLabel }}</span>
+            <span v-if="scheduleStartTimeLabel">(mulai {{ scheduleStartTimeLabel }})</span>
+          </p>
+        </div>
+
         <div class="overflow-hidden rounded-2xl border border-gray-100">
           <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50">
@@ -317,19 +467,25 @@ onMounted(() => {
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
                     <select
-                      v-model="record.selectedStatus"
-                      class="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#78AE4E]"
+                      v-model="record.draftStatus"
+                      :disabled="isScheduleLocked"
+                      :class="[
+                        'rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#78AE4E] disabled:cursor-not-allowed disabled:opacity-60',
+                        record.draftStatus ? 'text-gray-700' : 'text-gray-400',
+                      ]"
                     >
+                      <option disabled value="">Pilih status</option>
                       <option v-for="option in attendanceInputStatuses" :key="option" :value="option">{{ option }}</option>
                     </select>
-                    <span class="rounded-full px-3 py-1 text-xs font-semibold" :class="statusBadgeClass(record.status)">
-                      {{ record.status }}
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold" :class="statusBadgeClass(record.draftStatus)">
+                      {{ record.draftStatus || 'Belum diisi' }}
                     </span>
                   </div>
                 </td>
                 <td class="px-6 py-4">
                   <button
-                    class="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-[#78AE4E] hover:text-[#78AE4E]"
+                    class="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-[#78AE4E] hover:text-[#78AE4E] disabled:cursor-not-allowed disabled:opacity-60"
+                    :disabled="isScheduleLocked"
                     @click="openNoteModal(record)"
                   >
                     <DocumentTextIcon class="h-5 w-5" />
@@ -341,12 +497,17 @@ onMounted(() => {
                   <div class="flex items-center gap-3">
                     <button
                       class="rounded-full bg-[#78AE4E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-                      :disabled="record.saving || !isRecordDirty(record)"
+                      :disabled="isScheduleLocked || record.saving || !isRecordDirty(record)"
                       @click="saveAttendance(record)"
                     >
                       {{ record.saving ? 'Menyimpan...' : 'Simpan' }}
                     </button>
-                    <button class="text-red-500 transition hover:text-red-600" title="Hapus" @click="removeAttendance(record)">
+                    <button
+                      class="text-red-500 transition hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                      :disabled="isScheduleLocked"
+                      title="Hapus"
+                      @click="removeAttendance(record)"
+                    >
                       <TrashIcon class="h-5 w-5" />
                     </button>
                   </div>

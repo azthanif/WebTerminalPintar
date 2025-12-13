@@ -7,33 +7,68 @@ use App\Http\Requests\Guru\StoreAttendanceRequest;
 use App\Models\Attendance;
 use App\Models\Schedule;
 use App\Models\TeacherNote;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
         $teacher = $request->user();
+        $subjectFilter = $request->filled('subject') && $request->subject !== 'Semua'
+            ? $request->subject
+            : null;
+        try {
+            $scheduleDate = $request->filled('schedule_date')
+                ? Carbon::parse($request->input('schedule_date'))->toDateString()
+                : now()->toDateString();
+        } catch (\Throwable $e) {
+            $scheduleDate = now()->toDateString();
+        }
 
-        $records = Attendance::with(['student', 'schedule'])
-            ->forTeacher($teacher)
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $term = '%' . $request->search . '%';
-                $query->where(function ($builder) use ($term) {
-                    $builder->whereHas('student', fn ($q) => $q->where('name', 'like', $term))
-                        ->orWhere('session_topic', 'like', $term)
-                        ->orWhere('notes', 'like', $term)
-                        ->orWhereHas('schedule', fn ($q) => $q->where('topic', 'like', $term));
-                });
-            })
-            ->when($request->filled('status') && $request->status !== 'Semua', fn ($q) => $q->where('status', $request->status))
+        $baseQuery = Attendance::forTeacher($teacher);
+        $filteredQuery = $this->applyAttendanceFilters($baseQuery, $request, $subjectFilter, $scheduleDate);
+
+        $records = (clone $filteredQuery)
+            ->with(['student', 'schedule'])
             ->latest('attendance_date')
             ->paginate($request->integer('per_page', 10));
 
-        $summary = Attendance::forTeacher($teacher)
+        $summary = (clone $filteredQuery)
             ->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
+
+        $subjectsFromSchedule = Schedule::forTeacher($teacher)
+            ->whereDate('start_time', $scheduleDate)
+            ->get(['subject', 'topic'])
+            ->map(fn ($row) => $this->buildSubjectLabel($row->subject, $row->topic))
+            ->filter();
+
+        $subjectsFromAttendance = Attendance::forTeacher($teacher)
+            ->whereDate('attendance_date', $scheduleDate)
+            ->whereHas('schedule', fn ($query) => $query->whereNull('deleted_at'))
+            ->with('schedule')
+            ->get(['session_topic', 'schedule_id'])
+            ->map(function ($row) {
+                return $this->buildSubjectLabel(
+                    optional($row->schedule)->subject,
+                    optional($row->schedule)->topic
+                ) ?? $row->session_topic;
+            })
+            ->filter();
+
+        $subjects = $subjectsFromSchedule
+            ->merge($subjectsFromAttendance)
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $scheduleWindow = $subjectFilter
+            ? $this->buildScheduleWindow($teacher->id, $subjectFilter, $scheduleDate)
+            : null;
 
         return response()->json([
             'data' => $records->items(),
@@ -44,7 +79,39 @@ class AttendanceController extends Controller
                 'total' => $records->total(),
             ],
             'summary' => $summary,
+            'subjects' => $subjects,
+            'schedule_date' => $scheduleDate,
+            'schedule_window' => $scheduleWindow,
         ]);
+    }
+
+    protected function applyAttendanceFilters(Builder $query, Request $request, ?string $subjectFilter, ?string $scheduleDate): Builder
+    {
+        return $query
+            ->when($request->filled('search'), function ($builder) use ($request) {
+                $term = '%' . $request->search . '%';
+                $builder->where(function ($inner) use ($term) {
+                    $inner->whereHas('student', fn ($q) => $q->where('name', 'like', $term))
+                        ->orWhere('session_topic', 'like', $term)
+                        ->orWhere('notes', 'like', $term)
+                        ->orWhereHas('schedule', fn ($q) => $q->where('topic', 'like', $term));
+                });
+            })
+            ->when($request->filled('status') && $request->status !== 'Semua', fn ($builder) => $builder->where('status', $request->status))
+            ->when($scheduleDate, fn ($builder) => $builder->whereDate('attendance_date', $scheduleDate))
+            ->when($subjectFilter, function ($builder) use ($subjectFilter) {
+                $labelExpression = $this->subjectLabelExpression();
+                $builder->where(function ($inner) use ($subjectFilter, $labelExpression) {
+                    $inner->whereHas('schedule', function ($scheduleQuery) use ($subjectFilter, $labelExpression) {
+                        $scheduleQuery->withTrashed()->where(function ($query) use ($subjectFilter, $labelExpression) {
+                            $query->whereRaw("{$labelExpression} = ?", [$subjectFilter])
+                                ->orWhere('subject', $subjectFilter)
+                                ->orWhere('topic', $subjectFilter);
+                        });
+                    })
+                        ->orWhere('session_topic', $subjectFilter);
+                });
+            });
     }
 
     public function store(StoreAttendanceRequest $request)
@@ -56,6 +123,9 @@ class AttendanceController extends Controller
         $payload['recorded_by'] = $request->user()->id;
         $payload['recorded_at'] = $payload['recorded_at'] ?? now();
         $payload['attendance_date'] = $payload['attendance_date'] ?? $schedule->start_time?->toDateString();
+        $payload['session_topic'] = $payload['session_topic']
+            ?? $this->buildSubjectLabel($schedule->subject, $schedule->topic)
+            ?? $schedule->topic;
 
         $attendance = Attendance::updateOrCreate(
             [
@@ -110,6 +180,20 @@ class AttendanceController extends Controller
         );
     }
 
+    protected function subjectLabelExpression(): string
+    {
+        return "TRIM(BOTH '-' FROM CONCAT_WS('-', subject, topic))";
+    }
+
+    protected function buildSubjectLabel(?string $subject, ?string $topic): ?string
+    {
+        $parts = collect([$subject, $topic])
+            ->map(fn ($value) => is_string($value) ? trim($value) : $value)
+            ->filter(fn ($value) => filled($value));
+
+        return $parts->isEmpty() ? null : $parts->values()->implode('-');
+    }
+
     protected function buildAttendanceNoteTitle(Attendance $attendance, Schedule $schedule): string
     {
         $dateLabel = $attendance->attendance_date
@@ -126,5 +210,27 @@ class AttendanceController extends Controller
             ->implode(' - ');
 
         return trim('Catatan Kehadiran ' . $dateLabel . ($sessionLabel ? ' · ' . $sessionLabel : ''));
+    }
+
+    protected function buildScheduleWindow(int $teacherId, string $subjectLabel, string $scheduleDate): ?array
+    {
+        $matchingSchedule = Schedule::query()
+            ->where('teacher_id', $teacherId)
+            ->whereNull('deleted_at')
+            ->whereDate('start_time', $scheduleDate)
+            ->get()
+            ->first(fn ($schedule) => $this->buildSubjectLabel($schedule->subject, $schedule->topic) === $subjectLabel);
+
+        if (! $matchingSchedule || ! $matchingSchedule->start_time) {
+            return null;
+        }
+
+        $secondsUntil = now()->diffInSeconds($matchingSchedule->start_time, false);
+
+        return [
+            'starts_at' => $matchingSchedule->start_time->toIso8601String(),
+            'seconds_until' => $secondsUntil > 0 ? $secondsUntil : 0,
+            'schedule_label' => $this->buildSubjectLabel($matchingSchedule->subject, $matchingSchedule->topic),
+        ];
     }
 }
