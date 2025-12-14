@@ -3,6 +3,20 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
 import { computed, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { 
+    BookOpenIcon, 
+    ArrowLeftIcon, 
+    HashtagIcon, 
+    UserIcon, 
+    TagIcon, 
+    InformationCircleIcon, 
+    CalendarIcon,
+    DocumentTextIcon,
+    Bars3BottomLeftIcon,
+    ArchiveBoxIcon,
+    CheckCircleIcon,
+    ShieldCheckIcon
+} from '@heroicons/vue/24/outline'
 
 const props = defineProps({
     book: {
@@ -110,154 +124,229 @@ const submit = () => {
 </script>
 
 <template>
-    <AdminLayout>
-        <div class="space-y-10">
+    <div class="space-y-8">
         <Head :title="isEdit ? 'Edit Buku' : 'Tambah Buku'" />
 
-        <section>
-            <Link :href="route('admin.books.index')"
-                class="text-sm font-medium text-emerald-600 transition hover:text-emerald-700">
-                ← Kembali ke Daftar Buku
-            </Link>
-            <h1 class="mt-3 text-3xl font-bold text-emerald-600">
-                {{ isEdit ? 'Edit Data Buku' : 'Tambah Koleksi Perpustakaan' }}
-            </h1>
-            <p class="mt-1 text-sm text-slate-500">
-                Pastikan detail buku lengkap dan akurat agar mudah dicari siswa maupun guru.
-            </p>
+        <!-- Header Section -->
+        <section class="flex flex-col gap-6 md:flex-row md:items-end justify-between">
+            <div>
+                 <Link :href="route('admin.books.index')" class="group inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-sky-600 transition-colors mb-4">
+                    <div class="rounded-full bg-slate-100 p-1 group-hover:bg-sky-100 transition-colors">
+                        <ArrowLeftIcon class="h-4 w-4" />
+                    </div>
+                    <span>Kembali ke Katalog</span>
+                </Link>
+                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
+                    {{ isEdit ? 'Edit' : 'Tambah' }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-[var(--color-primary)]">Buku</span>
+                </h1>
+                <p class="mt-2 text-slate-500 font-medium text-lg max-w-2xl">
+                    {{ isEdit ? 'Perbarui informasi buku dalam koleksi perpustakaan.' : 'Tambahkan buku baru ke dalam inventaris perpustakaan.' }}
+                </p>
+            </div>
         </section>
 
-        <section class="rounded-3xl border border-slate-100 bg-white shadow-sm">
-            <form @submit.prevent="submit" class="space-y-8 p-8">
-                <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800">
-                    <strong>Tips:</strong> Gunakan kode unik, isi deskripsi singkat isi buku, dan sesuaikan stok tersedia
-                    dengan total eksemplar.
+        <section class="rounded-[2.5rem] border border-slate-200 bg-white shadow-sm overflow-hidden">
+             <!-- Form Header -->
+            <div class="px-8 pt-8 pb-4 border-b border-slate-100 bg-sky-50/30">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <BookOpenIcon class="h-6 w-6 text-sky-600" />
+                    Data Buku
+                </h2>
+            </div>
+            
+            <form @submit.prevent="submit" class="p-8 space-y-8">
+                <!-- Info Section -->
+                 <div class="rounded-2xl border border-sky-100 bg-sky-50 p-4 flex items-start gap-3">
+                    <InformationCircleIcon class="h-6 w-6 text-sky-600 shrink-0 mt-0.5" />
+                    <div>
+                         <p class="text-sm font-bold text-sky-800">Tips Pengisian</p>
+                         <p class="text-xs text-sky-600 mt-1 leading-relaxed">
+                             Gunakan <strong>Kode Buku</strong> yang unik, isi <strong>deskripsi</strong> singkat untuk membantu pencarian, dan sesuaikan <strong>Stok Tersedia</strong> dengan kondisi real di rak.
+                         </p>
+                    </div>
                 </div>
 
-                <div class="grid gap-6 lg:grid-cols-2">
-                    <div class="space-y-5">
+                <div class="grid gap-8 lg:grid-cols-2">
+                    <div class="space-y-6">
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700">Kode Buku<span
-                                    class="text-rose-500">*</span></label>
-                            <input v-model="form.code" type="text"
-                                class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                :class="{ 'border-rose-400': form.errors.code }" />
-                            <p v-if="form.errors.code" class="mt-1 text-xs text-rose-500">{{ form.errors.code }}</p>
+                             <label class="block text-sm font-bold text-slate-700 mb-2">Kode Buku <span class="text-rose-500">*</span></label>
+                             <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                    <HashtagIcon class="h-5 w-5" />
+                                </div>
+                                <input v-model="form.code" type="text" placeholder="Contoh: BK-001"
+                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
+                                    :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.code }" />
+                            </div>
+                            <p v-if="form.errors.code" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                                 <ShieldCheckIcon class="h-3 w-3" />
+                                {{ form.errors.code }}
+                            </p>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700">Judul Buku<span
-                                    class="text-rose-500">*</span></label>
-                            <input v-model="form.title" type="text"
-                                class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                :class="{ 'border-rose-400': form.errors.title }" />
-                            <p v-if="form.errors.title" class="mt-1 text-xs text-rose-500">{{ form.errors.title }}</p>
+                             <label class="block text-sm font-bold text-slate-700 mb-2">Judul Buku <span class="text-rose-500">*</span></label>
+                             <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                    <BookOpenIcon class="h-5 w-5" />
+                                </div>
+                                <input v-model="form.title" type="text" placeholder="Masukkan judul buku"
+                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
+                                    :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.title }" />
+                            </div>
+                            <p v-if="form.errors.title" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                                <ShieldCheckIcon class="h-3 w-3" />
+                                {{ form.errors.title }}
+                            </p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700">Penulis</label>
-                            <input v-model="form.author" type="text"
-                                class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                :class="{ 'border-rose-400': form.errors.author }" />
-                            <p v-if="form.errors.author" class="mt-1 text-xs text-rose-500">{{ form.errors.author }}</p>
+
+                         <div>
+                             <label class="block text-sm font-bold text-slate-700 mb-2">Penulis</label>
+                             <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                    <UserIcon class="h-5 w-5" />
+                                </div>
+                                <input v-model="form.author" type="text" placeholder="Nama penulis"
+                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
+                                    :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.author }" />
+                            </div>
+                            <p v-if="form.errors.author" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                                <ShieldCheckIcon class="h-3 w-3" />
+                                {{ form.errors.author }}
+                            </p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700">Kategori</label>
-                            <select v-model="form.category"
-                                class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                :class="{ 'border-rose-400': form.errors.category }">
-                                <option v-for="category in categories" :key="category" :value="category">
-                                    {{ category }}
-                                </option>
-                            </select>
-                            <p class="mt-1 text-xs text-slate-500">Gunakan kategori khusus bila buku sering dicari.</p>
-                            <p v-if="form.errors.category" class="mt-1 text-xs text-rose-500">{{ form.errors.category }}</p>
+
+                         <div>
+                             <label class="block text-sm font-bold text-slate-700 mb-2">Kategori</label>
+                             <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                    <TagIcon class="h-5 w-5" />
+                                </div>
+                                <select v-model="form.category"
+                                    class="w-full appearance-none rounded-2xl border border-slate-200 pl-11 pr-10 py-3 text-sm font-bold focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white cursor-pointer"
+                                    :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.category }">
+                                    <option v-for="category in categories" :key="category" :value="category">
+                                        {{ category }}
+                                    </option>
+                                </select>
+                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p v-if="form.errors.category" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.category }}</p>
                         </div>
                     </div>
 
-                    <div class="space-y-5">
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700">Status Koleksi</label>
-                                <select v-model="form.status"
-                                    class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                    :class="{ 'border-rose-400': form.errors.status }">
-                                    <option v-for="(label, value) in statuses" :key="value" :value="value">
-                                        {{ label }}
-                                    </option>
-                                </select>
-                                <p v-if="form.errors.status" class="mt-1 text-xs text-rose-500">{{ form.errors.status }}</p>
+                    <div class="space-y-6">
+                        <div class="grid gap-6 sm:grid-cols-2">
+                             <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Status Koleksi</label>
+                                <div class="relative">
+                                    <select v-model="form.status"
+                                        class="w-full appearance-none rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white cursor-pointer"
+                                        :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.status }">
+                                        <option v-for="(label, value) in statuses" :key="value" :value="value">
+                                            {{ label }}
+                                        </option>
+                                    </select>
+                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p v-if="form.errors.status" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.status }}</p>
                             </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700">Tahun Terbit</label>
-                                <input v-model.number="form.published_year" type="number"
-                                    class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                    :class="{ 'border-rose-400': form.errors.published_year }" />
-                                <p v-if="form.errors.published_year" class="mt-1 text-xs text-rose-500">
-                                    {{ form.errors.published_year }}
-                                </p>
+
+                             <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Tahun Terbit</label>
+                                 <div class="relative">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                        <CalendarIcon class="h-5 w-5" />
+                                    </div>
+                                    <input v-model.number="form.published_year" type="number"
+                                        class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
+                                        :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.published_year }" />
+                                </div>
+                                <p v-if="form.errors.published_year" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.published_year }}</p>
                             </div>
                         </div>
 
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700">Jumlah Halaman</label>
-                                <input v-model.number="form.total_pages" type="number" min="0"
-                                    class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                    :class="{ 'border-rose-400': form.errors.total_pages }" />
-                                <p v-if="form.errors.total_pages" class="mt-1 text-xs text-rose-500">
-                                    {{ form.errors.total_pages }}
-                                </p>
+                        <div class="grid gap-6 sm:grid-cols-2">
+                             <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Jml Halaman</label>
+                                 <div class="relative">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                        <DocumentTextIcon class="h-5 w-5" />
+                                    </div>
+                                    <input v-model.number="form.total_pages" type="number" min="0"
+                                        class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
+                                        :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.total_pages }" />
+                                </div>
+                                <p v-if="form.errors.total_pages" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.total_pages }}</p>
                             </div>
+
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700">Total Stok</label>
-                                <input v-model.number="form.total_stock" type="number" min="1"
-                                    class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                    :class="{ 'border-rose-400': form.errors.total_stock }" />
-                                <p v-if="form.errors.total_stock" class="mt-1 text-xs text-rose-500">
-                                    {{ form.errors.total_stock }}
-                                </p>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Total Stok</label>
+                                 <div class="relative">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                        <ArchiveBoxIcon class="h-5 w-5" />
+                                    </div>
+                                    <input v-model.number="form.total_stock" type="number" min="1"
+                                        class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
+                                        :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.total_stock }" />
+                                </div>
+                                <p v-if="form.errors.total_stock" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.total_stock }}</p>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700">Stok Tersedia</label>
-                            <input v-model.number="form.available_stock" type="number" min="0" :max="form.total_stock"
-                                class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                :class="{ 'border-rose-400': form.errors.available_stock }" />
-                            <p class="mt-1 text-xs text-slate-500">Nilai ini otomatis dibatasi oleh total stok.</p>
-                            <p v-if="form.errors.available_stock" class="mt-1 text-xs text-rose-500">
-                                {{ form.errors.available_stock }}
-                            </p>
+                         <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Stok Tersedia</label>
+                            <div class="relative">
+                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                    <CheckCircleIcon class="h-5 w-5" />
+                                </div>
+                                <input v-model.number="form.available_stock" type="number" min="0" :max="form.total_stock"
+                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
+                                    :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.available_stock }" />
+                            </div>
+                            <p class="mt-1.5 text-xs font-semibold text-slate-400">Tidak boleh melebihi Total Stok.</p>
+                            <p v-if="form.errors.available_stock" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.available_stock }}</p>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700">Deskripsi</label>
-                            <textarea v-model="form.description" rows="5"
-                                class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm leading-relaxed focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                :class="{ 'border-rose-400': form.errors.description }"></textarea>
-                            <p class="mt-1 text-xs text-slate-500">Masukkan ringkasan singkat untuk membantu pencarian.</p>
-                            <p v-if="form.errors.description" class="mt-1 text-xs text-rose-500">
-                                {{ form.errors.description }}
-                            </p>
+                         <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Deskripsi Singkat</label>
+                            <div class="relative">
+                                 <div class="pointer-events-none absolute top-3 left-0 flex items-start pl-4 text-slate-400">
+                                    <Bars3BottomLeftIcon class="h-5 w-5" />
+                                </div>
+                                <textarea v-model="form.description" rows="5" placeholder="Tuliskan sinopsis singkat..."
+                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium leading-relaxed focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white resize-none"
+                                    :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.description }"></textarea>
+                            </div>
+                            <p v-if="form.errors.description" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.description }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-6">
                     <Link :href="route('admin.books.index')"
-                        class="rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                        class="rounded-xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 active:scale-95">
                     Batal
                     </Link>
                     <button type="submit"
-                        class="rounded-2xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-600 disabled:opacity-60"
+                        class="group inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-light)] transition hover:bg-[var(--color-primary-hover)] hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                         :disabled="form.processing">
-                        {{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Buku' }}
+                         <div v-if="form.processing" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        <span>{{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Buku' }}</span>
                     </button>
                 </div>
             </form>
         </section>
-        </div>
-        <Notivue v-slot="notification">
-            <Notification :item="notification" />
-        </Notivue>
-    </AdminLayout>
+    </div>
+    <Notivue v-slot="notification">
+        <Notification :item="notification" />
+    </Notivue>
 </template>

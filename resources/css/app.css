@@ -3,14 +3,59 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-primary: #84994F;
+    --color-primary-hover: #738f3d;
+    --color-primary-light: color-mix(in srgb, #84994F, white 85%);
+    --color-primary-lighter: color-mix(in srgb, #84994F, white 94%);
+
+    --color-secondary: #FFE797;
+    --color-secondary-hover: #fcdfa0;
+
+    --color-accent: #FCB53B;
+    --color-accent-light: color-mix(in srgb, #FCB53B, white 85%);
+
+    --color-danger: #A72703;
+    --color-danger-light: color-mix(in srgb, #A72703, white 90%);
+
+    --color-body: #F9FAFB;
+    /* Main background color */
+
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* 1. TYPOGRAPHY ENFORCEMENT */
+body,
+input,
+button,
+select,
+textarea,
+table {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* 2. PAGE TRANSITION (Smooth Entry - Fade Slide Up) */
+/* Instant duration as requested previously (0.15s), but with 20px slide up */
+.page-enter-active,
+.page-leave-active {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Smoother ease-out for entrance */
+}
+
+.page-enter-from,
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+    /* Slide Up Effect */
+    filter: blur(4px);
+    /* Soft Blur Entry */
 }
 
 .notivue-stream {

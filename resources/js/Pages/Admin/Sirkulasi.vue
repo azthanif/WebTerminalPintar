@@ -2,264 +2,307 @@
   <div class="space-y-8">
     <Head title="Sirkulasi Perpustakaan - Admin" />
 
-    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <Link
-          :href="route('admin.books.index')"
-          class="flex items-center gap-2 text-sm font-medium text-[#78AE4E] transition hover:text-green-700"
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0 7-7m-7 7h18" />
-          </svg>
-          Kembali ke Daftar Buku
-        </Link>
-        <h1 class="mt-3 text-4xl font-bold text-[#78AE4E]">Sirkulasi Perpustakaan</h1>
-        <p class="text-sm text-gray-600">Kelola peminjaman dan pengembalian buku</p>
-      </div>
-      <div class="flex flex-wrap gap-3">
-        <button
-          type="button"
-          @click="openPinjamModal"
-          :disabled="!hasAvailableBooks"
-          class="inline-flex items-center gap-2 rounded-lg px-5 py-3 font-medium text-white transition focus:outline-none focus:ring-2 focus:ring-offset-2"
-          :class="
-            hasAvailableBooks
-              ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-              : 'cursor-not-allowed bg-gray-300 focus:ring-0'
-          "
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Catat Peminjaman
-        </button>
-        <button
-          type="button"
-          @click="openKembaliModal"
-          :disabled="!hasBorrowedBooks"
-          class="inline-flex items-center gap-2 rounded-lg px-5 py-3 font-medium text-white transition focus:outline-none focus:ring-2 focus:ring-offset-2"
-          :class="
-            hasBorrowedBooks
-              ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-              : 'cursor-not-allowed bg-gray-300 focus:ring-0'
-          "
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20V4m8 8H4" />
-          </svg>
-          Catat Pengembalian
-        </button>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div class="rounded-lg bg-white p-6 shadow">
-        <p class="text-sm text-gray-600">Buku Tersedia</p>
-        <p class="mt-2 text-3xl font-bold text-green-600">{{ stats.available ?? bukuTersedia.length }}</p>
-      </div>
-      <div class="rounded-lg bg-white p-6 shadow">
-        <p class="text-sm text-gray-600">Sedang Dipinjam</p>
-        <p class="mt-2 text-3xl font-bold text-blue-600">{{ stats.borrowed ?? bukuDipinjam.length }}</p>
-      </div>
-      <div class="rounded-lg bg-white p-6 shadow">
-        <p class="text-sm text-gray-600">Total Pengguna</p>
-        <p class="mt-2 text-3xl font-bold text-gray-700">{{ stats.totalUsers ?? users.length }}</p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <div class="rounded-lg bg-white p-6 shadow-md">
-        <div class="flex items-start justify-between">
+    <!-- Premium Header -->
+      <section class="flex flex-col gap-6 md:flex-row md:items-end justify-between relative">
           <div>
-            <h2 class="text-xl font-semibold text-gray-800">Peminjaman Buku</h2>
-            <p class="mt-1 text-sm text-gray-600">Catat peminjaman baru melalui modal yang tersedia.</p>
+              <Link
+              :href="route('admin.books.index')"
+              class="group inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors mb-4"
+              >
+                  <div class="rounded-full bg-slate-100 p-1 group-hover:bg-emerald-100 transition-colors">
+                      <ArrowLeftIcon class="h-4 w-4" />
+                  </div>
+                  <span>Kembali ke Katalog</span>
+              </Link>
+               <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600 mb-2 border border-emerald-100">
+                  <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>Sirkulasi Aktif</span>
+              </div>
+              <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
+                  Manajemen <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">Sirkulasi</span>
+              </h1>
+              <p class="mt-2 text-slate-500 font-medium text-lg">Kelola peminjaman dan pengembalian buku perpustakaan.</p>
           </div>
-          <div class="text-3xl">📤</div>
-        </div>
-        <p class="mt-4 text-sm text-gray-600">
-          Gunakan tombol “Catat Peminjaman” untuk memilih buku dan peminjam. Berikut beberapa buku yang saat ini tersedia:
-        </p>
-        <ul v-if="topBukuTersedia.length" class="mt-4 space-y-2">
-          <li
-            v-for="buku in topBukuTersedia"
-            :key="buku.id"
-            class="rounded-lg border border-gray-100 px-4 py-3"
-          >
-            <p class="text-sm font-semibold text-gray-900">{{ buku.judul }}</p>
-            <p class="text-xs text-gray-500">{{ buku.kategori || 'Tanpa kategori' }}</p>
-          </li>
-        </ul>
-        <p v-else class="mt-4 text-sm text-yellow-600">
-          Tidak ada buku yang tersedia untuk dipinjam saat ini.
-        </p>
+          
+          <div class="flex flex-wrap gap-3">
+              <button
+              type="button"
+              @click="openPinjamModal"
+              :disabled="!hasAvailableBooks"
+              class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-600 hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                  <div class="rounded-lg bg-white/20 p-1">
+                      <ArrowUpTrayIcon class="h-5 w-5 text-white" />
+                  </div>
+                  <span>Catat Peminjaman</span>
+              </button>
+              <button
+              type="button"
+              @click="openKembaliModal"
+              :disabled="!hasBorrowedBooks"
+              class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-sky-200 transition-all hover:bg-sky-600 hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                  <div class="rounded-lg bg-white/20 p-1">
+                      <ArrowDownTrayIcon class="h-5 w-5 text-white" />
+                  </div>
+                  <span>Catat Pengembalian</span>
+              </button>
+          </div>
+      </section>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1 hover:border-emerald-200">
+             <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-emerald-50 opacity-50 blur-xl group-hover:bg-emerald-100 transition-colors"></div>
+             <div class="relative">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Buku Tersedia</p>
+                <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.available ?? bukuTersedia.length }}</p>
+                <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">
+                    <CheckCircleIcon class="h-3 w-3" />
+                    <span>Siap Dipinjam</span>
+                </div>
+            </div>
       </div>
-      <div class="rounded-lg bg-white p-6 shadow-md">
-        <div class="flex items-start justify-between">
-          <div>
-            <h2 class="text-xl font-semibold text-gray-800">Pengembalian Buku</h2>
-            <p class="mt-1 text-sm text-gray-600">Tindak lanjuti pengembalian buku melalui modal pengembalian.</p>
-          </div>
-          <div class="text-3xl">📥</div>
-        </div>
-        <p class="mt-4 text-sm text-gray-600">
-          Gunakan tombol “Catat Pengembalian” untuk mencari buku yang sedang dipinjam. Berikut beberapa peminjaman aktif:
-        </p>
-        <ul v-if="topBukuDipinjam.length" class="mt-4 space-y-2">
-          <li
-            v-for="buku in topBukuDipinjam"
-            :key="buku.loan_id"
-            class="rounded-lg border border-gray-100 px-4 py-3"
-          >
-            <p class="text-sm font-semibold text-gray-900">{{ buku.judul }}</p>
-            <p class="text-xs text-gray-500">Peminjam: {{ getBorrowerName(buku) }}</p>
-          </li>
-        </ul>
-        <p v-else class="mt-4 text-sm text-green-600">
-          Tidak ada buku yang perlu dikembalikan saat ini.
-        </p>
+       <div class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1 hover:border-sky-200">
+             <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-sky-50 opacity-50 blur-xl group-hover:bg-sky-100 transition-colors"></div>
+             <div class="relative">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Sedang Dipinjam</p>
+                <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.borrowed ?? bukuDipinjam.length }}</p>
+                <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700">
+                    <ClockIcon class="h-3 w-3" />
+                    <span>Belum Kembali</span>
+                </div>
+            </div>
+      </div>
+       <div class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1 hover:border-amber-200">
+             <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-amber-50 opacity-50 blur-xl group-hover:bg-amber-100 transition-colors"></div>
+             <div class="relative">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Peminjam</p>
+                <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.totalUsers ?? users.length }}</p>
+                <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
+                    <UserGroupIcon class="h-3 w-3" />
+                    <span>Siswa & Guru</span>
+                </div>
+            </div>
       </div>
     </div>
 
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+       <!-- Card Peminjaman -->
+      <div class="flex flex-col rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm h-full">
+        <div class="mb-6 flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <ArrowUpTrayIcon class="h-6 w-6 text-emerald-600" />
+                Info Peminjaman
+            </h2>
+            <p class="mt-1 text-sm font-medium text-slate-500">Buku populer yang tersedia untuk dipinjam.</p>
+          </div>
+        </div>
+        
+        <div v-if="topBukuTersedia.length" class="space-y-3 flex-1">
+            <div v-for="buku in topBukuTersedia" :key="buku.id" 
+                class="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-white hover:border-emerald-200 hover:shadow-sm">
+                 <div>
+                    <p class="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">{{ buku.judul }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                         <span class="text-xs font-bold bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-500">{{ buku.code }}</span>
+                        <span class="text-xs text-slate-500">{{ buku.kategori || 'Umum' }}</span>
+                    </div>
+                 </div>
+                 <div class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <PlusIcon class="h-5 w-5" />
+                 </div>
+            </div>
+        </div>
+        <div v-else class="flex flex-col items-center justify-center flex-1 py-10 text-center rounded-2xl bg-amber-50 border border-amber-100">
+            <ExclamationTriangleIcon class="h-8 w-8 text-amber-500 mb-2" />
+            <p class="text-sm font-bold text-amber-700">Stok Kosong</p>
+            <p class="text-xs text-amber-600 mt-1">Tidak ada buku tersedia saat ini.</p>
+        </div>
+      </div>
+
+       <!-- Card Pengembalian -->
+      <div class="flex flex-col rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm h-full">
+        <div class="mb-6 flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <ArrowDownTrayIcon class="h-6 w-6 text-sky-600" />
+                Info Pengembalian
+            </h2>
+            <p class="mt-1 text-sm font-medium text-slate-500">Daftar buku yang sedang berada di luar.</p>
+          </div>
+        </div>
+
+        <div v-if="topBukuDipinjam.length" class="space-y-3 flex-1">
+            <div v-for="buku in topBukuDipinjam" :key="buku.loan_id"
+                 class="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-white hover:border-sky-200 hover:shadow-sm">
+                 <div>
+                    <p class="text-sm font-bold text-slate-800 group-hover:text-sky-700 transition-colors">{{ buku.judul }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <UserIcon class="h-3 w-3 text-slate-400" />
+                        <span class="text-xs text-slate-500 font-medium">{{ getBorrowerName(buku) }}</span>
+                    </div>
+                 </div>
+                 <div class="h-8 w-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <CheckCircleIcon class="h-5 w-5" />
+                 </div>
+            </div>
+        </div>
+        <div v-else class="flex flex-col items-center justify-center flex-1 py-10 text-center rounded-2xl bg-emerald-50 border border-emerald-100">
+             <CheckCircleIcon class="h-8 w-8 text-emerald-500 mb-2" />
+            <p class="text-sm font-bold text-emerald-700">Semua Tertib</p>
+            <p class="text-xs text-emerald-600 mt-1">Tidak ada buku yang dipinjam saat ini.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Peminjaman -->
     <Modal
       :show="showPinjamModal"
-      title="Catat Peminjaman Buku"
+      title="Catat Peminjaman"
       variant="success"
-      max-width="3xl"
+      max-width="2xl"
       @close="closePinjamModal"
     >
       <template #description>
-        Pilih buku yang tersedia serta peminjam untuk mencatat transaksi peminjaman baru.
+        Pilih buku dan peminjam untuk mencatat transaksi baru.
       </template>
 
-      <form @submit.prevent="submitPeminjaman" class="space-y-5">
-        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <form @submit.prevent="submitPeminjaman" class="space-y-6">
+        <div class="space-y-5">
+           <!-- Pilih Buku -->
           <div>
-            <label for="buku_pinjam" class="mb-2 block text-sm font-medium text-gray-700">
-              Pilih Buku <span class="text-red-500">*</span>
+            <label for="buku_pinjam" class="mb-2 block text-sm font-bold text-slate-700">
+              Pilih Buku <span class="text-rose-500">*</span>
             </label>
             <div class="relative" ref="bukuPinjamWrapper">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                    <MagnifyingGlassIcon class="h-5 w-5" />
+                </div>
               <input
                 id="buku_pinjam"
                 v-model="searchBukuPinjam"
                 type="text"
                 placeholder="Cari judul buku..."
-                class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-green-500"
-                :class="{ 'border-red-500': formPinjam.errors.buku_id }"
+                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50"
+                :class="{ 'border-rose-400 ring-4 ring-rose-50': formPinjam.errors.buku_id }"
                 @focus="showBukuPinjamDropdown = true"
                 autocomplete="off"
               />
               <div
                 v-if="showBukuPinjamDropdown && filteredBukuTersedia.length > 0"
-                class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border bg-white shadow-lg"
+                class="absolute z-10 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-slate-100 bg-white shadow-xl"
               >
                 <button
                   v-for="buku in filteredBukuTersedia"
                   :key="buku.id"
                   type="button"
                   @click="selectBukuPinjam(buku)"
-                  class="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  class="group flex w-full flex-col px-4 py-3 text-left transition hover:bg-emerald-50 border-b border-slate-50 last:border-0"
                 >
-                  <div class="font-medium text-gray-900">{{ buku.judul }}</div>
-                  <div class="text-sm text-gray-500">
-                    {{ buku.kategori ? `Kategori: ${buku.kategori}` : 'Tanpa Kategori' }}
-                  </div>
+                  <span class="text-sm font-bold text-slate-800 group-hover:text-emerald-700">{{ buku.judul }}</span>
+                  <span class="text-xs text-slate-500">{{ buku.kategori || 'Tanpa Kategori' }}</span>
                 </button>
               </div>
               <div
                 v-if="showBukuPinjamDropdown && searchBukuPinjam && filteredBukuTersedia.length === 0"
-                class="absolute z-10 mt-1 w-full rounded-lg border bg-white p-3 text-center text-sm text-gray-500"
+                class="absolute z-10 mt-2 w-full rounded-2xl border border-slate-100 bg-white p-4 text-center text-sm font-medium text-slate-500 shadow-xl"
               >
-                Tidak ada hasil yang cocok
+                Tidak ada buku ditemukan.
               </div>
             </div>
-            <p v-if="formPinjam.errors.buku_id" class="mt-1 text-sm text-red-600">{{ formPinjam.errors.buku_id }}</p>
-            <p v-if="!hasAvailableBooks" class="mt-1 text-sm text-yellow-600">
-              Tidak ada buku yang tersedia untuk dipinjam.
-            </p>
+            <p v-if="formPinjam.errors.buku_id" class="mt-1 text-xs font-bold text-rose-500">{{ formPinjam.errors.buku_id }}</p>
           </div>
 
+           <!-- Pilih Peminjam -->
           <div>
-            <label for="peminjam" class="mb-2 block text-sm font-medium text-gray-700">
-              Peminjam <span class="text-red-500">*</span>
+            <label for="peminjam" class="mb-2 block text-sm font-bold text-slate-700">
+              Data Peminjam <span class="text-rose-500">*</span>
             </label>
-            <p class="-mt-1 mb-2 text-xs text-gray-500">Pilih dari daftar atau ketik nama baru jika peminjam belum terdaftar.</p>
             <div class="relative" ref="peminjamWrapper">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                    <UserIcon class="h-5 w-5" />
+                </div>
               <input
                 id="peminjam"
                 v-model="searchPeminjam"
                 type="text"
-                placeholder="Cari atau tulis nama peminjam..."
-                class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-green-500"
-                :class="{ 'border-red-500': formPinjam.errors.peminjam_id || formPinjam.errors.peminjam_nama }"
+                placeholder="Cari atau ketik nama peminjam..."
+                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50"
+                :class="{ 'border-rose-400 ring-4 ring-rose-50': formPinjam.errors.peminjam_id || formPinjam.errors.peminjam_nama }"
                 @focus="showPeminjamDropdown = true"
                 autocomplete="off"
               />
               <div
                 v-if="showPeminjamDropdown && filteredUsers.length > 0"
-                class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border bg-white shadow-lg"
+                class="absolute z-10 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-slate-100 bg-white shadow-xl"
               >
                 <button
                   v-for="usr in filteredUsers"
                   :key="usr.id"
                   type="button"
                   @click="selectPeminjam(usr)"
-                  class="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  class="group flex w-full flex-col px-4 py-3 text-left transition hover:bg-emerald-50 border-b border-slate-50 last:border-0"
                 >
-                  <div class="font-medium text-gray-900">{{ usr.nama }}</div>
-                  <div class="text-sm text-gray-500">{{ usr.email }}</div>
+                  <span class="text-sm font-bold text-slate-800 group-hover:text-emerald-700">{{ usr.nama }}</span>
+                  <span class="text-xs text-slate-500">{{ usr.email }}</span>
                 </button>
               </div>
-              <div
-                v-if="showPeminjamDropdown && searchPeminjam && filteredUsers.length === 0"
-                class="absolute z-10 mt-1 w-full rounded-lg border bg-white p-3 text-center text-sm text-gray-500"
-              >
-                Tidak ada hasil yang cocok
-              </div>
             </div>
-            <p v-if="formPinjam.errors.peminjam_id || formPinjam.errors.peminjam_nama" class="mt-1 text-sm text-red-600">
+             <p class="mt-1.5 text-xs text-slate-400">Pilih dari daftar atau ketik nama baru untuk tamu.</p>
+            <p v-if="formPinjam.errors.peminjam_id || formPinjam.errors.peminjam_nama" class="mt-1 text-xs font-bold text-rose-500">
               {{ formPinjam.errors.peminjam_id || formPinjam.errors.peminjam_nama }}
             </p>
           </div>
 
-          <div v-if="!formPinjam.peminjam_id" class="md:col-span-2">
-            <label for="peminjam_email" class="mb-2 block text-sm font-medium text-gray-700">
-              Email Peminjam (opsional)
+          <div v-if="!formPinjam.peminjam_id" class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            <label for="peminjam_email" class="mb-2 block text-sm font-bold text-slate-700">
+              Email Peminjam (Opsional)
             </label>
             <input
               id="peminjam_email"
               v-model="formPinjam.peminjam_email"
               type="email"
-              placeholder="Contoh: peminjam@domain.com"
-              class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-green-500"
-              :class="{ 'border-red-500': formPinjam.errors.peminjam_email }"
+              placeholder="email@peminjam.com"
+              class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              :class="{ 'border-rose-400': formPinjam.errors.peminjam_email }"
               autocomplete="off"
             />
-            <p v-if="formPinjam.errors.peminjam_email" class="mt-1 text-sm text-red-600">{{ formPinjam.errors.peminjam_email }}</p>
           </div>
 
           <div>
-            <label for="tanggal_pinjam" class="mb-2 block text-sm font-medium text-gray-700">
-              Tanggal Pinjam <span class="text-red-500">*</span>
+            <label for="tanggal_pinjam" class="mb-2 block text-sm font-bold text-slate-700">
+              Tanggal Pinjam <span class="text-rose-500">*</span>
             </label>
-            <input
-              id="tanggal_pinjam"
-              v-model="formPinjam.tanggal_pinjam"
-              type="date"
-              class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-green-500"
-              :class="{ 'border-red-500': formPinjam.errors.tanggal_pinjam }"
-            />
-            <p v-if="formPinjam.errors.tanggal_pinjam" class="mt-1 text-sm text-red-600">{{ formPinjam.errors.tanggal_pinjam }}</p>
+            <div class="relative">
+                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                    <CalendarIcon class="h-5 w-5" />
+                </div>
+                <input
+                id="tanggal_pinjam"
+                v-model="formPinjam.tanggal_pinjam"
+                type="date"
+                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50"
+                :class="{ 'border-rose-400': formPinjam.errors.tanggal_pinjam }"
+                />
+            </div>
+             <p v-if="formPinjam.errors.tanggal_pinjam" class="mt-1 text-xs font-bold text-rose-500">{{ formPinjam.errors.tanggal_pinjam }}</p>
           </div>
         </div>
 
-        <div v-if="formPinjam.errors.error" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-          {{ formPinjam.errors.error }}
+        <div v-if="formPinjam.errors.error" class="rounded-xl border border-rose-200 bg-rose-50 p-4 flex items-center gap-2 text-sm text-rose-600 font-bold">
+            <ExclamationTriangleIcon class="h-5 w-5 shrink-0" />
+            {{ formPinjam.errors.error }}
         </div>
 
-        <div class="flex justify-end gap-3 border-t pt-4">
+        <div class="flex justify-end gap-3 pt-2">
           <button
             type="button"
-            class="rounded-full border border-gray-300 px-5 py-2 text-gray-700 transition hover:bg-gray-50"
+            class="rounded-xl border border-slate-200 px-6 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 active:scale-95"
             @click="closePinjamModal"
             :disabled="formPinjam.processing"
           >
@@ -267,95 +310,105 @@
           </button>
           <button
             type="submit"
-            class="rounded-full bg-[#78AE4E] px-5 py-2 text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+            class="rounded-xl bg-emerald-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="formPinjam.processing || !hasAvailableBooks"
           >
-            <span v-if="formPinjam.processing">Memproses...</span>
-            <span v-else>Catat Peminjaman</span>
+            <span v-if="formPinjam.processing">Menyimpan...</span>
+            <span v-else>Simpan Peminjaman</span>
           </button>
         </div>
       </form>
     </Modal>
 
+    <!-- Modal Pengembalian -->
     <Modal
       :show="showKembaliModal"
-      title="Catat Pengembalian Buku"
-      variant="primary"
-      max-width="3xl"
+      title="Catat Pengembalian"
+      variant="info"
+      max-width="2xl"
       @close="closeKembaliModal"
     >
       <template #description>
-        Pilih buku yang sedang dipinjam untuk menyelesaikan proses pengembalian.
+        Cari buku yang ingin dikembalikan dari daftar peminjaman.
       </template>
 
-      <form @submit.prevent="submitPengembalian" class="space-y-5">
-        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <form @submit.prevent="submitPengembalian" class="space-y-6">
+        <div class="space-y-5">
           <div>
-            <label for="buku_kembali" class="mb-2 block text-sm font-medium text-gray-700">
-              Pilih Buku yang Dikembalikan <span class="text-red-500">*</span>
+            <label for="buku_kembali" class="mb-2 block text-sm font-bold text-slate-700">
+              Cari Buku / Peminjam <span class="text-rose-500">*</span>
             </label>
             <div class="relative" ref="bukuKembaliWrapper">
+                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                    <MagnifyingGlassIcon class="h-5 w-5" />
+                </div>
               <input
                 id="buku_kembali"
                 v-model="searchBuku"
                 type="text"
-                placeholder="Cari judul buku..."
-                class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                :class="{ 'border-red-500': formKembali.errors.peminjaman_id }"
+                placeholder="Ketikan judul buku atau nama peminjam..."
+                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50"
+                :class="{ 'border-rose-400 ring-4 ring-rose-50': formKembali.errors.peminjaman_id }"
                 @focus="showBukuDropdown = true"
                 autocomplete="off"
               />
               <div
                 v-if="showBukuDropdown && filteredBuku.length > 0"
-                class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border bg-white shadow-lg"
+                class="absolute z-10 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-slate-100 bg-white shadow-xl"
               >
                 <button
                   v-for="buku in filteredBuku"
                   :key="buku.loan_id"
                   type="button"
                   @click="selectBuku(buku)"
-                  class="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  class="group flex w-full flex-col px-4 py-3 text-left transition hover:bg-sky-50 border-b border-slate-50 last:border-0"
                 >
-                  <div class="font-medium text-gray-900">{{ buku.judul }}</div>
-                  <div class="text-sm text-gray-500">Peminjam: {{ getBorrowerName(buku) }}</div>
+                  <span class="text-sm font-bold text-slate-800 group-hover:text-sky-700">{{ buku.judul }}</span>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                      <UserIcon class="h-3 w-3 text-slate-400" />
+                      <span class="text-xs text-slate-500">Peminjam: {{ getBorrowerName(buku) }}</span>
+                  </div>
                 </button>
               </div>
               <div
                 v-if="showBukuDropdown && searchBuku && filteredBuku.length === 0"
-                class="absolute z-10 mt-1 w-full rounded-lg border bg-white p-3 text-center text-sm text-gray-500"
+                class="absolute z-10 mt-2 w-full rounded-2xl border border-slate-100 bg-white p-4 text-center text-sm font-medium text-slate-500 shadow-xl"
               >
-                Tidak ada hasil yang cocok
+                Tidak ditemukan data peminjaman yang cocok.
               </div>
             </div>
-            <p v-if="formKembali.errors.peminjaman_id" class="mt-1 text-sm text-red-600">{{ formKembali.errors.peminjaman_id }}</p>
-            <p v-if="!hasBorrowedBooks" class="mt-1 text-sm text-green-600">
-              Tidak ada buku yang sedang dipinjam.
-            </p>
+            <p v-if="formKembali.errors.peminjaman_id" class="mt-1 text-xs font-bold text-rose-500">{{ formKembali.errors.peminjaman_id }}</p>
           </div>
 
           <div>
-            <label for="tanggal_kembali" class="mb-2 block text-sm font-medium text-gray-700">
-              Tanggal Kembali <span class="text-red-500">*</span>
+            <label for="tanggal_kembali" class="mb-2 block text-sm font-bold text-slate-700">
+              Tanggal Kembali <span class="text-rose-500">*</span>
             </label>
-            <input
-              id="tanggal_kembali"
-              v-model="formKembali.tanggal_kembali"
-              type="date"
-              class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              :class="{ 'border-red-500': formKembali.errors.tanggal_kembali }"
-            />
-            <p v-if="formKembali.errors.tanggal_kembali" class="mt-1 text-sm text-red-600">{{ formKembali.errors.tanggal_kembali }}</p>
+             <div class="relative">
+                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                    <CalendarIcon class="h-5 w-5" />
+                </div>
+                <input
+                id="tanggal_kembali"
+                v-model="formKembali.tanggal_kembali"
+                type="date"
+                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50"
+                :class="{ 'border-rose-400': formKembali.errors.tanggal_kembali }"
+                />
+            </div>
+             <p v-if="formKembali.errors.tanggal_kembali" class="mt-1 text-x font-bold text-rose-500">{{ formKembali.errors.tanggal_kembali }}</p>
           </div>
         </div>
 
-        <div v-if="formKembali.errors.error" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-          {{ formKembali.errors.error }}
+        <div v-if="formKembali.errors.error" class="rounded-xl border border-rose-200 bg-rose-50 p-4 flex items-center gap-2 text-sm text-rose-600 font-bold">
+            <ExclamationTriangleIcon class="h-5 w-5 shrink-0" />
+            {{ formKembali.errors.error }}
         </div>
 
-        <div class="flex justify-end gap-3 border-t pt-4">
+        <div class="flex justify-end gap-3 pt-2">
           <button
             type="button"
-            class="rounded-full border border-gray-300 px-5 py-2 text-gray-700 transition hover:bg-gray-50"
+            class="rounded-xl border border-slate-200 px-6 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 active:scale-95"
             @click="closeKembaliModal"
             :disabled="formKembali.processing"
           >
@@ -363,11 +416,11 @@
           </button>
           <button
             type="submit"
-            class="rounded-full bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            class="rounded-xl bg-sky-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-sky-200 transition hover:bg-sky-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="formKembali.processing || !hasBorrowedBooks"
           >
             <span v-if="formKembali.processing">Memproses...</span>
-            <span v-else>Catat Pengembalian</span>
+            <span v-else>Simpan Pengembalian</span>
           </button>
         </div>
       </form>
@@ -380,6 +433,19 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import {
+    ArrowLeftIcon,
+    ArrowUpTrayIcon,
+    ArrowDownTrayIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    UserGroupIcon,
+    PlusIcon,
+    ExclamationTriangleIcon,
+    UserIcon,
+    MagnifyingGlassIcon,
+    CalendarIcon
+} from '@heroicons/vue/24/outline'
 
 defineOptions({
   layout: AdminLayout,

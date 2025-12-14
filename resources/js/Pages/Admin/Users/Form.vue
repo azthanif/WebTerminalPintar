@@ -3,6 +3,17 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { 
+    UserIcon, 
+    ArrowLeftIcon, 
+    EnvelopeIcon, 
+    PhoneIcon, 
+    LockClosedIcon, 
+    EyeIcon, 
+    EyeSlashIcon,
+    BriefcaseIcon,
+    ShieldCheckIcon
+} from '@heroicons/vue/24/outline'
 
 const props = defineProps({
 	user: {
@@ -103,135 +114,212 @@ const togglePasswordVisibility = () => {
 </script>
 
 <template>
-	<div class="space-y-10">
+	<div class="space-y-8">
 		<Head :title="isEdit ? 'Edit Pengguna' : 'Tambah Pengguna'" />
 
-		<section>
-			<Link :href="route('admin.users.index')" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">
-				← Kembali ke Daftar Pengguna
-			</Link>
-			<h1 class="mt-3 text-3xl font-bold text-emerald-600">
-				{{ isEdit ? 'Edit Pengguna' : 'Tambah Pengguna Baru' }}
-			</h1>
-			<p class="mt-1 text-sm text-slate-500">
-				{{ isEdit
-					? 'Ubah informasi akun dan status akses pengguna.'
-					: 'Lengkapi detail pengguna untuk memberi akses ke sistem.' }}
-			</p>
-		</section>
+        <!-- Header Section -->
+        <section class="flex flex-col gap-6 md:flex-row md:items-end justify-between">
+            <div>
+                 <Link :href="route('admin.users.index')" class="group inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[var(--color-primary)] transition-colors mb-4">
+                    <div class="rounded-full bg-slate-100 p-1 group-hover:bg-[var(--color-primary-lighter)] transition-colors">
+                        <ArrowLeftIcon class="h-4 w-4" />
+                    </div>
+                    <span>Kembali ke Daftar</span>
+                </Link>
+                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
+                    {{ isEdit ? 'Edit' : 'Tambah' }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-[var(--color-primary)]">Pengguna</span>
+                </h1>
+                <p class="mt-2 text-slate-500 font-medium text-lg max-w-2xl">
+                    {{ isEdit ? 'Perbarui informasi dan hak akses pengguna sistem.' : 'Daftarkan pengguna baru untuk memberikan akses ke sistem.' }}
+                </p>
+            </div>
+        </section>
 
-		<section class="rounded-3xl border border-slate-100 bg-white shadow-sm">
-			<form @submit.prevent="submit" autocomplete="off" class="space-y-6 p-8">
-				<div>
-					<label class="block text-sm font-medium text-slate-700">Nama Lengkap<span class="text-rose-500">*</span></label>
-					<input v-model="form.name" type="text" placeholder="Masukkan nama lengkap"
-						class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-						:class="{ 'border-rose-400': form.errors.name }" />
-					<p v-if="form.errors.name" class="mt-1 text-xs text-rose-500">{{ form.errors.name }}</p>
+		<section class="rounded-[2.5rem] border border-slate-200 bg-white shadow-sm overflow-hidden">
+             <!-- Form Header -->
+            <div class="px-8 pt-8 pb-4 border-b border-slate-100 bg-slate-50/50">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <UserIcon class="h-6 w-6 text-purple-500" />
+                    Informasi Akun
+                </h2>
+            </div>
+            
+			<form @submit.prevent="submit" autocomplete="off" class="p-8 space-y-8">
+                <!-- Personal Info -->
+				<div class="grid gap-8 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <UserIcon class="h-5 w-5" />
+                            </div>
+                            <input v-model="form.name" type="text" placeholder="Masukkan nama lengkap"
+                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-[var(--color-primary)] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[var(--color-primary-lighter)] transition-all bg-slate-50 hover:bg-white"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.name }" />
+                        </div>
+                        <p v-if="form.errors.name" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                            <ShieldCheckIcon class="h-3 w-3" />
+                            {{ form.errors.name }}
+                        </p>
+                    </div>
+
+					<div>
+						<label class="block text-sm font-bold text-slate-700 mb-2">Email <span class="text-rose-500">*</span></label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <EnvelopeIcon class="h-5 w-5" />
+                            </div>
+                            <input v-model="form.email" type="email" :name="emailFieldName" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="email"
+                                placeholder="nama@email.com"
+                            class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-[var(--color-primary)] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[var(--color-primary-lighter)] transition-all bg-slate-50 hover:bg-white"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.email }" />
+                        </div>
+						<p v-if="form.errors.email" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                             <ShieldCheckIcon class="h-3 w-3" />
+                            {{ form.errors.email }}
+                        </p>
+					</div>
+                    
+					<div>
+						<label class="block text-sm font-bold text-slate-700 mb-2">Nomor Telepon / WA</label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <PhoneIcon class="h-5 w-5" />
+                            </div>
+                            <input v-model="form.phone" type="text" placeholder="08xxxxxxxxxx"
+                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-[var(--color-primary)] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[var(--color-primary-lighter)] transition-all bg-slate-50 hover:bg-white"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.phone }" />
+                        </div>
+						<p v-if="form.errors.phone" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                             <ShieldCheckIcon class="h-3 w-3" />
+                            {{ form.errors.phone }}
+                        </p>
+					</div>
 				</div>
 
-				<div class="grid gap-6 md:grid-cols-2">
+				<div class="grid gap-8 md:grid-cols-2 border-t border-slate-100 pt-8">
 					<div>
-						<label class="block text-sm font-medium text-slate-700">Email<span class="text-rose-500">*</span></label>
-						<input v-model="form.email" type="email" :name="emailFieldName" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="email"
-							placeholder="...@gmail.com"
-							class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-							:class="{ 'border-rose-400': form.errors.email }" />
-						<p v-if="form.errors.email" class="mt-1 text-xs text-rose-500">{{ form.errors.email }}</p>
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-slate-700">Nomor Telepon / WhatsApp</label>
-						<input v-model="form.phone" type="text" placeholder="08xxxxxxxxxx"
-							class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-							:class="{ 'border-rose-400': form.errors.phone }" />
-						<p v-if="form.errors.phone" class="mt-1 text-xs text-rose-500">{{ form.errors.phone }}</p>
-					</div>
-				</div>
-
-				<div class="grid gap-6 md:grid-cols-2">
-					<div>
-						<label class="block text-sm font-medium text-slate-700">Role Pengguna<span class="text-rose-500">*</span></label>
-						<select v-model="form.role_id" :disabled="isOrtu"
-							class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-							:class="[
-								{ 'border-rose-400': form.errors.role_id },
-								isOrtu ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white',
-							]">
-							<option value="" disabled>Pilih Role</option>
-							<option v-for="role in filteredRoles" :key="role.id" :value="role.id">
-								{{ role.display_name ?? role.name }}
-							</option>
-						</select>
-						<p v-if="form.errors.role_id" class="mt-1 text-xs text-rose-500">{{ form.errors.role_id }}</p>
-						<p class="mt-1 text-xs text-slate-500">Tentukan akses pengguna sesuai tugasnya.</p>
-						<p v-if="isOrtu" class="mt-1 text-xs text-amber-600">
-							⚠️ Role "Orang Tua" tidak dapat diubah karena terhubung ke data siswa.
+						<label class="block text-sm font-bold text-slate-700 mb-2">Role Pengguna <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <BriefcaseIcon class="h-5 w-5" />
+                            </div>
+                            <select v-model="form.role_id" :disabled="isOrtu"
+                                class="w-full appearance-none rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-bold focus:border-[var(--color-primary)] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[var(--color-primary-lighter)] transition-all bg-slate-50 hover:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.role_id }">
+                                <option value="" disabled>Pilih Hak Akses</option>
+                                <option v-for="role in filteredRoles" :key="role.id" :value="role.id">
+                                    {{ role.display_name ?? role.name }}
+                                </option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+						<p v-if="form.errors.role_id" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                             <ShieldCheckIcon class="h-3 w-3" />
+                            {{ form.errors.role_id }}
+                        </p>
+						<p v-if="isOrtu" class="mt-2 text-xs font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100 flex items-center gap-1.5">
+                            <ShieldCheckIcon class="h-4 w-4" />
+							Role "Orang Tua" tidak dapat diubah karena terhubung ke data siswa.
 						</p>
 					</div>
+                    
 					<div>
-						<label class="block text-sm font-medium text-slate-700">Status Akun</label>
-						<div class="mt-3 flex gap-6">
-							<label class="inline-flex items-center gap-2 text-sm text-slate-700">
-								<input v-model="form.is_active" type="radio" :value="true" class="text-emerald-500" />
-								<span>Aktif</span>
+						<label class="block text-sm font-bold text-slate-700 mb-2">Status Akun</label>
+						<div class="flex gap-4 p-1">
+							<label class="cursor-pointer group relative flex flex-1 items-center justify-center gap-2 rounded-xl border p-3 shadow-sm transition-all"
+                                :class="form.is_active ? 'bg-emerald-50 border-emerald-200 text-emerald-700 ring-2 ring-emerald-100' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'">
+								<input v-model="form.is_active" type="radio" :value="true" class="sr-only" />
+                                <div class="h-4 w-4 rounded-full border border-current flex items-center justify-center">
+                                    <div class="h-2 w-2 rounded-full bg-current transform scale-0 transition-transform" :class="{'scale-100': form.is_active}"></div>
+                                </div>
+								<span class="font-bold">Aktif</span>
 							</label>
-							<label class="inline-flex items-center gap-2 text-sm text-slate-700">
-								<input v-model="form.is_active" type="radio" :value="false" class="text-emerald-500" />
-								<span>Nonaktif</span>
+							<label class="cursor-pointer group relative flex flex-1 items-center justify-center gap-2 rounded-xl border p-3 shadow-sm transition-all"
+                                :class="!form.is_active ? 'bg-rose-50 border-rose-200 text-rose-700 ring-2 ring-rose-100' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'">
+								<input v-model="form.is_active" type="radio" :value="false" class="sr-only" />
+                                 <div class="h-4 w-4 rounded-full border border-current flex items-center justify-center">
+                                    <div class="h-2 w-2 rounded-full bg-current transform scale-0 transition-transform" :class="{'scale-100': !form.is_active}"></div>
+                                </div>
+								<span class="font-bold">Nonaktif</span>
 							</label>
 						</div>
-						<p class="mt-2 text-xs text-slate-500">Aktif: pengguna dapat login dan menggunakan seluruh fitur. Nonaktif: akses akan diblokir tanpa menghapus akun.</p>
 					</div>
 				</div>
 
-				<div v-if="!isOrtu" class="rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-700">
-					<strong>Info:</strong> Akun orang tua dibuat dan dihubungkan langsung dari modul Kelola Siswa. Gunakan menu tersebut untuk menambahkan siswa sekaligus membuat akun orang tua baru.
+				<div v-if="!isOrtu" class="rounded-2xl border border-sky-200 bg-sky-50 p-4 flex items-start gap-3">
+                    <ShieldCheckIcon class="h-6 w-6 text-sky-600 shrink-0 mt-0.5" />
+                    <div>
+                        <p class="text-sm font-bold text-sky-800">Informasi Penting</p>
+                        <p class="text-xs text-sky-600 mt-1 leading-relaxed">
+                            Akun orang tua sebaiknya dibuat melalui menu <strong>Kelola Siswa</strong> agar terhubung otomatis. 
+                            Menu ini lebih cocok untuk membuat akun <strong>Admin</strong> atau <strong>Guru</strong>.
+                        </p>
+                    </div>
 				</div>
 
-				<div class="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
-					<strong>Catatan Password:</strong> Kosongkan kolom password jika tidak ingin mengubah. Sistem akan mempertahankan password sebelumnya.
+                <!-- Password Info Box (Edit Mode Only) -->
+				<div v-if="isEdit" class="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+                     <LockClosedIcon class="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p class="text-sm font-bold text-amber-800">Keamanan Password</p>
+                        <p class="text-xs text-amber-600 mt-1 leading-relaxed">
+                            Kosongkan kolom password di bawah jika Anda tidak ingin mengubahnya. Password lama akan tetap digunakan.
+                        </p>
+                    </div>
 				</div>
 
-				<div class="grid gap-6 md:grid-cols-2">
+                <!-- Password Form -->
+				<div class="grid gap-8 md:grid-cols-2 border-t border-slate-100 pt-8">
 					<div>
-						<label class="block text-sm font-medium text-slate-700">
+						<label class="block text-sm font-bold text-slate-700 mb-2">
 							{{ isEdit ? 'Password Baru (Opsional)' : 'Password' }}
 						</label>
-						<div class="relative mt-2">
+						<div class="relative">
+                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <LockClosedIcon class="h-5 w-5" />
+                            </div>
 							<input v-model="form.password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
-								class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 pr-11 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-								:class="{ 'border-rose-400': form.errors.password }" />
+								class="w-full rounded-2xl border border-slate-200 pl-11 pr-12 py-3 text-sm font-medium focus:border-[var(--color-primary)] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[var(--color-primary-lighter)] transition-all bg-slate-50 hover:bg-white"
+								:class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.password }" />
 							<button type="button" @click="togglePasswordVisibility"
-								class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+								class="absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 hover:text-slate-600 transition-colors"
 								:aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-								<svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-									<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-								</svg>
-								<svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.21 16.057 7 19 11.478 19c1.482 0 2.895-.27 4.178-.762m3.364-2.145A10.45 10.45 0 0021.022 12C19.746 7.943 15.956 5 11.478 5c-.74 0-1.467.074-2.169.217" />
-									<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 00-3-3m0 0a3 3 0 00-3 3m3-3l8.25 8.25m-8.25-8.25L4.5 4.5" />
-								</svg>
+								<EyeIcon v-if="showPassword" class="h-5 w-5" />
+								<EyeSlashIcon v-else class="h-5 w-5" />
 							</button>
 						</div>
-						<p v-if="form.errors.password" class="mt-1 text-xs text-rose-500">{{ form.errors.password }}</p>
+						<p v-if="form.errors.password" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                             <ShieldCheckIcon class="h-3 w-3" />
+                            {{ form.errors.password }}
+                        </p>
 					</div>
 					<div>
-						<label class="block text-sm font-medium text-slate-700">Konfirmasi Password</label>
-						<input v-model="form.password_confirmation" type="password" placeholder="Ulangi password"
-							class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+						<label class="block text-sm font-bold text-slate-700 mb-2">Konfirmasi Password</label>
+                        <div class="relative">
+                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <LockClosedIcon class="h-5 w-5" />
+                            </div>
+						    <input v-model="form.password_confirmation" type="password" placeholder="Ulangi password"
+							class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-[var(--color-primary)] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[var(--color-primary-lighter)] transition-all bg-slate-50 hover:bg-white" />
+                        </div>
 					</div>
 				</div>
 
-				<div class="flex justify-end gap-3">
+				<div class="flex justify-end gap-4 border-t border-slate-100 pt-8">
 					<Link :href="route('admin.users.index')"
-						class="rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+						class="rounded-xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 active:scale-95">
 						Batal
 					</Link>
 					<button type="submit"
-						class="rounded-2xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-600 disabled:opacity-60"
+						class="group inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-light)] transition hover:bg-[var(--color-primary-hover)] hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
 						:disabled="form.processing">
-						{{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Pengguna' }}
+                         <div v-if="form.processing" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+						<span>{{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Pengguna' }}</span>
 					</button>
 				</div>
 			</form>

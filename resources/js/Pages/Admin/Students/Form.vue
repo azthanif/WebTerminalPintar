@@ -3,6 +3,18 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { 
+    UserIcon, 
+    ArrowLeftIcon, 
+    AcademicCapIcon, 
+    CalendarIcon, 
+    BuildingLibraryIcon, 
+    MapPinIcon, 
+    UserPlusIcon, 
+    ShieldCheckIcon,
+    MagnifyingGlassIcon,
+    XMarkIcon
+} from '@heroicons/vue/24/outline'
 
 const props = defineProps({
     student: {
@@ -172,193 +184,277 @@ const submit = () => {
 </script>
 
 <template>
-    <div class="space-y-10">
+    <div class="space-y-8">
         <Head :title="isEdit ? 'Edit Siswa' : 'Tambah Siswa'" />
 
-        <section>
-            <Link :href="route('admin.students.index')" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">
-                ← Kembali ke Daftar Siswa
-            </Link>
-            <h1 class="mt-3 text-3xl font-bold text-emerald-600">
-                {{ isEdit ? 'Edit Data Siswa' : 'Tambah Siswa Baru' }}
-            </h1>
-            <p class="mt-1 text-sm text-slate-500">
-                {{ isEdit
-                    ? 'Perbarui informasi siswa agar data tetap akurat.'
-                    : 'Lengkapi detail siswa dengan informasi yang akurat.' }}
-            </p>
+         <!-- Header Section -->
+        <section class="flex flex-col gap-6 md:flex-row md:items-end justify-between">
+            <div>
+                 <Link :href="route('admin.students.index')" class="group inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors mb-4">
+                    <div class="rounded-full bg-slate-100 p-1 group-hover:bg-emerald-100 transition-colors">
+                        <ArrowLeftIcon class="h-4 w-4" />
+                    </div>
+                    <span>Kembali ke Daftar</span>
+                </Link>
+                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
+                    {{ isEdit ? 'Edit' : 'Tambah' }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-[var(--color-primary)]">Siswa</span>
+                </h1>
+                <p class="mt-2 text-slate-500 font-medium text-lg max-w-2xl">
+                    {{ isEdit ? 'Perbarui data akademik dan informasi pribadi siswa.' : 'Daftarkan siswa baru ke dalam sistem pembelajaran.' }}
+                </p>
+            </div>
         </section>
 
-        <section class="rounded-3xl border border-slate-100 bg-white shadow-sm">
-            <form @submit.prevent="submit" class="space-y-6 p-8">
-                <div v-if="isEdit" class="grid gap-6 md:grid-cols-2">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">ID Siswa</label>
-                        <input v-model="form.student_id" type="text" readonly
-                            class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-600 focus:outline-none" />
-                        <p class="mt-1 text-xs text-slate-500">ID ini dibuat otomatis oleh sistem dan tidak dapat diubah.</p>
+        <section class="rounded-[2.5rem] border border-slate-200 bg-white shadow-sm overflow-hidden">
+             <!-- Form Header -->
+            <div class="px-8 pt-8 pb-4 border-b border-slate-100 bg-emerald-50/30">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <AcademicCapIcon class="h-6 w-6 text-emerald-600" />
+                    Data Akademik & Pribadi
+                </h2>
+            </div>
+
+            <form @submit.prevent="submit" class="p-8 space-y-8">
+                <!-- ID & Basic Info -->
+                <div class="grid gap-8 md:grid-cols-2">
+                    <div v-if="isEdit">
+                         <label class="block text-sm font-bold text-slate-700 mb-2">ID Siswa</label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <span class="text-xs font-black">ID</span>
+                            </div>
+                            <input v-model="form.student_id" type="text" readonly
+                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm font-bold text-slate-500 focus:outline-none cursor-not-allowed" />
+                        </div>
+                        <p class="mt-1.5 text-xs font-semibold text-slate-400">ID dibuat otomatis oleh sistem.</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Tanggal Lahir</label>
-                        <input v-model="form.date_of_birth" type="date"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            :class="{ 'border-rose-400': form.errors.date_of_birth }" />
-                        <p v-if="form.errors.date_of_birth" class="mt-1 text-xs text-rose-500">{{ form.errors.date_of_birth }}</p>
+                    <div v-else class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 flex items-start gap-3">
+                         <ShieldCheckIcon class="h-6 w-6 text-emerald-600 shrink-0 mt-0.5" />
+                        <div>
+                             <p class="text-sm font-bold text-emerald-800">ID Siswa Otomatis</p>
+                             <p class="text-xs text-emerald-600 mt-1 leading-relaxed">Sistem akan men-generate ID unik (misal: <strong>SW001</strong>) setelah data disimpan. Anda tidak perlu mengisinya.</p>
+                        </div>
                     </div>
-                </div>
-                <div v-else class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-700">
-                    <strong>ID Siswa Otomatis:</strong> Sistem akan membuat ID seperti <code>SW001</code>, <code>SW002</code>, dst. Kamu cukup mengisi data siswa saja.
+
+                    <div>
+                         <label class="block text-sm font-bold text-slate-700 mb-2">Tanggal Lahir</label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <CalendarIcon class="h-5 w-5" />
+                            </div>
+                            <input v-model="form.date_of_birth" type="date"
+                                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50 hover:bg-white"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.date_of_birth }" />
+                        </div>
+                        <p v-if="form.errors.date_of_birth" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.date_of_birth }}</p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap Siswa <span class="text-rose-500">*</span></label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <UserIcon class="h-5 w-5" />
+                            </div>
+                            <input v-model="form.name" type="text" placeholder="Masukkan nama lengkap siswa"
+                                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50 hover:bg-white"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.name }" />
+                        </div>
+                        <p v-if="form.errors.name" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.name }}</p>
+                    </div>
                 </div>
 
-                <div v-if="!isEdit">
-                    <label class="block text-sm font-medium text-slate-700">Tanggal Lahir</label>
-                    <input v-model="form.date_of_birth" type="date"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        :class="{ 'border-rose-400': form.errors.date_of_birth }" />
-                    <p v-if="form.errors.date_of_birth" class="mt-1 text-xs text-rose-500">{{ form.errors.date_of_birth }}</p>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700">Nama Lengkap<span class="text-rose-500">*</span></label>
-                    <input v-model="form.name" type="text" placeholder="Masukkan nama siswa"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        :class="{ 'border-rose-400': form.errors.name }" />
-                    <p v-if="form.errors.name" class="mt-1 text-xs text-rose-500">{{ form.errors.name }}</p>
-                </div>
-
-                <div class="grid gap-6 md:grid-cols-2">
+                <div class="grid gap-8 md:grid-cols-2">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Pendidikan Terakhir</label>
-                        <select v-model="form.education_level"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            :class="{ 'border-rose-400': form.errors.education_level }">
-                            <option value="">Pilih pendidikan</option>
-                            <option v-for="opt in educationList" :key="opt" :value="opt">{{ opt }}</option>
-                        </select>
-                        <p class="mt-1 text-xs text-slate-500">Gunakan data terakhir yang tercatat.</p>
-                        <p v-if="form.errors.education_level" class="mt-1 text-xs text-rose-500">{{ form.errors.education_level }}</p>
+                         <label class="block text-sm font-bold text-slate-700 mb-2">Pendidikan Terakhir</label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <AcademicCapIcon class="h-5 w-5" />
+                            </div>
+                            <select v-model="form.education_level"
+                                class="w-full appearance-none rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-bold focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50 hover:bg-white"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.education_level }">
+                                <option value="">Pilih Pendidikan</option>
+                                <option v-for="opt in educationList" :key="opt" :value="opt">{{ opt }}</option>
+                            </select>
+                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p v-if="form.errors.education_level" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.education_level }}</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Akun Orang Tua</label>
-                        <div class="mt-3 flex flex-col gap-2 rounded-2xl border border-slate-200 p-4 text-sm">
-                            <label class="flex items-center gap-2">
-                                <input type="radio" name="parentMode" :checked="!form.create_parent_account" @change="useExistingParent" />
-                                <span>Gunakan akun yang sudah ada</span>
-                            </label>
-                            <label class="flex items-center gap-2">
-                                <input type="radio" name="parentMode" :checked="form.create_parent_account" @change="useNewParent" />
-                                <span>Buat akun orang tua baru</span>
-                            </label>
+                     <div>
+                         <label class="block text-sm font-bold text-slate-700 mb-2">Nama Sekolah</label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <BuildingLibraryIcon class="h-5 w-5" />
+                            </div>
+                            <input v-model="form.school_name" type="text" placeholder="Asal sekolah"
+                                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50 hover:bg-white"
+                                :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.school_name }" />
+                        </div>
+                        <p v-if="form.errors.school_name" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.school_name }}</p>
+                    </div>
+                </div>
+
+                <!-- Parent Section -->
+                <div class="border-t border-slate-100 pt-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <UserPlusIcon class="h-5 w-5 text-emerald-600" />
+                        Informasi Orang Tua
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="md:col-span-1">
+                             <label class="block text-sm font-medium text-slate-500 mb-4">Pilih metode:</label>
+                             <div class="space-y-3">
+                                <label class="cursor-pointer group relative flex items-center gap-3 rounded-2xl border p-4 shadow-sm transition-all"
+                                    :class="!form.create_parent_account ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-100' : 'bg-white border-slate-200 hover:bg-slate-50'">
+                                    <input type="radio" name="parentMode" :checked="!form.create_parent_account" @change="useExistingParent" class="sr-only" />
+                                    <div class="h-5 w-5 rounded-full border border-slate-300 flex items-center justify-center bg-white" 
+                                         :class="{'border-emerald-500': !form.create_parent_account}">
+                                        <div v-if="!form.create_parent_account" class="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
+                                    </div>
+                                    <div>
+                                         <span class="block text-sm font-bold text-slate-700">Hubungkan Akun</span>
+                                         <span class="block text-xs text-slate-500 mt-0.5">Pilih orang tua yang sudah ada</span>
+                                    </div>
+                                </label>
+
+                                <label class="cursor-pointer group relative flex items-center gap-3 rounded-2xl border p-4 shadow-sm transition-all"
+                                    :class="form.create_parent_account ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-100' : 'bg-white border-slate-200 hover:bg-slate-50'">
+                                    <input type="radio" name="parentMode" :checked="form.create_parent_account" @change="useNewParent" class="sr-only" />
+                                    <div class="h-5 w-5 rounded-full border border-slate-300 flex items-center justify-center bg-white"
+                                         :class="{'border-emerald-500': form.create_parent_account}">
+                                        <div v-if="form.create_parent_account" class="h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
+                                    </div>
+                                     <div>
+                                         <span class="block text-sm font-bold text-slate-700">Buat Akun Baru</span>
+                                         <span class="block text-xs text-slate-500 mt-0.5">Daftarkan orang tua baru</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                             <!-- Existing Parent Search -->
+                            <div v-if="!form.create_parent_account" class="space-y-4 rounded-[2rem] border border-slate-200 bg-slate-50/50 p-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Cari Orang Tua</label>
+                                    <div class="relative">
+                                         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                            <MagnifyingGlassIcon class="h-5 w-5" />
+                                        </div>
+                                        <input v-model="parentSearchTerm" type="text" :disabled="!parentsList.length"
+                                            placeholder="Ketik nama orang tua..."
+                                            class="w-full rounded-2xl border border-slate-200 pl-11 pr-10 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-white"
+                                            :class="[
+                                                form.errors.parent_id ? 'border-rose-400' : '',
+                                                !parentsList.length ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : '',
+                                            ]" />
+                                         <button v-if="parentSearchTerm" type="button"
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-500 transition-colors"
+                                            @click="clearParentSelection">
+                                            <XMarkIcon class="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                    <div v-if="parentsList.length && hasParentSearch && !selectedParentName" class="mt-2 max-h-60 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-sm scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                                        <button type="button" v-for="parent in filteredParents" :key="parent.id"
+                                            class="group flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-emerald-50 border-b border-slate-50 last:border-0"
+                                            @click="selectParent(parent)">
+                                            <span class="text-sm font-medium text-slate-700 group-hover:text-emerald-700">{{ parent.name }}</span>
+                                        </button>
+                                         <div v-if="!filteredParents.length" class="px-4 py-6 text-center">
+                                            <p class="text-xs font-medium text-slate-400">Tidak ditemukan.</p>
+                                        </div>
+                                    </div>
+                                    <div v-if="selectedParentName" class="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700">
+                                        <ShieldCheckIcon class="h-4 w-4" />
+                                        Orang Tua Terpilih: {{ selectedParentName }}
+                                    </div>
+                                    <p v-if="form.errors.parent_id" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.parent_id }}</p>
+                                </div>
+                            </div>
+
+                             <!-- New Parent Form -->
+                            <div v-else class="space-y-4 rounded-[2rem] border border-emerald-100 bg-emerald-50/50 p-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap Orang Tua <span class="text-rose-500">*</span></label>
+                                    <input v-model="form.new_parent_name" type="text" placeholder="Masukkan nama"
+                                        class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-white"
+                                        :class="{ 'border-rose-400': form.errors.new_parent_name }" />
+                                    <p v-if="form.errors.new_parent_name" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.new_parent_name }}</p>
+                                </div>
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                     <div>
+                                        <label class="block text-sm font-bold text-slate-700 mb-2">Email <span class="text-rose-500">*</span></label>
+                                        <input v-model="form.new_parent_email" type="email" placeholder="email@contoh.com"
+                                            class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-white"
+                                            :class="{ 'border-rose-400': form.errors.new_parent_email }" />
+                                        <p v-if="form.errors.new_parent_email" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.new_parent_email }}</p>
+                                    </div>
+                                     <div>
+                                        <label class="block text-sm font-bold text-slate-700 mb-2">Nomor Telepon</label>
+                                        <input v-model="form.new_parent_phone" type="text" placeholder="08xxxxxxxxxx"
+                                            class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-white"
+                                            :class="{ 'border-rose-400': form.errors.new_parent_phone }" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="!form.create_parent_account" class="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                    <label class="block text-sm font-medium text-slate-700">Cari / Pilih Akun Orang Tua</label>
-                    <div class="relative">
-                        <input v-model="parentSearchTerm" type="text" :disabled="!parentsList.length"
-                            placeholder="Ketik nama orang tua"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            :class="[
-                                form.errors.parent_id ? 'border-rose-400' : '',
-                                !parentsList.length ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : '',
-                            ]" />
-                        <button v-if="parentSearchTerm" type="button"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-widest text-slate-400 hover:text-rose-500"
-                            @click="clearParentSelection">
-                            Hapus
-                        </button>
+                <!-- Address & Status -->
+                 <div class="border-t border-slate-100 pt-8 grid gap-8 md:grid-cols-2">
+                     <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Status Siswa</label>
+						<div class="flex gap-4 p-1">
+							<label class="cursor-pointer group relative flex flex-1 items-center justify-center gap-2 rounded-xl border p-3 shadow-sm transition-all"
+                                :class="form.status === 'active' ? 'bg-emerald-50 border-emerald-200 text-emerald-700 ring-2 ring-emerald-100' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'">
+								<input v-model="form.status" type="radio" value="active" class="sr-only" />
+                                <div class="h-4 w-4 rounded-full border border-current flex items-center justify-center">
+                                    <div class="h-2 w-2 rounded-full bg-current transform scale-0 transition-transform" :class="{'scale-100': form.status === 'active'}"></div>
+                                </div>
+								<span class="font-bold">Aktif</span>
+							</label>
+							<label class="cursor-pointer group relative flex flex-1 items-center justify-center gap-2 rounded-xl border p-3 shadow-sm transition-all"
+                                :class="form.status !== 'active' ? 'bg-rose-50 border-rose-200 text-rose-700 ring-2 ring-rose-100' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'">
+								<input v-model="form.status" type="radio" value="inactive" class="sr-only" />
+                                 <div class="h-4 w-4 rounded-full border border-current flex items-center justify-center">
+                                    <div class="h-2 w-2 rounded-full bg-current transform scale-0 transition-transform" :class="{'scale-100': form.status !== 'active'}"></div>
+                                </div>
+								<span class="font-bold">Nonaktif</span>
+							</label>
+						</div>
                     </div>
-                    <div v-if="parentsList.length" class="max-h-56 overflow-y-auto rounded-2xl border border-slate-200 bg-white">
-                        <template v-if="hasParentSearch">
-                            <button type="button" v-for="parent in filteredParents" :key="parent.id"
-                                class="flex w-full items-center justify-between border-b border-slate-50 px-4 py-2 text-left text-sm text-slate-700 last:border-b-0 hover:bg-emerald-50"
-                                :class="{ 'bg-emerald-50 text-emerald-700': isParentSelected(parent.id) }"
-                                @click="selectParent(parent)">
-                                <span>{{ parent.name }}</span>
-                                <span v-if="isParentSelected(parent.id)" class="text-xs font-semibold uppercase tracking-widest text-emerald-500">Dipilih</span>
-                            </button>
-                            <p v-if="hasParentSearch && !filteredParents.length" class="px-4 py-3 text-center text-xs text-slate-400">Nama orang tua tidak ditemukan.</p>
-                        </template>
-                        <p v-else class="px-4 py-3 text-center text-xs text-slate-400">Ketik nama orang tua untuk menampilkan hasil pencarian.</p>
-                    </div>
-                    <p v-else class="text-xs text-slate-400">Belum ada akun orang tua terdaftar.</p>
-                    <p class="text-xs text-slate-500">Biarkan kolom kosong apabila siswa belum memiliki akun orang tua.</p>
-                    <p v-if="form.errors.parent_id" class="text-xs text-rose-500">{{ form.errors.parent_id }}</p>
-                </div>
 
-                <div v-else class="space-y-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
-                    <div class="flex items-start gap-3 text-sm text-emerald-700">
-                        <span class="mt-0.5 font-semibold">Info:</span>
-                        <span>Akun orang tua baru akan dibuat otomatis dan mendapatkan peran "Orang Tua". Password awal akan ditampilkan pada notifikasi setelah data tersimpan.</span>
-                    </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Nama Orang Tua<span class="text-rose-500">*</span></label>
-                        <input v-model="form.new_parent_name" type="text" placeholder="Nama lengkap orang tua"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            :class="{ 'border-rose-400': form.errors.new_parent_name }" />
-                        <p v-if="form.errors.new_parent_name" class="mt-1 text-xs text-rose-500">{{ form.errors.new_parent_name }}</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Email Orang Tua<span class="text-rose-500">*</span></label>
-                        <input v-model="form.new_parent_email" type="email" placeholder="ortu@example.com"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            :class="{ 'border-rose-400': form.errors.new_parent_email }" />
-                        <p v-if="form.errors.new_parent_email" class="mt-1 text-xs text-rose-500">{{ form.errors.new_parent_email }}</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Nomor Telepon</label>
-                        <input v-model="form.new_parent_phone" type="text" placeholder="08xxxxxxxxxx"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            :class="{ 'border-rose-400': form.errors.new_parent_phone }" />
-                        <p class="mt-1 text-xs text-slate-500">Opsional namun membantu verifikasi akun.</p>
-                    </div>
-                </div>
-
-                <div class="grid gap-6 md:grid-cols-2">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Status Siswa</label>
-                        <div class="mt-3 flex gap-6">
-                            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
-                                <input v-model="form.status" type="radio" value="active" class="text-emerald-500" />
-                                <span>Aktif</span>
-                            </label>
-                            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
-                                <input v-model="form.status" type="radio" value="inactive" class="text-emerald-500" />
-                                <span>Nonaktif</span>
-                            </label>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Alamat Domisili</label>
+                         <div class="relative">
+                            <div class="pointer-events-none absolute top-3 left-0 flex items-start pl-4 text-slate-400">
+                                <MapPinIcon class="h-5 w-5" />
+                            </div>
+                            <textarea v-model="form.address" rows="3" placeholder="Alamat lengkap..."
+                                class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50 hover:bg-white resize-none"
+                                :class="{ 'border-rose-400': form.errors.address }"></textarea>
                         </div>
-                        <p class="mt-2 text-xs text-slate-500">Nonaktifkan sementara bila siswa tidak lagi aktif mengikuti kegiatan.</p>
+                        <p v-if="form.errors.address" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.address }}</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Nama Sekolah</label>
-                        <input v-model="form.school_name" type="text" placeholder="Nama sekolah saat ini"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            :class="{ 'border-rose-400': form.errors.school_name }" />
-                        <p v-if="form.errors.school_name" class="mt-1 text-xs text-rose-500">{{ form.errors.school_name }}</p>
-                    </div>
-                </div>
+                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-slate-700">Alamat</label>
-                    <textarea v-model="form.address" rows="3" placeholder="Alamat lengkap siswa"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        :class="{ 'border-rose-400': form.errors.address }"></textarea>
-                    <p v-if="form.errors.address" class="mt-1 text-xs text-rose-500">{{ form.errors.address }}</p>
-                </div>
-
-                <div class="flex justify-end gap-3">
-                    <Link :href="route('admin.students.index')"
-                        class="rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
-                        Batal
-                    </Link>
-                    <button
-                        type="button"
-                        @click="submit"
-                        class="rounded-2xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-600 disabled:opacity-60"
-                        :disabled="form.processing">
-                        {{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Siswa' }}
-                    </button>
+                <div class="flex justify-end gap-3 border-t border-slate-100 pt-8">
+                     <Link :href="route('admin.students.index')"
+						class="rounded-xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 active:scale-95">
+						Batal
+					</Link>
+					<button type="submit"
+						class="group inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-8 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-light)] transition hover:bg-[var(--color-primary-hover)] hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+						:disabled="form.processing">
+                         <div v-if="form.processing" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+						<span>{{ form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Siswa' }}</span>
+					</button>
                 </div>
             </form>
         </section>
