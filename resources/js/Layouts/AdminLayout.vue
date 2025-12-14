@@ -1,6 +1,7 @@
 ```
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { 
     HomeIcon, 
@@ -98,8 +99,29 @@ const toggleProfileMenu = () => {
 	profileMenuOpen.value = !profileMenuOpen.value
 }
 
-const logout = () => {
-	router.post(route('logout'))
+const confirmLogout = () => {
+	Swal.fire({
+		title: 'Keluar Aplikasi?',
+		text: "Apakah Anda yakin ingin mengakhiri sesi ini?",
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonColor: '#d33',
+		cancelButtonColor: '#84994f',
+		confirmButtonText: 'Ya, Keluar',
+		cancelButtonText: 'Batal',
+		reverseButtons: true,
+		width: '400px',
+		customClass: {
+			popup: 'rounded-xl font-sans',
+			title: 'text-xl font-bold text-gray-800',
+			confirmButton: 'rounded-full px-6 shadow-lg',
+			cancelButton: 'rounded-full px-6'
+		}
+	}).then((result) => {
+		if (result.isConfirmed) {
+			router.post(route('logout'))
+		}
+	})
 	profileMenuOpen.value = false
 }
 
@@ -132,14 +154,14 @@ watch(
 </script>
 
 <template>
-	<div class="min-h-screen bg-[var(--color-body)] font-sans text-slate-900">
+	<div class="min-h-screen bg-[#F5F5F4] font-sans text-slate-900">
 		<div class="flex min-h-screen">
 			<!-- Off-canvas backdrop -->
 			<div v-if="sidebarOpen" class="fixed inset-0 z-30 bg-black/20 lg:hidden" @click="closeSidebar" />
 
 			<!-- Sidebar -->
 			<aside :class="[
-				'fixed inset-y-0 left-0 z-40 w-72 bg-[var(--color-primary)] border-r-0 transition-transform duration-300 ease-in-out flex flex-col',
+				'fixed inset-y-0 left-0 z-40 w-72 h-screen bg-[var(--color-primary)] border-r-0 transition-transform duration-300 ease-in-out flex flex-col overflow-hidden',
 				sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
 			]">
 				<!-- Section A: Brand & Profile (Top) -->
@@ -174,19 +196,19 @@ watch(
 				</div>
 
 				<!-- Section B: Menu (Middle) -->
-				<nav class="flex-1 overflow-y-auto pl-4 py-4 space-y-1">
+				<nav class="flex-1 pl-4 py-4 space-y-1 overflow-hidden">
 					<Link v-for="item in navigation" :key="item.label" :href="navHref(item)"
 						class="relative flex items-center gap-4 px-6 py-4 text-sm font-bold transition-all duration-200 rounded-l-full group"
 						:class="isActive(item)
-							? 'bg-[var(--color-body)] text-[var(--color-primary)] z-20'
+							? 'bg-[#F5F5F4] text-[var(--color-primary)] z-20'
 							: 'text-white/70 hover:bg-white/10 hover:text-white z-10'
 							" @click="closeSidebar">
 						
                         <!-- Active Indicator Curves (Top & Bottom) - Precise Alignment -->
                         <!-- Top Curve -->
-                        <div v-if="isActive(item)" class="absolute right-0 -top-5 w-5 h-5 bg-transparent rounded-br-3xl shadow-[5px_5px_0_0_var(--color-body)] pointer-events-none"></div>
+                        <div v-if="isActive(item)" class="absolute right-0 -top-5 w-5 h-5 bg-transparent rounded-br-3xl shadow-[5px_5px_0_0_#F5F5F4] pointer-events-none"></div>
                         <!-- Bottom Curve -->
-                        <div v-if="isActive(item)" class="absolute right-0 -bottom-5 w-5 h-5 bg-transparent rounded-tr-3xl shadow-[5px_-5px_0_0_var(--color-body)] pointer-events-none"></div>
+                        <div v-if="isActive(item)" class="absolute right-0 -bottom-5 w-5 h-5 bg-transparent rounded-tr-3xl shadow-[5px_-5px_0_0_#F5F5F4] pointer-events-none"></div>
 
                         <component 
                             :is="item.icon" 
@@ -200,7 +222,7 @@ watch(
 
 				<!-- Section C: Logout (Bottom) -->
 				<div class="p-6">
-					<button @click="logout" class="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white hover:text-[var(--color-danger)] hover:border-white shadow-sm hover:shadow-md active:scale-95 duration-200">
+					<button @click="confirmLogout" class="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white hover:text-[var(--color-danger)] hover:border-white shadow-sm hover:shadow-md active:scale-95 duration-200">
 						<ArrowLeftOnRectangleIcon class="h-5 w-5 transition-transform group-hover:-translate-x-1" />
 						<span>Keluar Aplikasi</span>
 					</button>
@@ -211,7 +233,7 @@ watch(
 			</aside>
 
 			<!-- Main area -->
-			<div class="flex-1 lg:pl-72 bg-[var(--color-body)] transition-all duration-300">
+			<div class="flex-1 lg:pl-72 bg-[#F5F5F4] transition-all duration-300">
 				<!-- Header (Glassmorphism Scroll Effect) -->
 				<header 
                     class="sticky top-0 z-40 flex items-center justify-between px-8 py-5 transition-all duration-300"
@@ -223,13 +245,10 @@ watch(
 							<Bars3Icon class="h-5 w-5" />
 						</button>
 						<div>
-							<h2 class="text-2xl font-bold text-slate-800 tracking-tight leading-tight">
-								{{ page.props.title || 'Dashboard' }}
-							</h2>
-                            <p class="text-xs text-slate-500 font-medium mt-0.5">
-                                Selamat datang kembali, <span class="text-[var(--color-primary)]">{{ user?.name }}</span>!
-                            </p>
-						</div>
+						<h2 class="page-title text-3xl font-bold tracking-tight leading-tight bg-gradient-to-r from-slate-800 via-[var(--color-primary)] to-slate-800 bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient-shift hover:scale-105 transition-transform duration-300 cursor-default">
+							{{ page.props.title || 'Dashboard' }}
+						</h2>
+					</div>
 					</div>
 				</header>
 

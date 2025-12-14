@@ -255,6 +255,7 @@ const closeSidebar = () => {
 
 <script setup>
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { 
     HomeIcon, 
@@ -367,8 +368,29 @@ const switchStudent = (studentId) => {
   })
 }
 
-const logout = () => {
-  router.post(route('logout'))
+const confirmLogout = () => {
+  Swal.fire({
+    title: 'Keluar Aplikasi?',
+    text: "Apakah Anda yakin ingin mengakhiri sesi ini?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#84994f',
+    confirmButtonText: 'Ya, Keluar',
+    cancelButtonText: 'Batal',
+    reverseButtons: true,
+    width: '400px',
+    customClass: {
+      popup: 'rounded-xl font-sans',
+      title: 'text-xl font-bold text-gray-800',
+      confirmButton: 'rounded-full px-6 shadow-lg',
+      cancelButton: 'rounded-full px-6'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.post(route('logout'))
+    }
+  })
   profileMenuOpen.value = false
 }
 
@@ -463,7 +485,7 @@ onUnmounted(() => {
 
         <!-- Section C: Logout (Bottom) -->
         <div class="p-6">
-           <button @click="logout" class="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white hover:text-[var(--color-danger)] hover:border-white shadow-sm hover:shadow-md active:scale-95 duration-200">
+           <button @click="confirmLogout" class="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white hover:text-[var(--color-danger)] hover:border-white shadow-sm hover:shadow-md active:scale-95 duration-200">
              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9l3 3-3 3M15 12H3" />

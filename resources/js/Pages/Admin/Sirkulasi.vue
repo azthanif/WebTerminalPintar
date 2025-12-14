@@ -1,164 +1,160 @@
 <template>
   <div class="space-y-8">
-    <Head title="Sirkulasi Perpustakaan - Admin" />
+    <Head title="Manajemen Sirkulasi - Admin" />
 
-    <!-- Premium Header -->
-      <section class="flex flex-col gap-6 md:flex-row md:items-end justify-between relative">
-          <div>
-              <Link
-              :href="route('admin.books.index')"
-              class="group inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors mb-4"
-              >
-                  <div class="rounded-full bg-slate-100 p-1 group-hover:bg-emerald-100 transition-colors">
-                      <ArrowLeftIcon class="h-4 w-4" />
-                  </div>
-                  <span>Kembali ke Katalog</span>
-              </Link>
-               <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600 mb-2 border border-emerald-100">
-                  <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <span>Sirkulasi Aktif</span>
-              </div>
-              <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-                  Manajemen <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">Sirkulasi</span>
-              </h1>
-              <p class="mt-2 text-slate-500 font-medium text-lg">Kelola peminjaman dan pengembalian buku perpustakaan.</p>
-          </div>
-          
-          <div class="flex flex-wrap gap-3">
-              <button
-              type="button"
-              @click="openPinjamModal"
-              :disabled="!hasAvailableBooks"
-              class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-600 hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                  <div class="rounded-lg bg-white/20 p-1">
-                      <ArrowUpTrayIcon class="h-5 w-5 text-white" />
-                  </div>
-                  <span>Catat Peminjaman</span>
-              </button>
-              <button
-              type="button"
-              @click="openKembaliModal"
-              :disabled="!hasBorrowedBooks"
-              class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-sky-200 transition-all hover:bg-sky-600 hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                  <div class="rounded-lg bg-white/20 p-1">
-                      <ArrowDownTrayIcon class="h-5 w-5 text-white" />
-                  </div>
-                  <span>Catat Pengembalian</span>
-              </button>
-          </div>
-      </section>
+    <!-- Page Header -->
+    <PageHeader badgeLabel="Circulation Desk" badgeColor="cyan">
+        <template #title>
+            <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
+                Selamat datang kembali, <span class="text-[var(--color-primary)]">{{ user?.name }}</span>!
+            </p>
+        </template>
+    </PageHeader>
+
+    <!-- Back Link -->
+    <div class="-mt-4">
+      <Link
+        :href="route('admin.books.index')"
+        class="group inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-cyan-600 transition-colors"
+      >
+        <div class="rounded-full bg-slate-100 p-1 group-hover:bg-cyan-100 transition-colors">
+          <ArrowLeftIcon class="h-4 w-4" />
+        </div>
+        <span>Kembali ke Katalog</span>
+      </Link>
+    </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1 hover:border-emerald-200">
-             <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-emerald-50 opacity-50 blur-xl group-hover:bg-emerald-100 transition-colors"></div>
-             <div class="relative">
-                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Buku Tersedia</p>
-                <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.available ?? bukuTersedia.length }}</p>
-                <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">
-                    <CheckCircleIcon class="h-3 w-3" />
-                    <span>Siap Dipinjam</span>
-                </div>
+    <section class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1">
+        <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-cyan-50 opacity-50 blur-xl group-hover:bg-cyan-100 transition-colors"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Buku Tersedia</p>
+            <div class="h-10 w-10 rounded-full bg-cyan-100 flex items-center justify-center">
+              <CheckCircleIcon class="h-5 w-5 text-cyan-600" />
             </div>
-      </div>
-       <div class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1 hover:border-sky-200">
-             <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-sky-50 opacity-50 blur-xl group-hover:bg-sky-100 transition-colors"></div>
-             <div class="relative">
-                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Sedang Dipinjam</p>
-                <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.borrowed ?? bukuDipinjam.length }}</p>
-                <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700">
-                    <ClockIcon class="h-3 w-3" />
-                    <span>Belum Kembali</span>
-                </div>
-            </div>
-      </div>
-       <div class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1 hover:border-amber-200">
-             <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-amber-50 opacity-50 blur-xl group-hover:bg-amber-100 transition-colors"></div>
-             <div class="relative">
-                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Peminjam</p>
-                <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.totalUsers ?? users.length }}</p>
-                <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
-                    <UserGroupIcon class="h-3 w-3" />
-                    <span>Siswa & Guru</span>
-                </div>
-            </div>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-       <!-- Card Peminjaman -->
-      <div class="flex flex-col rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm h-full">
-        <div class="mb-6 flex items-start justify-between">
-          <div>
-            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <ArrowUpTrayIcon class="h-6 w-6 text-emerald-600" />
-                Info Peminjaman
-            </h2>
-            <p class="mt-1 text-sm font-medium text-slate-500">Buku populer yang tersedia untuk dipinjam.</p>
           </div>
+          <p class="text-4xl font-extrabold text-slate-800">{{ stats.available ?? bukuTersedia.length }}</p>
+          <p class="text-sm text-cyan-600 font-medium mt-1">Siap dipinjam</p>
+        </div>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1">
+        <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-orange-50 opacity-50 blur-xl group-hover:bg-orange-100 transition-colors"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sedang Dipinjam</p>
+            <div class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+              <ClockIcon class="h-5 w-5 text-orange-600" />
+            </div>
+          </div>
+          <p class="text-4xl font-extrabold text-slate-800">{{ stats.borrowed ?? bukuDipinjam.length }}</p>
+          <p class="text-sm text-orange-600 font-medium mt-1">Belum kembali</p>
+        </div>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1">
+        <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-blue-50 opacity-50 blur-xl group-hover:bg-blue-100 transition-colors"></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Peminjam</p>
+            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+              <UserGroupIcon class="h-5 w-5 text-blue-600" />
+            </div>
+          </div>
+          <p class="text-4xl font-extrabold text-slate-800">{{ stats.totalUsers ?? users.length }}</p>
+          <p class="text-sm text-blue-600 font-medium mt-1">Siswa & Guru</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <section class="grid gap-6 lg:grid-cols-2">
+      <!-- Card Peminjaman (Available Books) -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="bg-cyan-50 px-6 py-4 border-b border-cyan-100 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-cyan-900 flex items-center gap-2">
+              <ArrowUpTrayIcon class="h-5 w-5" />
+              Buku Tersedia
+            </h2>
+            <p class="text-sm text-cyan-700 mt-0.5">Buku populer yang siap dipinjam</p>
+          </div>
+          <button
+            type="button"
+            @click="openPinjamModal"
+            :disabled="!hasAvailableBooks"
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-green-600 text-white px-4 py-1.5 text-sm font-bold shadow-sm transition-all hover:bg-green-700 hover:-translate-y-0.5 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <ArrowUpTrayIcon class="h-4 w-4" />
+            <span class="hidden sm:inline">Catat Peminjaman</span>
+          </button>
         </div>
         
-        <div v-if="topBukuTersedia.length" class="space-y-3 flex-1">
-            <div v-for="buku in topBukuTersedia" :key="buku.id" 
-                class="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-white hover:border-emerald-200 hover:shadow-sm">
-                 <div>
-                    <p class="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">{{ buku.judul }}</p>
-                    <div class="flex items-center gap-2 mt-1">
-                         <span class="text-xs font-bold bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-500">{{ buku.code }}</span>
-                        <span class="text-xs text-slate-500">{{ buku.kategori || 'Umum' }}</span>
-                    </div>
-                 </div>
-                 <div class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <PlusIcon class="h-5 w-5" />
-                 </div>
+        <div v-if="topBukuTersedia.length" class="p-4 space-y-2">
+          <div v-for="buku in topBukuTersedia" :key="buku.id" 
+            class="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-3 transition-all hover:bg-white hover:border-cyan-200 hover:shadow-sm">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-slate-800 group-hover:text-cyan-700 transition-colors truncate">{{ buku.judul }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-500">{{ buku.code }}</span>
+                <span class="text-xs text-slate-500 truncate">{{ buku.kategori || 'Umum' }}</span>
+              </div>
             </div>
-        </div>
-        <div v-else class="flex flex-col items-center justify-center flex-1 py-10 text-center rounded-2xl bg-amber-50 border border-amber-100">
-            <ExclamationTriangleIcon class="h-8 w-8 text-amber-500 mb-2" />
-            <p class="text-sm font-bold text-amber-700">Stok Kosong</p>
-            <p class="text-xs text-amber-600 mt-1">Tidak ada buku tersedia saat ini.</p>
-        </div>
-      </div>
-
-       <!-- Card Pengembalian -->
-      <div class="flex flex-col rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm h-full">
-        <div class="mb-6 flex items-start justify-between">
-          <div>
-            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <ArrowDownTrayIcon class="h-6 w-6 text-sky-600" />
-                Info Pengembalian
-            </h2>
-            <p class="mt-1 text-sm font-medium text-slate-500">Daftar buku yang sedang berada di luar.</p>
+            <div class="h-8 w-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+              <PlusIcon class="h-4 w-4" />
+            </div>
           </div>
         </div>
-
-        <div v-if="topBukuDipinjam.length" class="space-y-3 flex-1">
-            <div v-for="buku in topBukuDipinjam" :key="buku.loan_id"
-                 class="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-white hover:border-sky-200 hover:shadow-sm">
-                 <div>
-                    <p class="text-sm font-bold text-slate-800 group-hover:text-sky-700 transition-colors">{{ buku.judul }}</p>
-                    <div class="flex items-center gap-2 mt-1">
-                        <UserIcon class="h-3 w-3 text-slate-400" />
-                        <span class="text-xs text-slate-500 font-medium">{{ getBorrowerName(buku) }}</span>
-                    </div>
-                 </div>
-                 <div class="h-8 w-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <CheckCircleIcon class="h-5 w-5" />
-                 </div>
-            </div>
-        </div>
-        <div v-else class="flex flex-col items-center justify-center flex-1 py-10 text-center rounded-2xl bg-emerald-50 border border-emerald-100">
-             <CheckCircleIcon class="h-8 w-8 text-emerald-500 mb-2" />
-            <p class="text-sm font-bold text-emerald-700">Semua Tertib</p>
-            <p class="text-xs text-emerald-600 mt-1">Tidak ada buku yang dipinjam saat ini.</p>
+        <div v-else class="flex flex-col items-center justify-center py-12 px-4 text-center">
+          <ExclamationTriangleIcon class="h-12 w-12 text-amber-400 mb-3" />
+          <p class="text-sm font-bold text-amber-700">Stok Kosong</p>
+          <p class="text-xs text-amber-600 mt-1">Tidak ada buku tersedia saat ini.</p>
         </div>
       </div>
-    </div>
+
+      <!-- Card Pengembalian (Borrowed Books) -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="bg-orange-50 px-6 py-4 border-b border-orange-100 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-orange-900 flex items-center gap-2">
+              <ArrowDownTrayIcon class="h-5 w-5" />
+              Sedang Dipinjam
+            </h2>
+            <p class="text-sm text-orange-700 mt-0.5">Daftar buku yang sedang berada di luar</p>
+          </div>
+          <button
+            type="button"
+            @click="openKembaliModal"
+            :disabled="!hasBorrowedBooks"
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-white text-cyan-700 border border-cyan-600 px-4 py-1.5 text-sm font-bold shadow-sm transition-all hover:bg-cyan-50 hover:-translate-y-0.5 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <ArrowDownTrayIcon class="h-4 w-4" />
+            <span class="hidden sm:inline">Catat Pengembalian</span>
+          </button>
+        </div>
+
+        <div v-if="topBukuDipinjam.length" class="p-4 space-y-2">
+          <div v-for="buku in topBukuDipinjam" :key="buku.loan_id"
+            class="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-3 transition-all hover:bg-white hover:border-orange-200 hover:shadow-sm">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-slate-800 group-hover:text-orange-700 transition-colors truncate">{{ buku.judul }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <UserIcon class="h-3 w-3 text-slate-400 shrink-0" />
+                <span class="text-xs text-slate-500 font-medium truncate">{{ getBorrowerName(buku) }}</span>
+              </div>
+            </div>
+            <div class="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+              <CheckCircleIcon class="h-4 w-4" />
+            </div>
+          </div>
+        </div>
+        <div v-else class="flex flex-col items-center justify-center py-12 px-4 text-center">
+          <CheckCircleIcon class="h-12 w-12 text-emerald-400 mb-3" />
+          <p class="text-sm font-bold text-emerald-700">Semua Tertib</p>
+          <p class="text-xs text-emerald-600 mt-1">Tidak ada buku yang dipinjam saat ini.</p>
+        </div>
+      </div>
+    </section>
 
     <!-- Modal Peminjaman -->
     <Modal
@@ -429,10 +425,11 @@
 </template>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Modal from '@/Components/Modal.vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import PageHeader from '@/Components/PageHeader.vue'
 import {
     ArrowLeftIcon,
     ArrowUpTrayIcon,
@@ -451,11 +448,10 @@ defineOptions({
   layout: AdminLayout,
 })
 
+const page = usePage()
+const user = computed(() => page.props.auth?.user ?? null)
+
 const props = defineProps({
-  user: {
-    type: Object,
-    default: () => ({}),
-  },
   bukuTersedia: {
     type: Array,
     default: () => [],

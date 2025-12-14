@@ -1,14 +1,14 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import PageHeader from '@/Components/PageHeader.vue'
 import { 
     UserGroupIcon, 
     NewspaperIcon, 
     BookOpenIcon, 
     UsersIcon, 
-    ArrowRightIcon, 
-    ClockIcon,
+    ArrowRightIcon,
     ChartBarIcon
 } from '@heroicons/vue/24/outline'
 
@@ -34,6 +34,9 @@ const props = defineProps({
 defineOptions({
     layout: AdminLayout,
 })
+
+const page = usePage()
+const user = computed(() => page.props.auth?.user ?? null)
 
 const summaryStats = computed(() => ({
     totalSiswa: props.stats?.students?.total ?? 0,
@@ -126,32 +129,14 @@ const daftarAktivitas = computed(() => {
     <div class="space-y-10">
         <Head title="Dashboard Admin" />
 
-        <!-- Header Section (Upgraded) -->
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
-            <div>
-                 <div class="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 mb-2 border border-orange-100">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                    </span>
-                    <span>Admin Portal</span>
-                </div>
-                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-                    Dashboard <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-emerald-600">Overview</span>
-                </h1>
-                <p class="mt-2 text-slate-500 font-medium text-lg">Selamat datang kembali, Administrator Terminal Pintar.</p>
-            </div>
-            
-            <div class="flex items-center gap-3 p-1.5 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                 <div class="p-2.5 bg-slate-50 rounded-xl text-[var(--color-primary)]">
-                    <ClockIcon class="h-6 w-6" />
-                 </div>
-                 <div class="pr-3">
-                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Hari ini</p>
-                     <p class="text-sm font-bold text-slate-700">{{ new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
-                 </div>
-            </div>
-        </section>
+        <!-- Page Header -->
+        <PageHeader badgeLabel="Admin Portal" badgeColor="orange">
+            <template #title>
+                <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
+                    Selamat datang kembali, <span class="text-[var(--color-primary)]">{{ user?.name }}</span>!
+                </p>
+            </template>
+        </PageHeader>
 
         <!-- Stats Grid (Modern Cards with Thicker Border) -->
         <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -210,56 +195,62 @@ const daftarAktivitas = computed(() => {
             </div>
         </section>
 
-        <!-- Main Modules Grid -->
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div v-for="module in moduleLinks" :key="module.id" 
-                class="group flex flex-col justify-between rounded-[2.5rem] bg-white p-8 shadow-sm border border-slate-200 transition-all hover:shadow-xl hover:-translate-y-2 cursor-pointer relative overflow-hidden hover:border-[var(--color-primary)]/30">
-                
-                <div class="absolute top-0 right-0 -mr-8 -mt-8 h-40 w-40 rounded-full opacity-5 bg-current transition-transform group-hover:scale-150" :class="module.color"></div>
-
-                <div>
-                    <div :class="[module.bg, module.color]" class="inline-flex rounded-2xl p-4 shadow-sm ring-4 ring-slate-50 transition-all group-hover:ring-[var(--color-primary)]/20">
-                        <component :is="module.icon" class="h-8 w-8" />
+        <!-- Two Column Layout: Activity Card + Navigation Grid -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column: Aktivitas Terbaru (Tall Card) -->
+            <div class="lg:col-span-4">
+                <div class="rounded-[2.5rem] bg-white p-8 shadow-sm border border-slate-200 h-full flex flex-col">
+                    <div class="mb-6 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="rounded-xl bg-slate-100 p-2.5 text-slate-600">
+                                <ChartBarIcon class="h-6 w-6" />
+                            </div>
+                            <h2 class="text-2xl font-bold text-slate-800">Aktivitas Terbaru</h2>
+                        </div>
                     </div>
-                    <h3 class="mt-6 text-xl font-bold text-slate-800">{{ module.title }}</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-slate-500 font-medium">{{ module.description }}</p>
-                </div>
 
-                <div class="mt-8">
-                     <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">{{ module.meta }}</p>
-                    <Link :href="module.href"
-                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3.5 text-sm font-bold text-slate-700 transition-all group-hover:bg-[var(--color-primary)] group-hover:text-white group-hover:shadow-lg">
-                        <span>Akses Modul</span>
-                        <ArrowRightIcon class="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
+                    <div class="flex-1 space-y-4 overflow-y-auto">
+                        <div v-for="(aktivitas, index) in daftarAktivitas" :key="aktivitas.id" 
+                            class="flex items-start gap-4 p-4 rounded-2xl transition hover:bg-slate-50 border border-transparent hover:border-slate-100"
+                            :class="index < 2 ? 'bg-slate-50/50' : ''">
+                            <div :class="[aktivitas.bg, aktivitas.color]" class="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-sm ring-2 ring-white">
+                                <component :is="aktivitas.icon" class="h-5 w-5" />
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800 leading-snug">{{ aktivitas.deskripsi }}</p>
+                                <div class="mt-1.5 flex items-center gap-2 text-xs text-slate-400 font-medium">
+                                    <ClockIcon class="h-3.5 w-3.5" />
+                                    <span>{{ aktivitas.waktu }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Activity Feed -->
-        <section class="rounded-[2.5rem] bg-white p-10 shadow-sm border border-slate-200">
-            <div class="mb-8 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="rounded-xl bg-slate-100 p-2.5 text-slate-600">
-                        <ChartBarIcon class="h-6 w-6" />
-                    </div>
-                    <h2 class="text-2xl font-bold text-slate-800">Aktivitas Terbaru</h2>
-                </div>
-                <button class="text-sm font-bold text-[var(--color-primary)] hover:underline decoration-2 underline-offset-4">Lihat Semua</button>
-            </div>
+            <!-- Right Column: Navigation Cards (2x2 Grid) -->
+            <div class="lg:col-span-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                    <div v-for="module in moduleLinks" :key="module.id" 
+                        class="group flex flex-col justify-between rounded-[2.5rem] bg-white p-8 shadow-sm border border-slate-200 transition-all hover:shadow-xl hover:-translate-y-2 cursor-pointer relative overflow-hidden hover:border-[var(--color-primary)]/30">
+                        
+                        <div class="absolute top-0 right-0 -mr-8 -mt-8 h-40 w-40 rounded-full opacity-5 bg-current transition-transform group-hover:scale-150" :class="module.color"></div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                <div v-for="(aktivitas, index) in daftarAktivitas" :key="aktivitas.id" 
-                    class="flex items-start gap-4 p-4 rounded-2xl transition hover:bg-slate-50 border border-transparent hover:border-slate-100"
-                    :class="index < 2 ? 'bg-slate-50/50' : ''">
-                    <div :class="[aktivitas.bg, aktivitas.color]" class="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-sm ring-2 ring-white">
-                        <component :is="aktivitas.icon" class="h-5 w-5" />
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-bold text-slate-800 leading-snug">{{ aktivitas.deskripsi }}</p>
-                        <div class="mt-1.5 flex items-center gap-2 text-xs text-slate-400 font-medium">
-                            <ClockIcon class="h-3.5 w-3.5" />
-                            <span>{{ aktivitas.waktu }}</span>
+                        <div>
+                            <div :class="[module.bg, module.color]" class="inline-flex rounded-2xl p-4 shadow-sm ring-4 ring-slate-50 transition-all group-hover:ring-[var(--color-primary)]/20">
+                                <component :is="module.icon" class="h-8 w-8" />
+                            </div>
+                            <h3 class="mt-6 text-xl font-bold text-slate-800">{{ module.title }}</h3>
+                            <p class="mt-2 text-sm leading-relaxed text-slate-500 font-medium">{{ module.description }}</p>
+                        </div>
+
+                        <div class="mt-8">
+                            <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">{{ module.meta }}</p>
+                            <Link :href="module.href"
+                                class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-3.5 text-sm font-bold text-slate-700 transition-all group-hover:bg-[var(--color-primary)] group-hover:text-white group-hover:shadow-lg">
+                                <span>Akses Modul</span>
+                                <ArrowRightIcon class="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            </Link>
                         </div>
                     </div>
                 </div>

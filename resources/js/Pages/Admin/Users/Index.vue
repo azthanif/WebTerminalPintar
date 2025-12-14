@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import PageHeader from '@/Components/PageHeader.vue'
 import { MagnifyingGlassIcon, PlusIcon, UserIcon, TrashIcon, PencilSquareIcon, ShieldCheckIcon, UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
@@ -68,6 +69,9 @@ watch(
 
 const PER_PAGE_LIMIT = 10
 const search = ref(props.filters.search || '')
+
+const user = computed(() => page.props.auth?.user ?? null)
+const currentUserId = computed(() => page.props.auth?.user?.id)
 
 const paginationMeta = computed(() => props.users?.meta ?? {})
 
@@ -189,36 +193,58 @@ const formatDateTime = (value) => {
         timeZone: 'Asia/Jakarta',
     })
 }
+
+// Dynamic role colors
+const getRoleColor = (roleName) => {
+    if (!roleName) return 'bg-slate-100 text-slate-600 border-slate-200'
+    
+    const name = roleName.toLowerCase()
+    
+    if (name.includes('admin')) {
+        return 'bg-purple-100 text-purple-700 border-purple-200'
+    } else if (name.includes('guru') || name.includes('teacher')) {
+        return 'bg-blue-100 text-blue-700 border-blue-200'
+    } else if (name.includes('orang tua') || name.includes('parent')) {
+        return 'bg-amber-100 text-amber-700 border-amber-200'
+    } else if (name.includes('siswa') || name.includes('student')) {
+        return 'bg-green-100 text-green-700 border-green-200'
+    } else {
+        return 'bg-indigo-100 text-indigo-700 border-indigo-200'
+    }
+}
+
+// Dynamic avatar colors based on role (matching role badge colors)
+const getAvatarColor = (roleName) => {
+    if (!roleName) return { bg: 'bg-gradient-to-br from-slate-400 to-slate-500', text: 'text-white', ring: 'ring-slate-300' }
+    
+    const name = roleName.toLowerCase()
+    
+    if (name.includes('admin')) {
+        return { bg: 'bg-gradient-to-br from-purple-400 to-purple-600', text: 'text-white', ring: 'ring-purple-300' }
+    } else if (name.includes('guru') || name.includes('teacher')) {
+        return { bg: 'bg-gradient-to-br from-blue-400 to-blue-600', text: 'text-white', ring: 'ring-blue-300' }
+    } else if (name.includes('orang tua') || name.includes('parent')) {
+        return { bg: 'bg-gradient-to-br from-amber-400 to-amber-600', text: 'text-white', ring: 'ring-amber-300' }
+    } else if (name.includes('siswa') || name.includes('student')) {
+        return { bg: 'bg-gradient-to-br from-green-400 to-green-600', text: 'text-white', ring: 'ring-green-300' }
+    } else {
+        return { bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600', text: 'text-white', ring: 'ring-indigo-300' }
+    }
+}
 </script>
 
 <template>
     <div class="space-y-8">
         <Head title="Kelola Pengguna" />
 
-        <!-- Premium Header Section -->
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
-             <div>
-                <div class="inline-flex items-center gap-2 rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-600 mb-2 border border-purple-100">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-                    </span>
-                    <span>Admin Panel</span>
-                </div>
-                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-                    Manajemen <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-[var(--color-primary)]">Pengguna</span>
-                </h1>
-                <p class="mt-2 text-slate-500 font-medium text-lg">Kelola akses dan aktivitas akun dalam sistem.</p>
-            </div>
-            
-             <Link :href="route('admin.users.create')"
-                class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-primary)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-light)] transition-all hover:bg-[var(--color-primary-hover)] hover:scale-105 active:scale-95">
-                <div class="rounded-lg bg-white/20 p-1">
-                    <PlusIcon class="h-5 w-5 text-white" />
-                </div>
-                <span>Tambah Pengguna</span>
-            </Link>
-        </section>
+        <!-- Page Header -->
+        <PageHeader badgeLabel="Admin Panel" badgeColor="blue">
+            <template #title>
+                <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
+                    Selamat datang kembali, <span class="text-[var(--color-primary)]">{{ user?.name }}</span>!
+                </p>
+            </template>
+        </PageHeader>
 
         <!-- Stats Grid (Modern Cards) -->
         <section class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
@@ -273,22 +299,37 @@ const formatDateTime = (value) => {
 
         <!-- Content Card -->
         <section class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-            <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-                <div>
-                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <!-- Table Toolbar (Standardized) -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <!-- Left: Title -->
+                <div class="w-full md:w-1/4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <UserGroupIcon class="h-6 w-6 text-slate-400" />
                         Daftar Pengguna
-                     </h2>
-                    <p class="text-sm text-slate-500 font-medium mt-1">Kelola data dan hak akses pengguna sistem.</p>
+                    </h2>
                 </div>
-                <div class="relative w-full md:w-72">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                        <MagnifyingGlassIcon class="h-5 w-5" />
+
+                <!-- Center: Search Bar -->
+                <div class="w-full md:w-1/2 flex justify-center">
+                    <div class="relative w-full max-w-md">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                            <MagnifyingGlassIcon class="h-5 w-5" />
+                        </div>
+                        <input v-model="search" type="text"
+                            placeholder="Cari nama atau email..."
+                            class="w-full rounded-full border border-gray-300 bg-white pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none" />
                     </div>
-                    <input v-model="search" type="text" placeholder="Cari nama atau email..."
-                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:bg-white focus:ring-[var(--color-primary)]" />
                 </div>
-            </header>
+
+                <!-- Right: Action Button -->
+                <div class="w-full md:w-1/4 flex justify-end">
+                    <Link :href="route('admin.users.create')"
+                        class="group inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary)]/30 transition-all hover:bg-[var(--color-primary-hover)] hover:-translate-y-0.5 hover:shadow-xl active:scale-95">
+                        <PlusIcon class="h-4 w-4" />
+                        <span>Tambah Pengguna</span>
+                    </Link>
+                </div>
+            </div>
 
             <div class="overflow-hidden rounded-2xl border border-slate-200">
                 <table class="min-w-full divide-y divide-slate-100">
@@ -311,8 +352,10 @@ const formatDateTime = (value) => {
                         >
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-4">
-                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-lighter)] text-sm font-bold text-[var(--color-primary)] ring-2 ring-white shadow-sm">
+                                    <div class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow-lg ring-2 transition-all group-hover:scale-110 group-hover:shadow-xl"
+                                        :class="[getAvatarColor(user.role?.nama_role).bg, getAvatarColor(user.role?.nama_role).text, getAvatarColor(user.role?.nama_role).ring]">
                                         {{ (user.nama || user.name).charAt(0).toUpperCase() }}
+                                        <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                                     </div>
                                     <div>
                                         <div class="flex items-center gap-2">
@@ -328,16 +371,22 @@ const formatDateTime = (value) => {
                                 <p class="text-xs text-slate-400 mt-0.5">{{ user.telepon || user.phone || '—' }}</p>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
-                                    :class="user.role ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-slate-100 text-slate-500 border border-slate-200'">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border shadow-sm transition-all hover:scale-105"
+                                    :class="getRoleColor(user.role?.nama_role)">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
                                     {{ user.role?.nama_role || 'Belum set role' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border shadow-sm"
-                                    :class="user.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'">
-                                    <CheckCircleIcon v-if="user.is_active" class="h-3.5 w-3.5" />
-                                    <XCircleIcon v-else class="h-3.5 w-3.5" />
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border-2 shadow-md transition-all hover:scale-105"
+                                    :class="user.is_active 
+                                        ? 'bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 border-emerald-300' 
+                                        : 'bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 border-rose-300'">
+                                    <span class="relative flex h-2 w-2">
+                                        <span v-if="user.is_active" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2" 
+                                            :class="user.is_active ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                                    </span>
                                     <span>{{ user.is_active ? 'Aktif' : 'Nonaktif' }}</span>
                                 </span>
                             </td>
@@ -347,9 +396,10 @@ const formatDateTime = (value) => {
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
                                     <Link :href="route('admin.users.edit', user.id)"
-                                        class="group/btn inline-flex items-center justify-center h-8 w-8 rounded-full bg-amber-50 text-amber-600 transition-all hover:bg-amber-100 hover:scale-110 active:scale-95 border border-amber-100"
+                                        class="group/btn inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-amber-200 transition-all hover:from-amber-600 hover:to-amber-700 hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
                                         title="Edit Pengguna">
-                                        <PencilSquareIcon class="h-4 w-4" />
+                                        <PencilSquareIcon class="h-3.5 w-3.5" />
+                                        <span>Edit</span>
                                     </Link>
                                     <button
                                         @click="attemptDelete(user)"

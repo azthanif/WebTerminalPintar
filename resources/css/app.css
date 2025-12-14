@@ -84,3 +84,51 @@ table {
         margin-inline: auto;
     }
 }
+
+/* 3. HIDE SCROLLBAR UTILITY */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* 4. GRADIENT SHIFT ANIMATION FOR PAGE TITLE */
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.animate-gradient-shift {
+    animation: gradient-shift 8s ease infinite;
+}
+
+.page-title {
+    display: inline-block;
+    position: relative;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), #84994F);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.page-title:hover::after {
+    width: 100%;
+}

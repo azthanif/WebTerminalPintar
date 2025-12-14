@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import PageHeader from '@/Components/PageHeader.vue'
 import { 
     MagnifyingGlassIcon, 
     PlusIcon, 
@@ -199,84 +200,116 @@ const modalInfoDate = computed(() => {
     if (!beritaPendingDelete.value) return ''
     return formatDate(beritaPendingDelete.value.event_date || beritaPendingDelete.value.created_at)
 })
+
+// Dynamic colors based on content type
+const getTypeColor = (type) => {
+    if (type === 'news') {
+        return { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200', dot: 'bg-rose-500' }
+    } else if (type === 'activity') {
+        return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' }
+    } else if (type === 'gallery') {
+        return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' }
+    }
+    return { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200', dot: 'bg-slate-400' }
+}
+
+// Avatar gradient colors based on type
+const getAvatarColor = (type) => {
+    if (type === 'news') {
+        return { bg: 'bg-gradient-to-br from-rose-400 to-rose-600', text: 'text-white', ring: 'ring-rose-300' }
+    } else if (type === 'activity') {
+        return { bg: 'bg-gradient-to-br from-blue-400 to-blue-600', text: 'text-white', ring: 'ring-blue-300' }
+    } else if (type === 'gallery') {
+        return { bg: 'bg-gradient-to-br from-amber-400 to-amber-600', text: 'text-white', ring: 'ring-amber-300' }
+    }
+    return { bg: 'bg-gradient-to-br from-slate-400 to-slate-500', text: 'text-white', ring: 'ring-slate-300' }
+}
+
 defineOptions({
     layout: AdminLayout,
 })
+
+const user = computed(() => page.props.auth?.user ?? null)
 </script>
 
 <template>
     <div class="space-y-8">
         <Head title="Manajemen Berita" />
 
-        <!-- Premium Header -->
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
-            <div>
-                 <div class="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 mb-2 border border-orange-100">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                    </span>
-                    <span>Pusat Informasi</span>
-                </div>
-                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-                    Berita & <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">Dokumentasi</span>
-                </h1>
-                <p class="mt-2 text-slate-500 font-medium text-lg">Kelola artikel berita, pengumuman kegiatan, dan galeri foto.</p>
-            </div>
-             <Link :href="route('admin.berita.create')"
-                class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-primary)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-light)] transition-all hover:bg-[var(--color-primary-hover)] hover:scale-105 active:scale-95">
-                <div class="rounded-lg bg-white/20 p-1">
-                    <PlusIcon class="h-5 w-5 text-white" />
-                </div>
-                <span>Tambah Konten</span>
-            </Link>
-        </section>
+        <!-- Page Header -->
+        <PageHeader badgeLabel="Content Portal" badgeColor="red">
+            <template #title>
+                <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
+                    Selamat datang kembali, <span class="text-[var(--color-primary)]">{{ user?.name }}</span>!
+                </p>
+            </template>
+        </PageHeader>
 
         <!-- Stats Cards -->
-        <section class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-             <div class="relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 group transition-all hover:shadow-md hover:-translate-y-1 hover:border-emerald-200">
-                 <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-emerald-50 opacity-50 blur-xl group-hover:bg-emerald-100 transition-colors"></div>
+        <section class="grid gap-6 md:grid-cols-2">
+             <div class="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1">
+                 <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-rose-50 opacity-50 blur-xl group-hover:bg-rose-100 transition-colors"></div>
                  <div class="relative">
-                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Artikel</p>
-                    <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.total_berita }}</p>
-                    <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">
-                        <NewspaperIcon class="h-3 w-3" />
-                        <span>Berita & Kegiatan</span>
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Artikel</p>
+                        <div class="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center">
+                            <NewspaperIcon class="h-5 w-5 text-rose-600" />
+                        </div>
                     </div>
+                    <p class="text-4xl font-extrabold text-slate-800">{{ stats.total_berita }}</p>
+                    <p class="text-sm text-rose-600 font-medium mt-1">Berita & Kegiatan</p>
                  </div>
             </div>
 
-            <div class="relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 group transition-all hover:shadow-md hover:-translate-y-1 hover:border-amber-200">
+            <div class="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1">
                  <div class="absolute top-0 right-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-amber-50 opacity-50 blur-xl group-hover:bg-amber-100 transition-colors"></div>
                  <div class="relative">
-                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Galeri</p>
-                    <p class="mt-2 text-4xl font-extrabold text-slate-800">{{ stats.total_foto }}</p>
-                    <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
-                        <PhotoIcon class="h-3 w-3" />
-                         <span>Dokumentasi Foto</span>
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Galeri</p>
+                        <div class="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
+                            <PhotoIcon class="h-5 w-5 text-amber-600" />
+                        </div>
                     </div>
+                    <p class="text-4xl font-extrabold text-slate-800">{{ stats.total_foto }}</p>
+                    <p class="text-sm text-amber-600 font-medium mt-1">Dokumentasi Foto</p>
                 </div>
             </div>
         </section>
 
         <!-- Content Card -->
         <section class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-             <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-                <div>
+            <!-- Table Toolbar (Standardized) -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <!-- Left: Title -->
+                <div class="w-full md:w-1/4">
                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                         <SpeakerWaveIcon class="h-6 w-6 text-slate-400" />
+                        <SpeakerWaveIcon class="h-6 w-6 text-slate-400" />
                         Daftar Publikasi
                     </h2>
-                     <p class="text-sm text-slate-500 font-medium mt-1">Gunakan pencarian untuk menemukan artikel lama.</p>
                 </div>
-                <div class="relative w-full md:w-80">
-                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                        <MagnifyingGlassIcon class="h-5 w-5" />
+
+                <!-- Center: Search Bar -->
+                <div class="w-full md:w-1/2 flex justify-center">
+                    <div class="relative w-full max-w-md">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                            <MagnifyingGlassIcon class="h-5 w-5" />
+                        </div>
+                        <input v-model="searchQuery" type="text"
+                            placeholder="Cari ID atau judul berita..."
+                            class="w-full rounded-full border border-gray-300 bg-white pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none" />
                     </div>
-                    <input v-model="searchQuery" type="text" placeholder="Cari ID atau judul berita..."
-                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:bg-white focus:ring-[var(--color-primary)]" />
                 </div>
-            </header>
+
+                <!-- Right: Action Button -->
+                <div class="w-full md:w-1/4 flex justify-end">
+                    <Link :href="route('admin.berita.create')"
+                        class="group inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 active:scale-95"
+                        style="background-color: #84994F; box-shadow: 0 4px 6px -1px rgba(132, 153, 79, 0.3);">
+                        <PlusIcon class="h-4 w-4" />
+                        <span>Tambah Konten</span>
+                    </Link>
+                </div>
+            </div>
 
             <div class="overflow-hidden rounded-2xl border border-slate-200">
                 <table class="min-w-full divide-y divide-slate-100 text-sm">
@@ -292,24 +325,30 @@ defineOptions({
                     <tbody class="divide-y divide-slate-100 bg-white">
                         <tr v-for="item in berita.data" :key="item.id" class="group hover:bg-slate-50/80 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-mono text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1.5 text-xs font-bold text-white shadow-md ring-2 ring-indigo-200 transition-all group-hover:scale-105 group-hover:shadow-lg">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-white opacity-70"></span>
                                     #{{ String(item.id).padStart(3, '0') }}
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <div>
-                                    <p class="font-bold text-slate-800 line-clamp-1" :title="item.judul">{{ item.judul }}</p>
-                                    <p class="text-xs text-slate-500 line-clamp-1 mt-1">{{ truncate(item.konten, 60) }}</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-lg ring-2 transition-all group-hover:scale-110 group-hover:shadow-xl"
+                                        :class="[getAvatarColor(item.type).bg, getAvatarColor(item.type).text, getAvatarColor(item.type).ring]">
+                                        <NewspaperIcon v-if="item.type === 'news'" class="h-4 w-4" />
+                                        <CalendarIcon v-else-if="item.type === 'activity'" class="h-4 w-4" />
+                                        <PhotoIcon v-else class="h-4 w-4" />
+                                        <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-800 line-clamp-1" :title="item.judul">{{ item.judul }}</p>
+                                        <p class="text-xs text-slate-500 line-clamp-1 mt-1">{{ truncate(item.konten, 60) }}</p>
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                 <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border shadow-sm"
-                                    :class="item.type === 'activity'
-                                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
-                                        : item.type === 'gallery'
-                                            ? 'bg-amber-50 text-amber-600 border-amber-100'
-                                            : 'bg-emerald-50 text-emerald-600 border-emerald-100'">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border shadow-sm transition-all hover:scale-105"
+                                    :class="[getTypeColor(item.type).bg, getTypeColor(item.type).text, getTypeColor(item.type).border]">
+                                    <span class="h-1.5 w-1.5 rounded-full" :class="getTypeColor(item.type).dot"></span>
                                     {{ formatType(item.type) }}
                                 </span>
                             </td>
@@ -319,9 +358,10 @@ defineOptions({
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
                                     <Link :href="route('admin.berita.edit', item.id)"
-                                        class="group/btn inline-flex items-center justify-center h-8 w-8 rounded-full bg-amber-50 text-amber-600 transition-all hover:bg-amber-100 hover:scale-110 active:scale-95 border border-amber-100"
+                                        class="group/btn inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-amber-200 transition-all hover:from-amber-600 hover:to-amber-700 hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
                                         title="Edit Konten">
-                                        <PencilSquareIcon class="h-4 w-4" />
+                                        <PencilSquareIcon class="h-3.5 w-3.5" />
+                                        <span>Edit</span>
                                     </Link>
                                     <button @click="openDeleteModal(item)"
                                         class="group/btn inline-flex items-center justify-center h-8 w-8 rounded-full bg-rose-50 text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700 hover:scale-110 active:scale-95 border border-rose-100"

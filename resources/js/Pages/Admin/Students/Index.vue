@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import PageHeader from '@/Components/PageHeader.vue'
 import { 
     MagnifyingGlassIcon, 
     PlusIcon, 
@@ -128,9 +129,49 @@ watch(searchQuery, () => {
     searchDebounceId = setTimeout(() => loadStudents(1), 400)
 })
 
+// Dynamic colors based on education level
+const getEducationColor = (educationLevel) => {
+    if (!educationLevel) return { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200', dot: 'bg-slate-400' }
+    
+    const level = educationLevel.toLowerCase()
+    
+    if (level.includes('sd') || level.includes('mi')) {
+        return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' }
+    } else if (level.includes('smp') || level.includes('mts')) {
+        return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200', dot: 'bg-purple-500' }
+    } else if (level.includes('sma') || level.includes('smk') || level.includes('ma')) {
+        return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200', dot: 'bg-green-500' }
+    } else if (level.includes('kuliah') || level.includes('universitas') || level.includes('perguruan')) {
+        return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' }
+    } else {
+        return { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500' }
+    }
+}
+
+// Avatar gradient colors based on education level
+const getAvatarColor = (educationLevel) => {
+    if (!educationLevel) return { bg: 'bg-gradient-to-br from-slate-400 to-slate-500', text: 'text-white', ring: 'ring-slate-300' }
+    
+    const level = educationLevel.toLowerCase()
+    
+    if (level.includes('sd') || level.includes('mi')) {
+        return { bg: 'bg-gradient-to-br from-blue-400 to-blue-600', text: 'text-white', ring: 'ring-blue-300' }
+    } else if (level.includes('smp') || level.includes('mts')) {
+        return { bg: 'bg-gradient-to-br from-purple-400 to-purple-600', text: 'text-white', ring: 'ring-purple-300' }
+    } else if (level.includes('sma') || level.includes('smk') || level.includes('ma')) {
+        return { bg: 'bg-gradient-to-br from-green-400 to-green-600', text: 'text-white', ring: 'ring-green-300' }
+    } else if (level.includes('kuliah') || level.includes('universitas') || level.includes('perguruan')) {
+        return { bg: 'bg-gradient-to-br from-amber-400 to-amber-600', text: 'text-white', ring: 'ring-amber-300' }
+    } else {
+        return { bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600', text: 'text-white', ring: 'ring-indigo-300' }
+    }
+}
+
 defineOptions({
     layout: AdminLayout,
 })
+
+const user = computed(() => page.props.auth?.user ?? null)
 </script>
 
 <template>
@@ -138,30 +179,15 @@ defineOptions({
 
         <Head title="Manajemen Siswa" />
 
-        <!-- Premium Header Section -->
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
-             <div>
-                <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600 mb-2 border border-emerald-100">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span>Monitoring Siswa</span>
-                </div>
-                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-                    Data <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-[var(--color-primary)]">Siswa</span>
-                </h1>
-                <p class="mt-2 text-slate-500 font-medium text-lg">Kelola data siswa, status akademik, dan relasi orang tua.</p>
-            </div>
-            
-             <Link :href="route('admin.students.create')"
-                class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-primary)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-light)] transition-all hover:bg-[var(--color-primary-hover)] hover:scale-105 active:scale-95">
-                <div class="rounded-lg bg-white/20 p-1">
-                    <PlusIcon class="h-5 w-5 text-white" />
-                </div>
-                <span>Tambah Siswa</span>
-            </Link>
-        </section>
+        <!-- Page Header -->
+        <PageHeader badgeLabel="Monitoring Siswa" badgeColor="green">
+            <template #title>
+                <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
+                    Selamat datang kembali, <span class="text-[var(--color-primary)]">{{ user?.name }}</span>!
+                </p>
+            </template>
+        </PageHeader>
+
 
         <!-- Stats Grid (Modern Cards) -->
         <section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -216,23 +242,37 @@ defineOptions({
 
         <!-- Content Card -->
         <section class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-             <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-                <div>
-                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <!-- Table Toolbar (Standardized) -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <!-- Left: Title -->
+                <div class="w-full md:w-1/4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <AcademicCapIcon class="h-6 w-6 text-slate-400" />
                         Daftar Siswa
-                     </h2>
-                    <p class="text-sm text-slate-500 font-medium mt-1">Cari berdasarkan nama, ID, atau tingkat pendidikan.</p>
+                    </h2>
                 </div>
-                <div class="relative w-full md:w-80">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                        <MagnifyingGlassIcon class="h-5 w-5" />
+
+                <!-- Center: Search Bar -->
+                <div class="w-full md:w-1/2 flex justify-center">
+                    <div class="relative w-full max-w-md">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                            <MagnifyingGlassIcon class="h-5 w-5" />
+                        </div>
+                        <input v-model="searchQuery" type="text"
+                            placeholder="Cari ID, nama, pendidikan..."
+                            class="w-full rounded-full border border-gray-300 bg-white pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none" />
                     </div>
-                    <input v-model="searchQuery" type="text"
-                         placeholder="Cari ID, nama, pendidikan"
-                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:bg-white focus:ring-[var(--color-primary)]" />
                 </div>
-            </header>
+
+                <!-- Right: Action Button -->
+                <div class="w-full md:w-1/4 flex justify-end">
+                    <Link :href="route('admin.students.create')"
+                        class="group inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary)]/30 transition-all hover:bg-[var(--color-primary-hover)] hover:-translate-y-0.5 hover:shadow-xl active:scale-95">
+                        <PlusIcon class="h-4 w-4" />
+                        <span>Tambah Siswa</span>
+                    </Link>
+                </div>
+            </div>
 
             <div class="overflow-hidden rounded-2xl border border-slate-200">
                 <table class="min-w-full divide-y divide-slate-100 text-sm">
@@ -249,14 +289,17 @@ defineOptions({
                     <tbody class="divide-y divide-slate-100 bg-white">
                         <tr v-for="student in students.data" :key="student.id" class="group hover:bg-slate-50/80 transition-colors">
                             <td class="px-6 py-4">
-                                <span class="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 border border-slate-200 group-hover:border-slate-300 transition-colors">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-md ring-2 ring-indigo-200 transition-all group-hover:scale-105 group-hover:shadow-lg">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-white opacity-70"></span>
                                     {{ student.student_id }}
                                 </span>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                     <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+                                    <div class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-lg ring-2 transition-all group-hover:scale-110 group-hover:shadow-xl"
+                                        :class="[getAvatarColor(student.education_level).bg, getAvatarColor(student.education_level).text, getAvatarColor(student.education_level).ring]">
                                         {{ student.name.charAt(0).toUpperCase() }}
+                                        <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                                     </div>
                                     <div>
                                         <p class="font-bold text-slate-800">{{ student.name }}</p>
@@ -265,14 +308,17 @@ defineOptions({
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <span class="inline-flex h-2 w-2 rounded-full bg-slate-300"></span>
-                                    <span class="font-medium text-slate-600">{{ student.education_level }}</span>
-                                </div>
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold border shadow-sm transition-all hover:scale-105"
+                                    :class="[getEducationColor(student.education_level).bg, getEducationColor(student.education_level).text, getEducationColor(student.education_level).border]">
+                                    <span class="h-1.5 w-1.5 rounded-full" :class="getEducationColor(student.education_level).dot"></span>
+                                    <span>{{ student.education_level }}</span>
+                                </span>
                             </td>
                             <td class="px-6 py-4">
                                 <div v-if="student.parent_name" class="flex items-center gap-2">
-                                    <UserIcon class="h-4 w-4 text-slate-400" />
+                                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-white text-xs font-bold shadow-md ring-2 ring-teal-300">
+                                        {{ student.parent_name.charAt(0).toUpperCase() }}
+                                    </div>
                                     <span class="font-medium text-slate-700">{{ student.parent_name }}</span>
                                 </div>
                                 <span v-else class="text-xs text-slate-400 italic">Belum terhubung</span>
@@ -286,9 +332,9 @@ defineOptions({
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <Link :href="route('admin.students.edit', student.id)"
-                                    class="group/btn inline-flex items-center justify-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition-all hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:shadow-sm active:scale-95">
+                                    class="group/btn inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-200 transition-all hover:from-blue-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-xl active:scale-95">
+                                    <PencilSquareIcon class="h-3.5 w-3.5" />
                                     <span>Kelola</span>
-                                    <PencilSquareIcon class="h-3 w-3" />
                                 </Link>
                             </td>
                         </tr>

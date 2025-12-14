@@ -1,8 +1,9 @@
 <script setup>
-import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { Head, router, useForm, Link, usePage } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import { Notivue, Notification, push } from 'notivue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import PageHeader from '@/Components/PageHeader.vue'
 import { 
     MagnifyingGlassIcon, 
     PlusIcon, 
@@ -43,6 +44,8 @@ defineOptions({
 })
 
 const page = usePage()
+const user = computed(() => page.props.auth?.user ?? null)
+
 const FLASH_NOTIFICATION_DURATION = 4000
 
 const pushFlashNotification = (type, message) => {
@@ -196,44 +199,59 @@ const confirmDelete = () => {
         onFinish: () => closeDeleteModal(),
     })
 }
+
+// Dynamic colors based on category
+const getCategoryColor = (category) => {
+    if (!category) return { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' }
+    
+    const cat = category.toLowerCase()
+    
+    if (cat.includes('fiksi')) {
+        return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' }
+    } else if (cat.includes('non') || cat.includes('pengetahuan')) {
+        return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' }
+    } else if (cat.includes('referensi') || cat.includes('kamus')) {
+        return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' }
+    } else if (cat.includes('pelajaran') || cat.includes('akademik')) {
+        return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' }
+    } else {
+        return { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-200' }
+    }
+}
+
+// Avatar gradient colors based on category
+const getAvatarColor = (category) => {
+    if (!category) return { bg: 'bg-gradient-to-br from-slate-400 to-slate-500', text: 'text-white', ring: 'ring-slate-300' }
+    
+    const cat = category.toLowerCase()
+    
+    if (cat.includes('fiksi')) {
+        return { bg: 'bg-gradient-to-br from-amber-400 to-amber-600', text: 'text-white', ring: 'ring-amber-300' }
+    } else if (cat.includes('non') || cat.includes('pengetahuan')) {
+        return { bg: 'bg-gradient-to-br from-blue-400 to-blue-600', text: 'text-white', ring: 'ring-blue-300' }
+    } else if (cat.includes('referensi') || cat.includes('kamus')) {
+        return { bg: 'bg-gradient-to-br from-purple-400 to-purple-600', text: 'text-white', ring: 'ring-purple-300' }
+    } else if (cat.includes('pelajaran') || cat.includes('akademik')) {
+        return { bg: 'bg-gradient-to-br from-green-400 to-green-600', text: 'text-white', ring: 'ring-green-300' }
+    } else {
+        return { bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600', text: 'text-white', ring: 'ring-indigo-300' }
+    }
+}
 </script>
 
 <template>
     <div class="space-y-8">
         <Head title="Manajemen Buku" />
 
-        <!-- Premium Header Section -->
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
-             <div>
-                <div class="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-600 mb-2 border border-sky-100">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-                    </span>
-                    <span>Katalog Perpustakaan</span>
-                </div>
-                <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-                    Koleksi <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-indigo-600">Buku</span>
-                </h1>
-                <p class="mt-2 text-slate-500 font-medium text-lg">Kelola inventaris buku dan pantau sirkulasi peminjaman.</p>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row gap-3">
-                 <Link :href="route('admin.perpustakaan.sirkulasi')"
-                    class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-white border border-slate-200 px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 hover:scale-105 active:scale-95">
-                    <ArchiveBoxArrowDownIcon class="h-5 w-5 text-slate-500 group-hover:text-slate-700" />
-                    <span>Sirkulasi</span>
-                </Link>
-                <Link :href="route('admin.books.create')"
-                    class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-primary)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-light)] transition-all hover:bg-[var(--color-primary-hover)] hover:scale-105 active:scale-95">
-                    <div class="rounded-lg bg-white/20 p-1">
-                        <PlusIcon class="h-5 w-5 text-white" />
-                    </div>
-                    <span>Tambah Buku</span>
-                </Link>
-            </div>
-        </section>
-
+        <!-- Page Header -->
+        <PageHeader badgeLabel="Library System" badgeColor="amber">
+            <template #title>
+                <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
+                    Selamat datang kembali, <span class="text-[var(--color-primary)]">{{ user?.name }}</span>!
+                </p>
+            </template>
+        </PageHeader>
+    
         <!-- Stats Grid (Modern Cards) -->
         <section class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
              <div class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:-translate-y-1 hover:border-emerald-200">
@@ -287,100 +305,111 @@ const confirmDelete = () => {
 
         <!-- Content Card -->
         <section class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-             <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-                <div>
-                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <!-- Table Toolbar (Standardized) -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <!-- Left: Title -->
+                <div class="w-full md:w-1/4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <BuildingLibraryIcon class="h-6 w-6 text-slate-400" />
                         Daftar Buku
-                     </h2>
-                    <p class="text-sm text-slate-500 font-medium mt-1">Cari judul, kode, atau filter berdasarkan status.</p>
+                    </h2>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                     <select v-model="status" @change="changeStatus($event.target.value)"
-                        class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 focus:border-[var(--color-primary)] focus:bg-white focus:outline-none transition-colors cursor-pointer hover:bg-slate-100">
+
+                <!-- Center: Search & Filter -->
+                <div class="w-full md:w-1/2 flex justify-center gap-3">
+                    <select v-model="status" @change="changeStatus($event.target.value)"
+                        class="rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none transition-all cursor-pointer hover:bg-slate-50">
                         <option value="">Semua Status</option>
                         <option v-for="(label, value) in statuses" :key="value" :value="value">
                             {{ label }}
                         </option>
                     </select>
-                    <div class="relative w-full md:w-72">
+                    <div class="relative flex-1 max-w-md">
                         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                             <MagnifyingGlassIcon class="h-5 w-5" />
                         </div>
-                        <input v-model="search" type="text" placeholder="Cari judul atau kode..."
-                            class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:bg-white focus:ring-[var(--color-primary)]" />
+                        <input v-model="search" type="text"
+                            placeholder="Cari judul atau kode..."
+                            class="w-full rounded-full border border-gray-300 bg-white pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-400 transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none" />
                     </div>
                 </div>
-            </header>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200">
+                <!-- Right: Action Buttons Group -->
+                <div class="w-full md:w-1/4 flex justify-end gap-3">
+                    <Link :href="route('admin.perpustakaan.sirkulasi')"
+                        class="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold shadow-sm transition-all hover:bg-[#f0f2eb] hover:-translate-y-1 active:scale-95"
+                        style="color: #84994F; border: 2px solid #84994F;">
+                        <ArchiveBoxArrowDownIcon class="h-4 w-4" />
+                        <span>Sirkulasi</span>
+                    </Link>
+                    <Link :href="route('admin.books.create')"
+                        class="inline-flex items-center justify-center gap-2 rounded-full text-white px-6 py-2.5 text-sm font-bold shadow-lg transition-all hover:-translate-y-1 active:scale-95"
+                        style="background-color: #84994F;"
+                        onmouseover="this.style.backgroundColor='#6d7f42'" 
+                        onmouseout="this.style.backgroundColor='#84994F'">
+                        <PlusIcon class="h-4 w-4" />
+                        <span>Tambah Buku</span>
+                    </Link>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <table class="min-w-full divide-y divide-slate-100 text-sm">
                      <thead class="bg-slate-50/80">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Buku</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Kategori</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Status</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Peminjam</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Stok</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Sirkulasi</th>
-                            <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Aksi</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Buku</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Kategori</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Stok</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
                         <tr v-for="book in books.data" :key="book.id" class="group hover:bg-slate-50/80 transition-colors">
-                            <td class="px-6 py-4">
-                                <div>
-                                    <p class="font-bold text-slate-800 line-clamp-1" :title="book.title">{{ book.title }}</p>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span class="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 border border-slate-200">{{ book.code }}</span>
-                                        <span class="text-xs text-slate-500 truncate max-w-[150px]" :title="book.author">{{ book.author || 'Tanpa Penulis' }}</span>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-lg ring-2 transition-all group-hover:scale-110 group-hover:shadow-xl"
+                                        :class="[getAvatarColor(book.category).bg, getAvatarColor(book.category).text, getAvatarColor(book.category).ring]">
+                                        <BookOpenIcon class="h-5 w-5" />
+                                        <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-bold text-slate-800 line-clamp-1" :title="book.title">{{ book.title }}</p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 border border-slate-200">{{ book.code }}</span>
+                                            <span class="text-xs text-slate-500 truncate" :title="book.author">{{ book.author || 'Tanpa Penulis' }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border shadow-sm transition-all hover:scale-105"
+                                    :class="[getCategoryColor(book.category).bg, getCategoryColor(book.category).text, getCategoryColor(book.category).border]">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
                                     {{ book.category || 'Umum' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3">
                                 <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border shadow-sm"
                                     :class="statusColor(book.status)">
                                     <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
                                     {{ statuses[book.status] || 'Unknown' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
-                                <div v-if="book.active_loans && book.active_loans.length" class="space-y-2">
-                                     <div v-for="loan in book.active_loans" :key="loan.id" 
-                                          class="flex items-center gap-2 rounded-xl bg-orange-50 border border-orange-100 p-2">
-                                        <div class="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-600 shrink-0">
-                                            {{ (loan.borrower_display_name || loan.borrower?.name || '?').charAt(0) }}
-                                        </div>
-                                        <div class="overflow-hidden">
-                                            <p class="text-xs font-bold text-slate-700 truncate w-32" :title="borrowerLabel(loan)">{{ borrowerLabel(loan) }}</p>
-                                        </div>
-                                     </div>
-                                </div>
-                                <span v-else class="text-xs font-medium text-slate-400 italic">Tidak ada</span>
-                            </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3">
                                 <div class="flex items-center gap-1">
                                     <span class="font-bold text-slate-700">{{ book.available_stock }}</span>
                                     <span class="text-slate-400">/</span>
                                     <span class="text-xs font-bold text-slate-500">{{ book.total_stock }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200">
-                                    {{ formatNumber(book.loans_count) }}x
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-2">
                                     <Link :href="route('admin.books.edit', book.id)"
-                                        class="group/btn inline-flex items-center justify-center h-8 w-8 rounded-full bg-amber-50 text-amber-600 transition-all hover:bg-amber-100 hover:scale-110 active:scale-95 border border-amber-100"
+                                        class="group/btn inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-amber-200 transition-all hover:from-amber-600 hover:to-amber-700 hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
                                         title="Edit Buku">
-                                        <PencilSquareIcon class="h-4 w-4" />
+                                        <PencilSquareIcon class="h-3.5 w-3.5" />
+                                        <span>Edit</span>
                                     </Link>
                                     <button @click="openDeleteModal(book)"
                                         class="group/btn inline-flex items-center justify-center h-8 w-8 rounded-full bg-rose-50 text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700 hover:scale-110 active:scale-95 border border-rose-100"
@@ -391,7 +420,7 @@ const confirmDelete = () => {
                             </td>
                         </tr>
                         <tr v-if="books.data.length === 0">
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="5" class="px-6 py-16 text-center">
                                  <div class="flex flex-col items-center justify-center">
                                     <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
                                         <BookOpenIcon class="h-8 w-8 text-slate-300" />
