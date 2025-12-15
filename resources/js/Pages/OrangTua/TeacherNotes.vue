@@ -99,7 +99,7 @@ const formatNoteTitle = (title) => {
             <span>Laporan Perkembangan</span>
         </div>
         <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-             Catatan <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Guru</span>
+             Catatan <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-[#84994F]">Guru</span>
         </h1>
         <p class="text-slate-500 font-medium text-lg max-w-2xl">
             Rekomendasi dan hasil evaluasi pembelajaran untuk {{ student.name }}.
@@ -126,7 +126,7 @@ const formatNoteTitle = (title) => {
       <article
         v-for="note in (notes.data ?? [])"
         :key="note.id"
-        class="group relative flex flex-col gap-6 rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm transition-all hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1"
+        class="group relative flex flex-col gap-6 rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm transition-all hover:shadow-lg hover:border-[#84994F] hover:-translate-y-1"
       >
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
              <div class="space-y-3 flex-1">
@@ -135,29 +135,29 @@ const formatNoteTitle = (title) => {
                         <CalendarIcon class="h-3.5 w-3.5" />
                         {{ note.recorded_at_readable }}
                     </span>
-                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#84994F]/20 to-[#6b7a3f]/20 border border-[#84994F]/30 px-2.5 py-1 text-xs font-bold text-[#84994F]">
                         <TagIcon class="h-3.5 w-3.5" />
                         Catatan Akademik
                     </span>
                 </div>
-                <h3 class="text-2xl font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                <h3 class="text-2xl font-extrabold text-slate-900 group-hover:text-[#84994F] transition-colors">
                     {{ formatNoteTitle(note.title) }}
                 </h3>
              </div>
              
-             <div class="flex items-center gap-3 bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                 <div class="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-emerald-600 shadow-sm border border-slate-100">
+             <div class="flex items-center gap-3 bg-gradient-to-r from-[#84994F]/10 to-[#6b7a3f]/10 rounded-2xl p-3 border border-[#84994F]/20">
+                 <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-[#84994F] to-[#6b7a3f] flex items-center justify-center text-white shadow-sm">
                      <UserIcon class="h-5 w-5" />
                  </div>
                  <div>
-                     <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Ditulis Oleh</p>
-                     <p class="text-sm font-bold text-slate-800">{{ note.teacher?.name ?? 'Guru Pengampu' }}</p>
+                     <p class="text-[10px] font-bold uppercase text-[#84994F]/70 tracking-wider">Ditulis Oleh</p>
+                     <p class="text-sm font-extrabold bg-gradient-to-r from-[#84994F] to-[#6b7a3f] bg-clip-text text-transparent">{{ note.teacher?.name ?? 'Guru Pengampu' }}</p>
                  </div>
              </div>
         </div>
         
         <div class="relative">
-             <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-teal-200 rounded-full"></div>
+             <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#84994F] to-[#6b7a3f] rounded-full"></div>
              <p class="pl-6 text-base leading-relaxed text-slate-600 whitespace-pre-line font-medium">
                 {{ note.note }}
              </p>
@@ -188,7 +188,7 @@ const formatNoteTitle = (title) => {
       </div>
       <div class="flex gap-2">
         <button
-          class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
+          class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-[#84994F]/10 hover:text-[#84994F] hover:border-[#84994F] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
           :disabled="!props.notes?.links?.prev"
           @click="goToPage(props.notes?.links?.prev)"
         >
@@ -196,7 +196,7 @@ const formatNoteTitle = (title) => {
           Sebelumnya
         </button>
         <button
-          class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
+          class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-[#84994F]/10 hover:text-[#84994F] hover:border-[#84994F] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
           :disabled="!props.notes?.links?.next"
           @click="goToPage(props.notes?.links?.next)"
         >

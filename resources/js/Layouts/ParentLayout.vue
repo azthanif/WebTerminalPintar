@@ -86,7 +86,7 @@ const closeSidebar = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50">
+  <div class="min-h-screen bg-[#F5F5F4]">
     <Head :title="navigation.find(item => item.active)?.name ?? 'Orang Tua'" />
 
     <div class="flex min-h-screen">
@@ -98,7 +98,7 @@ const closeSidebar = () => {
 
       <aside
         :class="[
-          'fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 transform transition-transform duration-300 ease-in-out flex flex-col shadow-lg shadow-black/5',
+          'fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col shadow-lg shadow-black/5',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         ]"
       >
@@ -120,12 +120,12 @@ const closeSidebar = () => {
             :key="item.name"
             :href="item.href"
             class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition"
-            :class="item.active ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+            :class="item.active ? 'bg-[#F5F5F4] text-[#84994f] font-bold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
             @click="closeSidebar"
           >
             <span
               class="flex h-9 w-9 items-center justify-center rounded-lg"
-              :class="item.active ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'"
+              :class="item.active ? 'bg-[#84994f] text-white' : 'bg-slate-100 text-slate-500'"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />

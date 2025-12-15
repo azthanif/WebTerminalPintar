@@ -140,17 +140,44 @@ const calendarModeOptions = [
 const calendarLoading = ref(false)
 const calendarHasCustomRange = ref(false)
 const calendarDetailActive = ref(true)
+const agendaSection = ref(null)
 
 const statusDictionary = {
+  'Akan Datang': {
+    label: 'Akan Datang',
+    badge: 'bg-[#FEF3C6] text-amber-700 border-amber-200',
+    chip: 'bg-[#FEF3C6] text-amber-700',
+  },
+  'Berlangsung': {
+    label: 'Berlangsung',
+    badge: 'bg-[#D0FAE5] text-emerald-700 border-emerald-200',
+    chip: 'bg-[#D0FAE5] text-emerald-700',
+  },
+  'Selesai': {
+    label: 'Selesai',
+    badge: 'bg-[#F1F5F9] text-slate-600 border-slate-200',
+    chip: 'bg-[#F1F5F9] text-slate-600',
+  },
+  'Dibatalkan': {
+    label: 'Dibatalkan',
+    badge: 'bg-rose-50 text-rose-700 border-rose-200',
+    chip: 'bg-rose-50 text-rose-700',
+  },
+  // Fallback for English keys if they exist
   scheduled: {
     label: 'Akan Datang',
-    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    chip: 'bg-emerald-50 text-emerald-700',
+    badge: 'bg-[#FEF3C6] text-amber-700 border-amber-200',
+    chip: 'bg-[#FEF3C6] text-amber-700',
+  },
+  ongoing: {
+    label: 'Berlangsung',
+    badge: 'bg-[#D0FAE5] text-emerald-700 border-emerald-200',
+    chip: 'bg-[#D0FAE5] text-emerald-700',
   },
   completed: {
     label: 'Selesai',
-    badge: 'bg-slate-100 text-slate-600 border-slate-200',
-    chip: 'bg-slate-100 text-slate-600',
+    badge: 'bg-[#F1F5F9] text-slate-600 border-slate-200',
+    chip: 'bg-[#F1F5F9] text-slate-600',
   },
   canceled: {
     label: 'Dibatalkan',
@@ -381,6 +408,12 @@ const selectDate = (dateKey) => {
   if (calendarMode.value === 'day' && calendarCursor.value !== dateKey) {
     calendarCursor.value = dateKey
   }
+  // Smooth scroll to agenda section
+  setTimeout(() => {
+    if (agendaSection.value) {
+      agendaSection.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, 100)
 }
 
 const showAllSchedules = () => {
@@ -426,7 +459,7 @@ onMounted(() => {
             <span>Agenda Akademik</span>
         </div>
         <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-             Jadwal <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Belajar</span>
+             Jadwal <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-[#84994F]">Belajar</span>
         </h1>
         <p class="text-slate-500 font-medium text-lg max-w-2xl">
             Pantau kegiatan dan agenda {{ student.name }} secara real-time.
@@ -447,7 +480,7 @@ onMounted(() => {
     </section>
 
     <!-- Calendar Section -->
-    <section class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
+    <section class="rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-sm">
       <!-- Calendar Controls -->
       <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
         <div>
@@ -501,7 +534,7 @@ onMounted(() => {
         </div>
 
         <!-- Calendar Grid -->
-        <div class="relative min-h-[300px]">
+        <div class="relative min-h-[200px]">
           <div
             v-if="calendarLoading"
             class="absolute inset-0 z-10 flex items-center justify-center rounded-[2rem] bg-white/60 backdrop-blur-sm"
@@ -520,18 +553,18 @@ onMounted(() => {
               v-for="cell in calendarCells"
               :key="cell.key"
               type="button"
-              class="group flex flex-col rounded-2xl p-4 text-left transition-all outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-emerald-400"
+              class="group flex flex-col rounded-2xl p-4 text-left transition-all outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[#84994F]"
               :class="[
                 cell.key === selectedDate 
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-[1.02]' 
+                    ? 'bg-[#84994F] text-white shadow-lg shadow-[#84994F]/30 scale-[1.02]' 
                     : 'bg-slate-50 text-slate-600 hover:bg-white hover:shadow-md hover:scale-[1.01] border border-transparent hover:border-emerald-100',
-                 calendarMode === 'day' ? 'min-h-[120px]' : 'min-h-[140px]'
+                 calendarMode === 'day' ? 'min-h-[100px]' : 'min-h-[110px]'
               ]"
               @click="selectDate(cell.key)"
             >
               <div class="flex items-center justify-between mb-3">
                 <div>
-                  <p class="text-xs font-bold uppercase tracking-wider opacity-80" :class="cell.key === selectedDate ? 'text-emerald-100' : 'text-slate-400'">{{ cell.label }}</p>
+                  <p class="text-xs font-bold uppercase tracking-wider opacity-80" :class="cell.key === selectedDate ? 'text-white/80' : 'text-slate-400'">{{ cell.label }}</p>
                   <p class="text-2xl font-extrabold" :class="cell.key === selectedDate ? 'text-white' : 'text-slate-800'">{{ String(cell.number).padStart(2, '0') }}</p>
                 </div>
                 <span v-if="cell.isToday" class="rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wide" :class="cell.key === selectedDate ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'">
@@ -550,7 +583,7 @@ onMounted(() => {
                   <span class="truncate mr-2">{{ event.topic }}</span>
                   <span class="opacity-80 text-[10px]">{{ formatTimeRange(event.start_time).split(' - ')[0] }}</span>
                 </div>
-                <p v-if="cell.events.length > 3" class="text-[10px] font-bold text-center mt-1" :class="cell.key === selectedDate ? 'text-emerald-100' : 'text-emerald-600'">
+                <p v-if="cell.events.length > 3" class="text-[10px] font-bold text-center mt-1" :class="cell.key === selectedDate ? 'text-white/80' : 'text-emerald-600'">
                   + {{ cell.events.length - 3 }} Lainnya
                 </p>
               </div>
@@ -561,7 +594,7 @@ onMounted(() => {
     </section>
 
     <!-- Detailed List Section -->
-    <section class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden">
+    <section ref="agendaSection" class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden scroll-mt-8">
       <div class="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
           <ListBulletIcon class="w-64 h-64 text-slate-900" />
       </div>
@@ -589,27 +622,27 @@ onMounted(() => {
         <article
           v-for="schedule in activeSessions"
           :key="schedule.id"
-          class="group rounded-[2rem] border border-slate-200 bg-slate-50/50 p-6 transition-all hover:bg-white hover:border-emerald-200 hover:shadow-lg hover:-translate-y-1"
+          class="group rounded-[2rem] border border-slate-200 bg-slate-50/50 p-6 transition-all hover:bg-white hover:border-[#84994F] hover:shadow-lg hover:-translate-y-1"
         >
           <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div class="flex-1 space-y-4">
                <!-- Header Line -->
               <div class="flex flex-wrap items-center gap-3">
                  <div class="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 border border-slate-200 shadow-sm">
-                    <CalendarDaysIcon class="h-4 w-4 text-emerald-500" />
+                    <CalendarDaysIcon class="h-4 w-4 text-[#84994F]" />
                     <p class="text-sm font-bold text-slate-700">{{ formatFullDate(schedule.start_time) }}</p>
                  </div>
                 <span class="rounded-lg px-3 py-1.5 text-xs font-bold border shadow-sm" :class="badgeClass(schedule.status)">
                   {{ statusLabel(schedule.status) }}
                 </span>
-                 <span class="rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600">
+                 <span class="rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 px-3 py-1.5 text-xs font-bold text-purple-700">
                     {{ schedule.subject }}
                 </span>
               </div>
 
                <!-- Title & Desc -->
               <div>
-                <h4 class="text-xl font-extrabold text-slate-900 group-hover:text-emerald-600 transition-colors">{{ schedule.topic }}</h4>
+                <h4 class="text-xl font-extrabold bg-gradient-to-r from-[#84994F] to-[#6b7a3f] bg-clip-text text-transparent group-hover:from-[#6b7a3f] group-hover:to-[#84994F] transition-all">{{ schedule.topic }}</h4>
                 <p class="text-sm font-medium text-slate-500 mt-2 leading-relaxed max-w-3xl">
                   {{ schedule.description || 'Tidak ada deskripsi tambahan untuk sesi ini.' }}
                 </p>
@@ -618,18 +651,18 @@ onMounted(() => {
               <!-- Meta Info -->
               <div class="flex flex-wrap items-center gap-6 text-sm font-semibold text-slate-600 pt-2">
                 <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100">
-                  <ClockIcon class="h-5 w-5 text-emerald-500" />
+                  <ClockIcon class="h-5 w-5 text-[#84994F]" />
                   <span>{{ formatTimeRange(schedule.start_time, schedule.end_time) }}</span>
                 </div>
                 <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100" v-if="schedule.location">
-                  <MapPinIcon class="h-5 w-5 text-emerald-500" />
+                  <MapPinIcon class="h-5 w-5 text-[#84994F]" />
                   <span>{{ schedule.location }}</span>
                 </div>
-                <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100">
-                   <div class="h-5 w-5 rounded-full bg-slate-200 flex items-center justify-center">
-                        <span class="text-[10px] font-bold text-slate-500">G</span>
+                <div class="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-1.5 rounded-lg border border-orange-200">
+                   <div class="h-5 w-5 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-sm">
+                        <span class="text-[10px] font-bold text-white">G</span>
                    </div>
-                  <span>{{ schedule.teacher?.name ?? 'Guru Pengampu' }}</span>
+                  <span class="font-extrabold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">{{ schedule.teacher?.name ?? 'Guru Pengampu' }}</span>
                 </div>
               </div>
             </div>
@@ -645,14 +678,14 @@ onMounted(() => {
                         v-for="material in schedule.materials"
                         :key="material.id"
                         type="button"
-                        class="w-full flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-left hover:border-emerald-200 hover:bg-emerald-50 transition-all group/file"
+                        class="w-full flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-left hover:border-[#84994F] hover:bg-[#84994F]/10 transition-all group/file"
                         @click="openMaterial(material.download_url)"
                     >
-                        <div class="h-8 w-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-emerald-500 shadow-sm group-hover/file:scale-110 transition-transform">
+                        <div class="h-8 w-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[#84994F] shadow-sm group-hover/file:scale-110 transition-transform">
                             <ArrowDownTrayIcon class="h-4 w-4" />
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-slate-700 truncate group-hover/file:text-emerald-700">{{ material.title }}</p>
+                            <p class="text-xs font-bold text-slate-700 truncate group-hover/file:text-[#84994F]">{{ material.title }}</p>
                             <p class="text-[10px] text-slate-500 truncate">Unduh File</p>
                         </div>
                     </button>
