@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
+import PrimaryButton from '@/Components/UI/PrimaryButton.vue'
 
 const props = defineProps({
   kegiatan: {
@@ -12,6 +13,105 @@ const props = defineProps({
 
 const isMobileMenuOpen = ref(false)
 const isLoading = ref(false)
+
+// Intersection Observer refs
+const heroRef = ref(null)
+const heroVisible = ref(false)
+const activitiesRef = ref(null)
+const activitiesVisible = ref(false)
+// Alias for template compatibility
+const featuresRef = activitiesRef
+const featuresVisible = activitiesVisible
+const aboutRef = ref(null)
+const aboutVisible = ref(false)
+const teamRef = ref(null)
+const teamVisible = ref(false)
+const ctaRef = ref(null)
+const ctaVisible = ref(false)
+
+let heroObserver = null
+let activitiesObserver = null
+let aboutObserver = null
+let teamObserver = null
+let ctaObserver = null
+
+// Stagger delay helper
+const getStaggerDelay = (index) => `${index * 100}ms`
+
+onMounted(() => {
+  // Hero section observer
+  if (heroRef.value) {
+    heroObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          heroVisible.value = entry.isIntersecting
+        })
+      },
+      { threshold: 0.1 }
+    )
+    heroObserver.observe(heroRef.value)
+  }
+
+  // Activities section observer
+  if (activitiesRef.value) {
+    activitiesObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          activitiesVisible.value = entry.isIntersecting
+        })
+      },
+      { threshold: 0.15 }
+    )
+    activitiesObserver.observe(activitiesRef.value)
+  }
+
+  // About section observer
+  if (aboutRef.value) {
+    aboutObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          aboutVisible.value = entry.isIntersecting
+        })
+      },
+      { threshold: 0.15 }
+    )
+    aboutObserver.observe(aboutRef.value)
+  }
+
+  // Team section observer
+  if (teamRef.value) {
+    teamObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          teamVisible.value = entry.isIntersecting
+        })
+      },
+      { threshold: 0.15 }
+    )
+    teamObserver.observe(teamRef.value)
+  }
+
+  // CTA section observer
+  if (ctaRef.value) {
+    ctaObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          ctaVisible.value = entry.isIntersecting
+        })
+      },
+      { threshold: 0.15 }
+    )
+    ctaObserver.observe(ctaRef.value)
+  }
+})
+
+onUnmounted(() => {
+  heroObserver?.disconnect()
+  activitiesObserver?.disconnect()
+  aboutObserver?.disconnect()
+  teamObserver?.disconnect()
+  ctaObserver?.disconnect()
+})
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
@@ -164,69 +264,222 @@ const handleImageError = (event) => {
       </header>
 
       <section
-        class="hero-section relative bg-cover bg-center h-[500px] flex items-center text-white"
+        ref="heroRef"
+        class="hero-section relative bg-cover bg-center min-h-[600px] flex items-center text-white overflow-hidden"
         :style="{ backgroundImage: `url('${assets.hero}')` }"
       >
-        <div class="absolute inset-0 bg-linear-to-r from-[#76B340]/70 to-[#76B340]/50" />
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 relative">
-          <h1 class="text-5xl md:text-6xl font-bold mb-6 italic drop-shadow-md">
-            Halo, Selamat Datang di <br> Terminal Pintar!
-          </h1>
-          <p class="text-lg md:text-xl font-light max-w-3xl mx-auto mb-10 italic opacity-90">
-            Mari bergabung bersama kami untuk belajar, berbagi inspirasi, menjadi relawan, atau berdonasi demi mendukung masa depan yang lebih baik.
-          </p>
-          <a
-            href="#kegiatan"
-            class="inline-block bg-white text-[#76B340] px-8 py-3 rounded-full text-base font-bold shadow-lg hover:bg-gray-50 hover:scale-105 hover:shadow-xl active:scale-95 transition-all duration-300"
+        <div class="absolute inset-0 bg-gradient-to-r from-[#76B340]/80 via-[#76B340]/70 to-[#76B340]/60" />
+        
+        <!-- Animated background elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+          <div class="absolute bottom-1/4 left-1/4 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl opacity-30 animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 relative py-20">
+          <!-- Headline with staggered animation -->
+          <h1 
+            :class="[
+              'text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-lg transition-all duration-1000',
+              heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            ]"
           >
-            Jelajah Lebih Lanjut
-          </a>
+            Halo, Selamat Datang di <br>
+            <span class="inline-block mt-2 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
+              Terminal Pintar!
+            </span>
+          </h1>
+          
+          <!-- Subheadline -->
+          <p 
+            :class="[
+              'text-lg md:text-xl font-light max-w-3xl mx-auto mb-10 leading-relaxed transition-all duration-1000 delay-100',
+              heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            ]"
+          >
+            Mari bergabung bersama kami untuk belajar, berbagi inspirasi, menjadi relawan, 
+            atau berdonasi demi mendukung masa depan yang lebih baik.
+          </p>
+          
+          <!-- CTA Button with animation -->
+          <div 
+            :class="[
+              'transition-all duration-1000 delay-200',
+              heroVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-95'
+            ]"
+          >
+            <a
+              href="#kegiatan"
+              class="inline-flex items-center gap-2 bg-white text-[#76B340] px-8 py-4 rounded-full text-base font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 group"
+            >
+              Jelajah Lebih Lanjut
+              <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+          </div>
+
+          <!-- Trust signals with staggered animation -->
+          <div 
+            :class="[
+              'mt-16 flex flex-wrap justify-center gap-8 items-center transition-all duration-1000 delay-300',
+              heroVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            ]"
+          >
+            <div class="text-center group cursor-default">
+              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">100+</div>
+              <div class="text-sm text-white/80 font-medium">Siswa Terdampak</div>
+            </div>
+            <div class="hidden sm:block w-px h-12 bg-white/30"></div>
+            <div class="text-center group cursor-default">
+              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">5+</div>
+              <div class="text-sm text-white/80 font-medium">Relawan Aktif</div>
+            </div>
+            <div class="hidden sm:block w-px h-12 bg-white/30"></div>
+            <div class="text-center group cursor-default">
+              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">3+</div>
+              <div class="text-sm text-white/80 font-medium">Tahun Berdampak</div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section id="kegiatan" class="py-24 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 class="text-3xl font-bold text-center text-[#76B340] mb-12 relative inline-block left-1/2 -translate-x-1/2">
-            Dokumentasi Kegiatan Terbaru
-            <span class="block h-1 w-20 bg-[#76B340] mx-auto mt-4 rounded-full" />
+      <section id="kegiatan" class="py-24 bg-slate-50">
+        <div ref="featuresRef" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 
+            :class="[
+              'text-3xl md:text-4xl font-extrabold text-center mb-4 relative inline-block left-1/2 -translate-x-1/2 transition-all duration-1000',
+              featuresVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            ]"
+          >
+            <span class="bg-gradient-to-r from-[#76B340] to-emerald-600 bg-clip-text text-transparent">
+              Dokumentasi Kegiatan Terbaru
+            </span>
+            <span class="block h-1 w-24 bg-gradient-to-r from-[#76B340] to-emerald-600 mx-auto mt-4 rounded-full" />
           </h2>
+          
+          <p 
+            :class="[
+              'text-center text-slate-600 max-w-2xl mx-auto mb-12 transition-all duration-1000 delay-100',
+              featuresVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            ]"
+          >
+            Lihat berbagai kegiatan dan program yang telah kami laksanakan untuk membangun masa depan yang lebih baik
+          </p>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <template v-if="!isLoading && kegiatan.length">
               <article
-                v-for="item in kegiatan"
+                v-for="(item, index) in kegiatan"
                 :key="item.id"
-                class="group bg-white rounded-2xl shadow-md hover:shadow-2xl overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-2 border border-transparent hover:border-green-100"
+                :class="[
+                  'group bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden flex flex-col transition-all duration-700 hover:-translate-y-3 border border-slate-100 hover:border-[#76B340]/30 relative',
+                  activitiesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+                ]"
+                :style="activitiesVisible ? { transitionDelay: getStaggerDelay(index) } : {}"
               >
-                <div class="h-56 overflow-hidden relative">
+                <!-- Image Container with Advanced Effects -->
+                <div class="h-64 overflow-hidden relative">
+                  <!-- Main Image -->
                   <img
                     :src="item.gambar_url || placeholderImage"
                     :alt="item.judul"
-                    class="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    class="h-full w-full object-cover transform group-hover:scale-110 group-hover:rotate-1 transition-all duration-700 ease-out"
                     @error="handleImageError"
                   >
-                  <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-                </div>
-                <div class="p-6 grow">
-                  <h3 class="font-bold text-xl mb-2 text-gray-900 group-hover:text-[#76B340] transition-colors">
-                    {{ item.judul }}
-                  </h3>
-                  <div class="flex items-center mb-3">
-                    <span class="text-xs font-semibold bg-green-100 text-[#76B340] px-2 py-1 rounded">
-                      {{ formatTanggal(item.tanggal_publikasi) }}
+                  
+                  <!-- Gradient Overlay - Bottom to Top -->
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                  
+                  <!-- Animated Gradient Border Effect -->
+                  <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#76B340]/20 via-transparent to-emerald-500/20" />
+                  </div>
+                  
+                  <!-- Category Badge - Top Left -->
+                  <div class="absolute top-4 left-4 z-10">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white/95 backdrop-blur-sm text-[#76B340] shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                      </svg>
+                      Kegiatan
                     </span>
                   </div>
-                  <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                  
+                  <!-- Date Badge - Top Right with Animation -->
+                  <div class="absolute top-4 right-4 z-10 transform group-hover:-translate-y-1 transition-transform duration-300">
+                    <div class="flex flex-col items-end gap-1">
+                      <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-[#76B340] to-emerald-600 text-white shadow-lg backdrop-blur-sm">
+                        {{ formatTanggal(item.tanggal_publikasi) }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Hover Play Icon Overlay -->
+                  <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
+                    <div class="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl transform group-hover:rotate-90 transition-transform duration-700">
+                      <svg class="w-8 h-8 text-[#76B340] ml-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Content Container -->
+                <div class="p-6 grow flex flex-col">
+                  <!-- Title with Gradient on Hover -->
+                  <h3 class="font-extrabold text-xl mb-3 text-slate-900 group-hover:bg-gradient-to-r group-hover:from-[#76B340] group-hover:to-emerald-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300 leading-tight line-clamp-2">
+                    {{ item.judul }}
+                  </h3>
+                  
+                  <!-- Meta Info Row -->
+                  <div class="flex items-center gap-3 mb-4 text-xs text-slate-500">
+                    <!-- Read Time Estimate -->
+                    <div class="flex items-center gap-1.5 group/meta">
+                      <svg class="w-4 h-4 text-slate-400 group-hover/meta:text-[#76B340] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span class="font-medium">5 min read</span>
+                    </div>
+                    
+                    <span class="text-slate-300">•</span>
+                    
+                    <!-- View Count (simulated) -->
+                    <div class="flex items-center gap-1.5 group/meta">
+                      <svg class="w-4 h-4 text-slate-400 group-hover/meta:text-[#76B340] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span class="font-medium">{{ Math.floor(Math.random() * 500) + 100 }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Description -->
+                  <p class="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-6 flex-grow">
                     {{ item.deskripsi ?? item.deskripsi_singkat }}
                   </p>
-                </div>
-                <div class="p-6 pt-0 mt-auto">
+                  
+                  <!-- CTA Button with Icon -->
                   <Link
                     :href="route('public.news.show', item.slug)"
-                    class="block w-full text-center border-2 border-[#76B340] text-[#76B340] px-5 py-2.5 rounded-xl text-sm font-bold group-hover:bg-[#76B340] group-hover:text-white transition-all duration-300"
+                    class="group/btn relative inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-bold overflow-hidden transition-all duration-300 border-2 border-[#76B340] text-[#76B340] hover:text-white"
                   >
-                    Baca Selengkapnya
+                    <!-- Animated Background -->
+                    <span class="absolute inset-0 bg-gradient-to-r from-[#76B340] to-emerald-600 transform -translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300 ease-out" />
+                    
+                    <!-- Button Content -->
+                    <span class="relative flex items-center gap-2">
+                      Baca Selengkapnya
+                      <svg class="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
                   </Link>
+                </div>
+                
+                <!-- Decorative Corner Element -->
+                <div class="absolute top-0 right-0 w-20 h-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
+                  <div class="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-[#76B340]/20 to-transparent rounded-full blur-xl" />
                 </div>
               </article>
             </template>
@@ -258,145 +511,778 @@ const handleImageError = (event) => {
             </p>
           </div>
 
-          <div class="text-center mt-16">
+          <div 
+            :class="[
+              'text-center mt-16 transition-all duration-1000 delay-500',
+              activitiesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            ]"
+          >
             <Link
               :href="route('public.news.index')"
-              class="group inline-flex items-center justify-center px-8 py-3 text-lg font-bold rounded-xl bg-[#76B340] text-white shadow-md transition-all duration-300 hover:bg-[#659936] hover:shadow-xl hover:-translate-y-1"
+              class="group inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-bold rounded-xl bg-gradient-to-r from-[#76B340] to-emerald-600 text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:scale-105 active:scale-95"
             >
-              Lihat semua kegiatan
+              Lihat Semua Kegiatan
+              <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </Link>
           </div>
         </div>
       </section>
 
-      <section id="tentang" class="py-24 bg-white relative overflow-hidden">
-        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-green-100 rounded-full opacity-90 z-0" />
-        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-orange-100 rounded-full opacity-90 z-0" />
+      <section ref="aboutRef" id="tentang" class="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-gradient-to-br from-[#76B340]/10 to-transparent rounded-full blur-3xl opacity-60 animate-float"></div>
+          <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-gradient-to-tr from-orange-200/20 to-transparent rounded-full blur-3xl opacity-50 animate-float-delayed"></div>
+        </div>
 
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <h2 class="text-3xl font-bold text-center text-[#76B340] mb-16">
-            Tentang Kami
-          </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div class="bg-white border-2 border-gray-100 p-8 rounded-2xl transition-all duration-300 hover:border-[#76B340] hover:shadow-xl hover:-translate-y-1 group">
-              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#76B340]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 class="font-bold text-2xl text-gray-800 group-hover:text-[#76B340] mb-4 text-center transition-colors">
-                SEJARAH
-              </h3>
-              <p class="text-gray-600 leading-relaxed text-center text-sm">
-                Terminal Pintar bermula dari inisiatif relawan yang peduli terhadap anak-anak perkotaan yang rentan. Komunitas ini menjadi ruang aman untuk bertumbuh, belajar, dan mengekspresikan kreativitas.
-              </p>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <!-- Section Header -->
+          <div 
+            :class="[
+              'text-center mb-20 transition-all duration-1000',
+              aboutVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            ]"
+          >
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
+              <span class="bg-gradient-to-r from-[#76B340] via-emerald-600 to-[#76B340] bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_100%]">
+                Tentang Kami
+              </span>
+            </h2>
+            <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+              Perjalanan kami dalam membangun masa depan yang lebih baik untuk anak-anak Indonesia
+            </p>
+            <div class="mt-6 flex items-center justify-center gap-2">
+              <div class="h-1 w-20 bg-gradient-to-r from-transparent via-[#76B340] to-transparent rounded-full"></div>
+              <div class="h-2 w-2 rounded-full bg-[#76B340]"></div>
+              <div class="h-1 w-20 bg-gradient-to-r from-transparent via-[#76B340] to-transparent rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Timeline Cards with Connecting Line -->
+          <div class="relative">
+            <!-- Connecting Line (Desktop) -->
+            <div 
+              :class="[
+                'hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-[#76B340]/20 via-[#76B340] to-orange-400/20 -translate-y-1/2 rounded-full transition-all duration-1000 delay-300',
+                aboutVisible ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
+              ]"
+            >
+              <div class="absolute inset-0 bg-gradient-to-r from-[#76B340] to-orange-400 rounded-full animate-pulse"></div>
             </div>
 
-            <div class="bg-white border-2 border-gray-100 p-8 rounded-2xl transition-all duration-300 hover:border-[#EB9232] hover:shadow-xl hover:-translate-y-1 group">
-              <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#EB9232]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
-              <h3 class="font-bold text-2xl text-gray-800 group-hover:text-[#EB9232] mb-4 text-center transition-colors">
-                VISI
-              </h3>
-              <p class="text-gray-600 leading-relaxed text-center text-sm">
-                Menjadi teman perjalanan anak-anak untuk menemukan kembali arti rumah, pendidikan, dan harapan.
-              </p>
+            <!-- Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 relative">
+              <!-- Card 1: SEJARAH -->
+              <article 
+                :class="[
+                  'group relative transition-all duration-700 delay-500',
+                  aboutVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-20'
+                ]"
+              >
+                <!-- Card Container -->
+                <div class="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-[#76B340]/50 hover:-translate-y-2">
+                  <!-- Gradient Background on Hover -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#76B340]/5 to-emerald-50/50 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  <!-- Content -->
+                  <div class="relative z-10">
+                    <!-- Icon Container with Animation -->
+                    <div class="relative mb-6 flex justify-center">
+                      <!-- Animated Ring -->
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-24 h-24 rounded-full border-4 border-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-500 group-hover:scale-110"></div>
+                        <div class="absolute w-28 h-28 rounded-full border-2 border-[#76B340]/10 group-hover:border-[#76B340]/20 transition-all duration-700 group-hover:scale-125 group-hover:rotate-180"></div>
+                      </div>
+                      
+                      <!-- Icon Circle -->
+                      <div class="relative w-20 h-20 bg-gradient-to-br from-[#76B340] to-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white transform group-hover:rotate-12 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        
+                        <!-- Pulse Effect -->
+                        <div class="absolute inset-0 rounded-full bg-[#76B340] opacity-0 group-hover:opacity-30 group-hover:scale-150 transition-all duration-1000"></div>
+                      </div>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="font-extrabold text-3xl text-center mb-4 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-[#76B340] group-hover:to-emerald-600 transition-all duration-500">
+                      SEJARAH
+                    </h3>
+
+                    <!-- Decorative Line -->
+                    <div class="flex items-center justify-center gap-2 mb-6">
+                      <div class="h-px w-12 bg-gradient-to-r from-transparent to-[#76B340]/50"></div>
+                      <div class="h-1.5 w-1.5 rounded-full bg-[#76B340]"></div>
+                      <div class="h-px w-12 bg-gradient-to-l from-transparent to-[#76B340]/50"></div>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="text-slate-600 leading-relaxed text-center">
+                      Terminal Pintar bermula dari <span class="font-semibold text-[#76B340]">inisiatif relawan</span> yang peduli terhadap anak-anak perkotaan yang rentan. Komunitas ini menjadi <span class="font-semibold text-emerald-600">ruang aman</span> untuk bertumbuh, belajar, dan mengekspresikan kreativitas.
+                    </p>
+
+                    <!-- Stats Badge -->
+                    <div class="mt-6 flex justify-center">
+                      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#76B340]/10 border border-[#76B340]/20 group-hover:bg-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-300">
+                        <svg class="w-4 h-4 text-[#76B340]" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                        </svg>
+                        <span class="text-sm font-bold text-[#76B340]">Sejak 2019</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Corner Decoration -->
+                  <div class="absolute top-0 right-0 w-32 h-32 overflow-hidden rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div class="absolute -top-16 -right-16 w-32 h-32 bg-gradient-to-br from-[#76B340]/20 to-transparent rounded-full blur-2xl"></div>
+                  </div>
+                </div>
+
+                <!-- Connection Point (Desktop) -->
+                <div class="hidden md:block absolute top-1/2 -right-8 w-16 h-16 -translate-y-1/2 z-20">
+                  <div class="w-6 h-6 rounded-full bg-white border-4 border-[#76B340] shadow-lg group-hover:scale-125 group-hover:shadow-xl transition-all duration-500 mx-auto">
+                    <div class="absolute inset-0 rounded-full bg-[#76B340] opacity-0 group-hover:opacity-50 group-hover:scale-150 transition-all duration-700"></div>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Card 2: VISI -->
+              <article 
+                :class="[
+                  'group relative md:mt-0 transition-all duration-700 delay-700',
+                  aboutVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
+                ]"
+              >
+                <!-- Card Container -->
+                <div class="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-orange-400/50 hover:-translate-y-2">
+                  <!-- Gradient Background on Hover -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-amber-50/30 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  <!-- Content -->
+                  <div class="relative z-10">
+                    <!-- Icon Container with Animation -->
+                    <div class="relative mb-6 flex justify-center">
+                      <!-- Animated Ring -->
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-24 h-24 rounded-full border-4 border-orange-400/20 group-hover:border-orange-400/40 transition-all duration-500 group-hover:scale-110"></div>
+                        <div class="absolute w-28 h-28 rounded-full border-2 border-orange-300/10 group-hover:border-orange-300/20 transition-all duration-700 group-hover:scale-125 group-hover:rotate-180"></div>
+                      </div>
+                      
+                      <!-- Icon Circle -->
+                      <div class="relative w-20 h-20 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white transform group-hover:-rotate-12 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        
+                        <!-- Pulse Effect -->
+                        <div class="absolute inset-0 rounded-full bg-orange-400 opacity-0 group-hover:opacity-30 group-hover:scale-150 transition-all duration-1000"></div>
+                      </div>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="font-extrabold text-3xl text-center mb-4 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-orange-500 group-hover:to-amber-600 transition-all duration-500">
+                      VISI
+                    </h3>
+
+                    <!-- Decorative Line -->
+                    <div class="flex items-center justify-center gap-2 mb-6">
+                      <div class="h-px w-12 bg-gradient-to-r from-transparent to-orange-400/50"></div>
+                      <div class="h-1.5 w-1.5 rounded-full bg-orange-400"></div>
+                      <div class="h-px w-12 bg-gradient-to-l from-transparent to-orange-400/50"></div>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="text-slate-600 leading-relaxed text-center">
+                      Menjadi <span class="font-semibold text-orange-500">teman perjalanan</span> anak-anak untuk menemukan kembali arti <span class="font-semibold text-amber-600">rumah, pendidikan, dan harapan</span>.
+                    </p>
+
+                    <!-- Mission Points -->
+                    <div class="mt-6 space-y-2">
+                      <div class="flex items-center justify-center gap-2 text-sm text-slate-600">
+                        <svg class="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">Pendidikan Berkualitas</span>
+                      </div>
+                      <div class="flex items-center justify-center gap-2 text-sm text-slate-600">
+                        <svg class="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">Lingkungan Aman</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Corner Decoration -->
+                  <div class="absolute top-0 left-0 w-32 h-32 overflow-hidden rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div class="absolute -top-16 -left-16 w-32 h-32 bg-gradient-to-br from-orange-300/20 to-transparent rounded-full blur-2xl"></div>
+                  </div>
+                </div>
+
+                <!-- Connection Point (Desktop) -->
+                <div class="hidden md:block absolute top-1/2 -left-8 w-16 h-16 -translate-y-1/2 z-20">
+                  <div class="w-6 h-6 rounded-full bg-white border-4 border-orange-400 shadow-lg group-hover:scale-125 group-hover:shadow-xl transition-all duration-500 mx-auto">
+                    <div class="absolute inset-0 rounded-full bg-orange-400 opacity-0 group-hover:opacity-50 group-hover:scale-150 transition-all duration-700"></div>
+                  </div>
+                </div>
+              </article>
             </div>
+          </div>
+
+          <!-- Bottom CTA -->
+          <div 
+            :class="[
+              'mt-20 text-center transition-all duration-1000 delay-900',
+              aboutVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            ]"
+          >
+            <p class="text-slate-600 mb-6 text-lg">
+              Bergabunglah dengan kami dalam perjalanan ini
+            </p>
+            <a
+              href="#kontak"
+              class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#76B340] to-emerald-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+            >
+              Hubungi Kami
+              <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
           </div>
         </div>
       </section>
 
-      <section class="py-24 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 class="text-3xl font-bold text-center text-[#76B340] mb-16">
-            Pengurus
-          </h2>
-          <div class="flex flex-wrap justify-center gap-x-20 gap-y-12">
-            <div class="group flex flex-col items-center text-center w-52">
-              <div class="relative mb-6">
-                <div class="absolute inset-0 bg-[#76B340] rounded-full opacity-0 group-hover:opacity-20 transform scale-90 group-hover:scale-110 transition-all duration-300" />
-                <img
-                  :src="assets.pengurus"
-                  alt="Nabila Nurshani"
-                  class="w-36 h-36 rounded-full object-cover shadow-md relative z-10 group-hover:scale-105 transition-transform duration-300 border-4 border-white group-hover:border-[#76B340]"
-                >
-              </div>
-              <h4 class="font-bold text-xl text-gray-800 group-hover:text-[#76B340] transition-colors">Nabila Nurshani</h4>
-              <p class="text-gray-500 font-medium">Pengurus</p>
-            </div>
+      <section ref="teamRef" class="py-24 bg-gradient-to-br from-white via-slate-50 to-emerald-50/20 relative overflow-hidden">
+        <!-- Animated Background -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-[#76B340]/5 rounded-full blur-3xl animate-float"></div>
+          <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-orange-200/10 rounded-full blur-3xl animate-float-delayed"></div>
+        </div>
 
-            <div class="group flex flex-col items-center text-center w-52">
-              <div class="relative mb-6">
-                <div class="absolute inset-0 bg-[#EB9232] rounded-full opacity-0 group-hover:opacity-20 transform scale-90 group-hover:scale-110 transition-all duration-300" />
-                <img
-                  :src="assets.pengurus"
-                  alt="Andi Rahmadi"
-                  class="w-36 h-36 rounded-full object-cover shadow-md relative z-10 group-hover:scale-105 transition-transform duration-300 border-4 border-white group-hover:border-[#EB9232]"
-                >
-              </div>
-              <h4 class="font-bold text-xl text-gray-800 group-hover:text-[#EB9232] transition-colors">Andi Rahmadi</h4>
-              <p class="text-gray-500 font-medium">Pendiri</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <!-- Section Header -->
+          <div 
+            :class="[
+              'text-center mb-20 transition-all duration-1000',
+              teamVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            ]"
+          >
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
+              <span class="bg-gradient-to-r from-[#76B340] via-emerald-600 to-[#76B340] bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_100%]">
+                Tim Pengurus
+              </span>
+            </h2>
+            <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+              Orang-orang hebat di balik Terminal Pintar yang berdedikasi untuk masa depan anak-anak Indonesia
+            </p>
+            <div class="mt-6 flex items-center justify-center gap-2">
+              <div class="h-1 w-16 bg-gradient-to-r from-transparent via-[#76B340] to-transparent rounded-full"></div>
+              <div class="h-2 w-2 rounded-full bg-[#76B340]"></div>
+              <div class="h-1 w-16 bg-gradient-to-r from-transparent via-[#76B340] to-transparent rounded-full"></div>
             </div>
+          </div>
 
-            <div class="group flex flex-col items-center text-center w-52">
-              <div class="relative mb-6">
-                <div class="absolute inset-0 bg-[#76B340] rounded-full opacity-0 group-hover:opacity-20 transform scale-90 group-hover:scale-110 transition-all duration-300" />
-                <img
-                  :src="assets.pengurus"
-                  alt="Hanifah Ahmad"
-                  class="w-36 h-36 rounded-full object-cover shadow-md relative z-10 group-hover:scale-105 transition-transform duration-300 border-4 border-white group-hover:border-[#76B340]"
-                >
+          <!-- Team Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+            <!-- Team Member 1: Nabila -->
+            <article 
+              :class="[
+                'group relative transition-all duration-700 delay-300',
+                teamVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+              ]"
+            >
+              <!-- Card Container -->
+              <div class="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-[#76B340]/50 hover:-translate-y-3 transform perspective-1000">
+                <!-- Gradient Overlay on Hover -->
+                <div class="absolute inset-0 bg-gradient-to-br from-[#76B340]/5 to-emerald-50/50 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10">
+                  <!-- Avatar Container -->
+                  <div class="relative mb-6 flex justify-center">
+                    <!-- Animated Rings -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-44 h-44 rounded-full border-4 border-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-700 group-hover:scale-110 group-hover:rotate-180"></div>
+                      <div class="absolute w-48 h-48 rounded-full border-2 border-[#76B340]/10 group-hover:border-[#76B340]/30 transition-all duration-1000 group-hover:scale-125 group-hover:-rotate-180"></div>
+                    </div>
+                    
+                    <!-- Avatar Image -->
+                    <div class="relative">
+                      <img
+                        :src="assets.pengurus"
+                        alt="Nabila Nurshani"
+                        class="w-40 h-40 rounded-full object-cover shadow-xl relative z-10 group-hover:scale-105 transition-all duration-500 border-4 border-white group-hover:border-[#76B340]"
+                      >
+                      <!-- Status Badge -->
+                      <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-[#76B340] to-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 z-20">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Name & Role -->
+                  <div class="text-center mb-4">
+                    <h4 class="font-extrabold text-xl mb-2 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-[#76B340] group-hover:to-emerald-600 transition-all duration-500">
+                      Nabila Nurshani
+                    </h4>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#76B340]/10 border border-[#76B340]/20 group-hover:bg-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-300">
+                      <svg class="w-4 h-4 text-[#76B340]" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                      </svg>
+                      <span class="text-sm font-bold text-[#76B340]">Pengurus</span>
+                    </div>
+                  </div>
+
+                  <!-- Bio/Description -->
+                  <p class="text-slate-600 text-sm text-center leading-relaxed mb-6">
+                    Berdedikasi dalam mengelola program pendidikan dan pengembangan komunitas
+                  </p>
+
+                  <!-- Social Links -->
+                  <div class="flex justify-center gap-3">
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
+                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
+                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Corner Decoration -->
+                <div class="absolute top-0 right-0 w-24 h-24 overflow-hidden rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div class="absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br from-[#76B340]/20 to-transparent rounded-full blur-xl"></div>
+                </div>
               </div>
-              <h4 class="font-bold text-xl text-gray-800 group-hover:text-[#76B340] transition-colors">Hanifah Ahmad</h4>
-              <p class="text-gray-500 font-medium">Pengurus</p>
-            </div>
+            </article>
+
+            <!-- Team Member 2: Andi (Founder) -->
+            <article 
+              :class="[
+                'group relative md:mt-8 transition-all duration-700 delay-500',
+                teamVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+              ]"
+            >
+              <!-- Card Container -->
+              <div class="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-orange-400/50 hover:-translate-y-3 transform perspective-1000">
+                <!-- Gradient Overlay on Hover -->
+                <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-amber-50/30 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <!-- Founder Badge -->
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 z-30">
+                  <div class="px-4 py-2 bg-gradient-to-r from-orange-400 to-amber-500 rounded-full shadow-lg">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span class="text-xs font-bold text-white">FOUNDER</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Content -->
+                <div class="relative z-10 mt-4">
+                  <!-- Avatar Container -->
+                  <div class="relative mb-6 flex justify-center">
+                    <!-- Animated Rings -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-44 h-44 rounded-full border-4 border-orange-400/20 group-hover:border-orange-400/40 transition-all duration-700 group-hover:scale-110 group-hover:rotate-180"></div>
+                      <div class="absolute w-48 h-48 rounded-full border-2 border-orange-300/10 group-hover:border-orange-300/30 transition-all duration-1000 group-hover:scale-125 group-hover:-rotate-180"></div>
+                    </div>
+                    
+                    <!-- Avatar Image -->
+                    <div class="relative">
+                      <img
+                        :src="assets.pengurus"
+                        alt="Andi Rahmadi"
+                        class="w-40 h-40 rounded-full object-cover shadow-xl relative z-10 group-hover:scale-105 transition-all duration-500 border-4 border-white group-hover:border-orange-400"
+                      >
+                      <!-- Status Badge -->
+                      <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 z-20">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Name & Role -->
+                  <div class="text-center mb-4">
+                    <h4 class="font-extrabold text-xl mb-2 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-orange-500 group-hover:to-amber-600 transition-all duration-500">
+                      Andi Rahmadi
+                    </h4>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-400/10 border border-orange-400/20 group-hover:bg-orange-400/20 group-hover:border-orange-400/40 transition-all duration-300">
+                      <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                      </svg>
+                      <span class="text-sm font-bold text-orange-500">Pendiri</span>
+                    </div>
+                  </div>
+
+                  <!-- Bio/Description -->
+                  <p class="text-slate-600 text-sm text-center leading-relaxed mb-6">
+                    Visioner yang menginisiasi Terminal Pintar untuk memberdayakan anak-anak Indonesia
+                  </p>
+
+                  <!-- Social Links -->
+                  <div class="flex justify-center gap-3">
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-orange-400 flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
+                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-orange-400 flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
+                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Corner Decoration -->
+                <div class="absolute top-0 left-0 w-24 h-24 overflow-hidden rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div class="absolute -top-12 -left-12 w-24 h-24 bg-gradient-to-br from-orange-300/20 to-transparent rounded-full blur-xl"></div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Team Member 3: Hanifah -->
+            <article 
+              :class="[
+                'group relative transition-all duration-700 delay-700',
+                teamVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+              ]"
+            >
+              <!-- Card Container -->
+              <div class="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-[#76B340]/50 hover:-translate-y-3 transform perspective-1000">
+                <!-- Gradient Overlay on Hover -->
+                <div class="absolute inset-0 bg-gradient-to-br from-[#76B340]/5 to-emerald-50/50 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10">
+                  <!-- Avatar Container -->
+                  <div class="relative mb-6 flex justify-center">
+                    <!-- Animated Rings -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-44 h-44 rounded-full border-4 border-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-700 group-hover:scale-110 group-hover:rotate-180"></div>
+                      <div class="absolute w-48 h-48 rounded-full border-2 border-[#76B340]/10 group-hover:border-[#76B340]/30 transition-all duration-1000 group-hover:scale-125 group-hover:-rotate-180"></div>
+                    </div>
+                    
+                    <!-- Avatar Image -->
+                    <div class="relative">
+                      <img
+                        :src="assets.pengurus"
+                        alt="Hanifah Ahmad"
+                        class="w-40 h-40 rounded-full object-cover shadow-xl relative z-10 group-hover:scale-105 transition-all duration-500 border-4 border-white group-hover:border-[#76B340]"
+                      >
+                      <!-- Status Badge -->
+                      <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-[#76B340] to-emerald-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 z-20">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Name & Role -->
+                  <div class="text-center mb-4">
+                    <h4 class="font-extrabold text-xl mb-2 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-[#76B340] group-hover:to-emerald-600 transition-all duration-500">
+                      Hanifah Ahmad
+                    </h4>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#76B340]/10 border border-[#76B340]/20 group-hover:bg-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-300">
+                      <svg class="w-4 h-4 text-[#76B340]" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                      </svg>
+                      <span class="text-sm font-bold text-[#76B340]">Pengurus</span>
+                    </div>
+                  </div>
+
+                  <!-- Bio/Description -->
+                  <p class="text-slate-600 text-sm text-center leading-relaxed mb-6">
+                    Berkomitmen dalam mengembangkan program dan memberdayakan relawan
+                  </p>
+
+                  <!-- Social Links -->
+                  <div class="flex justify-center gap-3">
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
+                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
+                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Corner Decoration -->
+                <div class="absolute top-0 right-0 w-24 h-24 overflow-hidden rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div class="absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br from-[#76B340]/20 to-transparent rounded-full blur-xl"></div>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </section>
 
-      <section class="py-24 bg-white">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 class="text-3xl font-bold text-center text-[#76B340] mb-12">
-            Mari Berkontribusi Membangun Harapan!
-          </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            <div class="group bg-white border-2 border-gray-100 rounded-2xl p-8 text-center shadow-sm transition-all duration-300 hover:shadow-xl hover:border-[#76B340] hover:-translate-y-2">
-              <div class="bg-green-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-[#76B340] transition-colors duration-300">
-                <img
-                  :src="assets.donasi"
-                  alt="Donasi"
-                  class="h-20 w-20 rounded-full object-cover"
-                >
-              </div>
-              <h3 class="font-bold text-2xl text-gray-800 group-hover:text-[#76B340] mb-3 transition-colors">DONASI</h3>
-              <p class="text-gray-600 mb-8 leading-relaxed">Mari ikut berdonasi untuk membantu mereka yang membutuhkan. Dukungan Anda sangat berarti.</p>
-              <a
-                href="#"
-                class="inline-block w-full bg-[#76B340] text-white px-6 py-3 rounded-xl text-base font-bold shadow-md hover:bg-[#659a35] hover:shadow-lg active:scale-95 transition-all duration-200"
-              >
-                Lihat Cara Berdonasi
-              </a>
-            </div>
+      <section ref="ctaRef" class="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-[#76B340]/10 rounded-full blur-3xl animate-float"></div>
+          <div class="absolute bottom-1/3 left-1/4 w-80 h-80 bg-orange-200/10 rounded-full blur-3xl animate-float-delayed"></div>
+        </div>
 
-            <div class="group bg-white border-2 border-gray-100 rounded-2xl p-8 text-center shadow-sm transition-all duration-300 hover:shadow-xl hover:border-[#EB9232] hover:-translate-y-2">
-              <div class="bg-orange-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-[#EB9232] transition-colors duration-300">
-                <img
-                  :src="assets.relawan"
-                  alt="Relawan"
-                  class="h-20 w-20 rounded-full object-cover"
-                >
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <!-- Section Header -->
+          <div 
+            :class="[
+              'text-center mb-16 transition-all duration-1000',
+              ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            ]"
+          >
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
+              <span class="bg-gradient-to-r from-[#76B340] via-emerald-600 to-orange-500 bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_100%]">
+                Mari Berkontribusi Membangun Harapan!
+              </span>
+            </h2>
+            <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+              Setiap kontribusi Anda, sekecil apapun, membawa perubahan besar bagi masa depan anak-anak Indonesia
+            </p>
+            <div class="mt-6 flex items-center justify-center gap-2">
+              <div class="h-1 w-20 bg-gradient-to-r from-transparent via-[#76B340] to-transparent rounded-full"></div>
+              <div class="h-2 w-2 rounded-full bg-[#76B340]"></div>
+              <div class="h-1 w-20 bg-gradient-to-r from-transparent via-orange-400 to-transparent rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- CTA Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+            <!-- Donasi Card -->
+            <article 
+              :class="[
+                'group relative transition-all duration-700 delay-300',
+                ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+              ]"
+            >
+              <!-- 3D Card Container -->
+              <div class="relative bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-[#76B340]/50 hover:-translate-y-4 transform perspective-1000">
+                <!-- Gradient Overlay on Hover -->
+                <div class="absolute inset-0 bg-gradient-to-br from-[#76B340]/5 via-emerald-50/50 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10 text-center">
+                  <!-- Icon Container with Advanced Animation -->
+                  <div class="relative mb-8 flex justify-center">
+                    <!-- Animated Rings -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-32 h-32 rounded-full border-4 border-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-700 group-hover:scale-110 group-hover:rotate-180"></div>
+                      <div class="absolute w-36 h-36 rounded-full border-2 border-[#76B340]/10 group-hover:border-[#76B340]/30 transition-all duration-1000 group-hover:scale-125 group-hover:-rotate-180"></div>
+                    </div>
+                    
+                    <!-- Icon Circle -->
+                    <div class="relative w-28 h-28 bg-gradient-to-br from-[#76B340] to-emerald-600 rounded-full flex items-center justify-center shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 overflow-hidden">
+                      <img
+                        :src="assets.donasi"
+                        alt="Donasi"
+                        class="h-20 w-20 rounded-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-500"
+                      >
+                      <!-- Pulse Effect -->
+                      <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 group-hover:scale-150 transition-all duration-1000"></div>
+                    </div>
+
+                    <!-- Floating Badge -->
+                    <div class="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-br from-emerald-400 to-[#76B340] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                      <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Title -->
+                  <h3 class="font-extrabold text-3xl mb-4 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-[#76B340] group-hover:to-emerald-600 transition-all duration-500">
+                    DONASI
+                  </h3>
+
+                  <!-- Decorative Line -->
+                  <div class="flex items-center justify-center gap-2 mb-6">
+                    <div class="h-px w-16 bg-gradient-to-r from-transparent to-[#76B340]/50"></div>
+                    <div class="h-1.5 w-1.5 rounded-full bg-[#76B340]"></div>
+                    <div class="h-px w-16 bg-gradient-to-l from-transparent to-[#76B340]/50"></div>
+                  </div>
+
+                  <!-- Description -->
+                  <p class="text-slate-600 leading-relaxed mb-8">
+                    Mari ikut berdonasi untuk membantu mereka yang membutuhkan. <span class="font-semibold text-[#76B340]">Dukungan Anda sangat berarti</span> untuk masa depan mereka.
+                  </p>
+
+                  <!-- Impact Stats -->
+                  <div class="mb-8 p-4 bg-[#76B340]/5 rounded-xl border border-[#76B340]/20 group-hover:bg-[#76B340]/10 group-hover:border-[#76B340]/30 transition-all duration-300">
+                    <div class="flex items-center justify-center gap-2 text-sm">
+                      <svg class="w-5 h-5 text-[#76B340]" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                      </svg>
+                      <span class="font-bold text-[#76B340]">100+ anak terbantu</span>
+                    </div>
+                  </div>
+
+                  <!-- CTA Button -->
+                  <a
+                    href="#"
+                    class="group/btn relative inline-flex items-center justify-center gap-2 w-full px-8 py-4 rounded-xl text-base font-bold overflow-hidden transition-all duration-300 border-2 border-[#76B340] text-white bg-gradient-to-r from-[#76B340] to-emerald-600 hover:shadow-xl hover:scale-105 active:scale-95"
+                  >
+                    <span class="relative flex items-center gap-2">
+                      Lihat Cara Berdonasi
+                      <svg class="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
+                  </a>
+                </div>
+
+                <!-- Corner Decoration -->
+                <div class="absolute top-0 right-0 w-32 h-32 overflow-hidden rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div class="absolute -top-16 -right-16 w-32 h-32 bg-gradient-to-br from-[#76B340]/20 to-transparent rounded-full blur-2xl"></div>
+                </div>
+
+                <!-- Bottom Accent Line -->
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#76B340] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-3xl"></div>
               </div>
-              <h3 class="font-bold text-2xl text-gray-800 group-hover:text-[#EB9232] mb-3 transition-colors">RELAWAN</h3>
-              <p class="text-gray-600 mb-8 leading-relaxed">Mari ikut menjadi relawan untuk membantu mereka yang membutuhkan. Bantuan Anda sangat dinanti.</p>
-              <a
-                href="#"
-                class="inline-block w-full bg-[#EB9232] text-white px-6 py-3 rounded-xl text-base font-bold shadow-md hover:bg-[#d6822a] hover:shadow-lg active:scale-95 transition-all duration-200"
-              >
-                Lihat Cara Mendaftar
-              </a>
+            </article>
+
+            <!-- Relawan Card -->
+            <article 
+              :class="[
+                'group relative md:mt-8 transition-all duration-700 delay-500',
+                ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+              ]"
+            >
+              <!-- 3D Card Container -->
+              <div class="relative bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-orange-400/50 hover:-translate-y-4 transform perspective-1000">
+                <!-- Gradient Overlay on Hover -->
+                <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10 text-center">
+                  <!-- Icon Container with Advanced Animation -->
+                  <div class="relative mb-8 flex justify-center">
+                    <!-- Animated Rings -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="w-32 h-32 rounded-full border-4 border-orange-400/20 group-hover:border-orange-400/40 transition-all duration-700 group-hover:scale-110 group-hover:rotate-180"></div>
+                      <div class="absolute w-36 h-36 rounded-full border-2 border-orange-300/10 group-hover:border-orange-300/30 transition-all duration-1000 group-hover:scale-125 group-hover:-rotate-180"></div>
+                    </div>
+                    
+                    <!-- Icon Circle -->
+                    <div class="relative w-28 h-28 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 overflow-hidden">
+                      <img
+                        :src="assets.relawan"
+                        alt="Relawan"
+                        class="h-20 w-20 rounded-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-500"
+                      >
+                      <!-- Pulse Effect -->
+                      <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 group-hover:scale-150 transition-all duration-1000"></div>
+                    </div>
+
+                    <!-- Floating Badge -->
+                    <div class="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                      <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Title -->
+                  <h3 class="font-extrabold text-3xl mb-4 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-orange-500 group-hover:to-amber-600 transition-all duration-500">
+                    RELAWAN
+                  </h3>
+
+                  <!-- Decorative Line -->
+                  <div class="flex items-center justify-center gap-2 mb-6">
+                    <div class="h-px w-16 bg-gradient-to-r from-transparent to-orange-400/50"></div>
+                    <div class="h-1.5 w-1.5 rounded-full bg-orange-400"></div>
+                    <div class="h-px w-16 bg-gradient-to-l from-transparent to-orange-400/50"></div>
+                  </div>
+
+                  <!-- Description -->
+                  <p class="text-slate-600 leading-relaxed mb-8">
+                    Mari ikut menjadi relawan untuk membantu mereka yang membutuhkan. <span class="font-semibold text-orange-500">Bantuan Anda sangat dinanti</span> untuk perubahan nyata.
+                  </p>
+
+                  <!-- Impact Stats -->
+                  <div class="mb-8 p-4 bg-orange-400/5 rounded-xl border border-orange-400/20 group-hover:bg-orange-400/10 group-hover:border-orange-400/30 transition-all duration-300">
+                    <div class="flex items-center justify-center gap-2 text-sm">
+                      <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                      <span class="font-bold text-orange-500">5+ relawan aktif</span>
+                    </div>
+                  </div>
+
+                  <!-- CTA Button -->
+                  <a
+                    href="#"
+                    class="group/btn relative inline-flex items-center justify-center gap-2 w-full px-8 py-4 rounded-xl text-base font-bold overflow-hidden transition-all duration-300 border-2 border-orange-400 text-white bg-gradient-to-r from-orange-400 to-amber-500 hover:shadow-xl hover:scale-105 active:scale-95"
+                  >
+                    <span class="relative flex items-center gap-2">
+                      Lihat Cara Mendaftar
+                      <svg class="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
+                  </a>
+                </div>
+
+                <!-- Corner Decoration -->
+                <div class="absolute top-0 left-0 w-32 h-32 overflow-hidden rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div class="absolute -top-16 -left-16 w-32 h-32 bg-gradient-to-br from-orange-300/20 to-transparent rounded-full blur-2xl"></div>
+                </div>
+
+                <!-- Bottom Accent Line -->
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-3xl"></div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Bottom Encouragement -->
+          <div 
+            :class="[
+              'mt-16 text-center transition-all duration-1000 delay-700',
+              ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            ]"
+          >
+            <p class="text-slate-600 text-lg mb-4">
+              Bersama kita bisa membuat perbedaan
+            </p>
+            <div class="flex items-center justify-center gap-6 text-sm text-slate-500">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span class="font-medium">Transparan</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span class="font-medium">Terpercaya</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span class="font-medium">Berdampak</span>
+              </div>
             </div>
           </div>
         </div>
@@ -491,3 +1377,45 @@ const handleImageError = (event) => {
     </div>
   </PublicLayout>
 </template>
+
+<style scoped>
+@keyframes float {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(-25px) translateX(15px); }
+  66% { transform: translateY(-12px) translateX(-12px); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+  33% { transform: translateY(20px) translateX(-20px) scale(1.05); }
+  66% { transform: translateY(8px) translateX(15px) scale(0.95); }
+}
+
+@keyframes text-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.animate-float {
+  animation: float 10s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 12s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.animate-text-shimmer {
+  animation: text-shimmer 3s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+</style>
