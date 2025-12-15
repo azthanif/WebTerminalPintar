@@ -1139,7 +1139,9 @@ const handleImageError = (event) => {
 
                   <!-- CTA Button -->
                   <a
-                    href="#"
+                    href="https://forms.gle/CJAebiE78GAQN62E6"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     class="group/btn relative inline-flex items-center justify-center gap-2 w-full px-8 py-4 rounded-xl text-base font-bold overflow-hidden transition-all duration-300 border-2 border-[#76B340] text-white bg-gradient-to-r from-[#76B340] to-emerald-600 hover:shadow-xl hover:scale-105 active:scale-95"
                   >
                     <span class="relative flex items-center gap-2">
@@ -1231,7 +1233,9 @@ const handleImageError = (event) => {
 
                   <!-- CTA Button -->
                   <a
-                    href="#"
+                    href="https://forms.gle/1hgE5aW6Qwpd9Jg29"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     class="group/btn relative inline-flex items-center justify-center gap-2 w-full px-8 py-4 rounded-xl text-base font-bold overflow-hidden transition-all duration-300 border-2 border-orange-400 text-white bg-gradient-to-r from-orange-400 to-amber-500 hover:shadow-xl hover:scale-105 active:scale-95"
                   >
                     <span class="relative flex items-center gap-2">
