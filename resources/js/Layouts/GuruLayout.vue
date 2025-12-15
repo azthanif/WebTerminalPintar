@@ -219,7 +219,7 @@ watch(
                             <Bars3Icon class="h-5 w-5" />
                         </button>
                         <div>
-                        <h2 class="page-title text-4xl font-bold tracking-tight leading-tight bg-gradient-to-r from-slate-800 via-[#84994f] to-slate-800 bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient-shift hover:scale-105 transition-transform duration-300 cursor-default">
+                        <h2 class="page-title text-3xl font-bold tracking-tight leading-tight bg-gradient-to-r from-slate-800 via-[#84994f] to-slate-800 bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient-shift hover:scale-105 transition-transform duration-300 cursor-default">
                             {{ page.props.title || 'Dashboard' }}
                         </h2>
                     </div>
