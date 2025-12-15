@@ -4,7 +4,6 @@ import GuruLayout from '@/Layouts/GuruLayout.vue'
 import Modal from '@/Components/Modal.vue'
 import axios from 'axios'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { route } from 'ziggy-js'
 import {
   DocumentTextIcon,
   FunnelIcon,
@@ -74,9 +73,13 @@ const attendanceSummaryCards = computed(() => [
     subtitle: 'Siswa hadir tepat waktu',
     badge: 'bg-emerald-50 text-emerald-700',
     icon: CheckCircleIcon,
-    bgGradient: 'bg-gradient-to-br from-emerald-500 to-teal-400',
-    shadowColor: 'shadow-emerald-200',
-    textColor: 'text-white'
+    bg: 'bg-emerald-100',
+    color: 'text-emerald-600',
+    cardBg: 'bg-emerald-50/30',
+    cardBorder: 'border-emerald-100',
+    textLabel: 'text-emerald-900',
+    tagBg: 'bg-emerald-200/50',
+    tagColor: 'text-emerald-800'
   },
   {
     id: 'izin',
@@ -85,9 +88,13 @@ const attendanceSummaryCards = computed(() => [
     subtitle: 'Butuh persetujuan wali',
     badge: 'bg-blue-50 text-blue-700',
     icon: ClipboardDocumentCheckIcon,
-    bgGradient: 'bg-gradient-to-br from-blue-500 to-indigo-400',
-    shadowColor: 'shadow-blue-200',
-    textColor: 'text-white'
+    bg: 'bg-blue-100',
+    color: 'text-blue-600',
+    cardBg: 'bg-blue-50/30',
+    cardBorder: 'border-blue-100',
+    textLabel: 'text-blue-900',
+    tagBg: 'bg-blue-200/50',
+    tagColor: 'text-blue-800'
   },
   {
     id: 'sakit',
@@ -96,9 +103,13 @@ const attendanceSummaryCards = computed(() => [
     subtitle: 'Update status setelah pulih',
     badge: 'bg-amber-50 text-amber-700',
     icon: ExclamationCircleIcon,
-    bgGradient: 'bg-gradient-to-br from-amber-400 to-orange-400',
-    shadowColor: 'shadow-amber-200',
-    textColor: 'text-white'
+    bg: 'bg-amber-100',
+    color: 'text-amber-600',
+    cardBg: 'bg-amber-50/30',
+    cardBorder: 'border-amber-100',
+    textLabel: 'text-amber-900',
+    tagBg: 'bg-amber-200/50',
+    tagColor: 'text-amber-800'
   },
   {
     id: 'alpha',
@@ -107,9 +118,13 @@ const attendanceSummaryCards = computed(() => [
     subtitle: 'Perlu tindak lanjut segera',
     badge: 'bg-rose-50 text-rose-700',
     icon: XCircleIcon,
-    bgGradient: 'bg-gradient-to-br from-rose-500 to-pink-500',
-    shadowColor: 'shadow-rose-200',
-    textColor: 'text-white'
+    bg: 'bg-rose-100',
+    color: 'text-rose-600',
+    cardBg: 'bg-rose-50/30',
+    cardBorder: 'border-rose-100',
+    textLabel: 'text-rose-900',
+    tagBg: 'bg-rose-200/50',
+    tagColor: 'text-rose-800'
   },
 ])
 
@@ -385,15 +400,16 @@ onBeforeUnmount(() => {
     <!-- Header Section -->
     <section class="flex flex-col gap-6 md:flex-row md:items-end justify-between">
       <div>
-         <div class="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 mb-2 border border-orange-100 shadow-sm">
-            <ClockIcon class="h-3 w-3" />
+         <div class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-1.5 text-xs font-bold text-blue-600 mb-2 border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            <ClockIcon class="h-3.5 w-3.5" />
             <span>Manajemen Presensi</span>
         </div>
-        <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-             Rekapitulasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">Kehadiran</span>
-        </h1>
-        <p class="mt-2 text-slate-500 font-medium text-lg max-w-2xl">
-            Pantau kehadiran siswa secara realtime dan kelola catatan perkembangan kelas.
+        <p class="mt-3 text-lg md:text-xl font-bold text-slate-700 max-w-3xl leading-relaxed tracking-wide transition-all duration-300 hover:text-[#84994f] hover:scale-[1.02] cursor-default">
+            Monitor presensi siswa secara real-time.
         </p>
       </div>
       
@@ -422,26 +438,27 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- Summary Cards (Colorful Gradient) -->
+    <!-- Summary Cards (Dashboard Style) -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div v-for="card in attendanceSummaryCards" :key="card.id" 
-             :class="['group relative overflow-hidden rounded-[2rem] p-6 shadow-md border-0 transition-all hover:scale-[1.02]', card.bgGradient, card.shadowColor]">
+             class="group relative overflow-hidden rounded-[2.5rem] p-8 shadow-sm border transition-all hover:shadow-lg hover:-translate-y-1"
+             :class="[card.cardBg, card.cardBorder]">
            
-           <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-
-           <div class="flex items-start justify-between relative z-10">
+           <!-- Decorative Blob -->
+           <div class="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-30" :class="card.bg"></div>
+           
+           <div class="relative flex items-start justify-between">
                 <div>
-                   <p class="text-xs font-bold uppercase tracking-widest text-white/80">{{ card.label }}</p>
-                   <p class="mt-2 text-4xl font-extrabold text-white drop-shadow-sm">{{ card.value }}</p>
+                   <p class="text-sm font-bold uppercase tracking-wider opacity-70" :class="card.textLabel">{{ card.label }}</p>
+                   <h3 class="mt-2 text-4xl font-extrabold text-slate-800">{{ card.value }}</h3>
+                   <div class="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset shadow-sm ring-black/5" :class="[card.tagBg, card.tagColor]">
+                       <span class="font-medium">{{ card.subtitle }}</span>
+                   </div>
                 </div>
-                 <div class="rounded-2xl p-2.5 bg-white/20 backdrop-blur-sm border border-white/20 shadow-sm">
-                     <component :is="card.icon" class="h-6 w-6 text-white" />
-                 </div>
+                <div class="rounded-2xl p-3 ring-4 ring-white/50 backdrop-blur-sm transition-all group-hover:scale-110 shadow-sm" :class="[card.bg, card.color]">
+                    <component :is="card.icon" class="h-8 w-8" />
+                </div>
            </div>
-           <p class="mt-4 text-xs font-medium text-white/90 flex items-center gap-1.5 relative z-10">
-               <span class="inline-block h-1.5 w-1.5 rounded-full bg-white"></span>
-               {{ card.subtitle }}
-           </p>
         </div>
     </div>
 
@@ -533,13 +550,13 @@ onBeforeUnmount(() => {
                             </div>
                         </td>
                     </tr>
-                    <tr v-else v-for="(record, index) in attendanceRecords" :key="record.id" class="group hover:bg-orange-50/20 transition-colors">
+                     <tr v-else v-for="(record, index) in attendanceRecords" :key="record.id" class="group hover:bg-[#84994f]/5 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-400">
                             {{ attendanceStartIndex + index }}
                         </td>
                          <td class="px-6 py-4">
                             <div>
-                                <p class="font-bold text-slate-800 group-hover:text-orange-700 transition-colors">{{ record.student?.name ?? '—' }}</p>
+                                <p class="font-bold text-slate-800 group-hover:text-[#84994f] transition-colors">{{ record.student?.name ?? '—' }}</p>
                                 <p class="text-xs font-medium text-slate-400 mt-0.5">{{ record.session_label }}</p>
                             </div>
                         </td>
@@ -565,14 +582,14 @@ onBeforeUnmount(() => {
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                             <div class="flex items-start gap-2">
+                             <div class="flex items-start gap-3">
                                 <button
-                                    class="group/note flex items-center justify-center h-8 w-8 rounded-full bg-slate-50 text-slate-400 hover:bg-orange-100 hover:text-orange-600 transition-all border border-slate-200 hover:border-orange-200"
+                                    class="group/note inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2.5 text-xs font-bold text-blue-700 hover:from-blue-100 hover:to-indigo-100 hover:text-blue-800 transition-all border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md active:scale-95"
                                     :disabled="isScheduleLocked"
                                     @click="openNoteModal(record)"
-                                    title="Edit Catatan"
                                 >
-                                    <DocumentTextIcon class="h-4 w-4" />
+                                    <DocumentTextIcon class="h-4 w-4 transition-transform group-hover/note:scale-110" />
+                                    <span>{{ record.notes ? 'Edit Catatan' : 'Tambah Catatan' }}</span>
                                 </button>
                                 <p v-if="record.notes" class="text-xs text-slate-600 font-medium bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 max-w-[200px] leading-relaxed cursor-help" :title="record.notes">
                                     {{ truncateNote(record.notes) }}
@@ -583,7 +600,7 @@ onBeforeUnmount(() => {
                         <td class="px-6 py-4 text-right">
                              <div class="flex items-center justify-end gap-2">
                                 <button
-                                    class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-emerald-200 transition-all hover:bg-emerald-600 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                    class="inline-flex items-center gap-1.5 rounded-xl bg-[#84994f] px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-[#84994f]/30 transition-all hover:bg-[#6b7a3f] hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     :disabled="isScheduleLocked || record.saving || !isRecordDirty(record)"
                                     @click="saveAttendance(record)"
                                 >
@@ -632,7 +649,7 @@ onBeforeUnmount(() => {
     <Modal
       :show="showNoteModal"
       title="Catatan Siswa"
-      variant="warning"
+      variant="info"
       max-width="lg"
       @close="closeNoteModal"
     >
@@ -646,7 +663,7 @@ onBeforeUnmount(() => {
            <textarea
               v-model="noteForm.description"
               rows="6"
-              class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-100 transition-all bg-slate-50 focus:bg-white resize-none"
+              class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-slate-50 focus:bg-white resize-none"
               placeholder="Tuliskan detail perilaku, prestasi, atau hal yang perlu diperhatikan..."
             ></textarea>
         </div>
@@ -659,7 +676,7 @@ onBeforeUnmount(() => {
             Batal
           </button>
           <button
-            class="rounded-xl bg-orange-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-95"
+            class="rounded-xl bg-blue-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-600 active:scale-95"
             @click="saveNote"
           >
             Simpan Catatan

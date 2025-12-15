@@ -18,7 +18,7 @@ class AttendancePageController extends Controller
             : now()->toDateString();
 
         return Inertia::render('Guru/Kehadiran', [
-            'title' => 'Kehadiran',
+            'title' => 'Rekap Kehadiran Siswa',
             'initialSubject' => $initialSubject,
             'initialScheduleDate' => $initialScheduleDate,
         ]);

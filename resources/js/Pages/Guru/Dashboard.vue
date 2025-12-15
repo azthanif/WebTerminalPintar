@@ -12,10 +12,9 @@
             </span>
             <span>Portal Guru</span>
         </div>
-        <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight leading-tight">
-             Dashboard <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Overview</span>
-        </h1>
-        <p class="mt-2 text-slate-500 font-medium text-lg">Selamat datang, <span class="text-emerald-700 font-bold">{{ teacherName }}</span>. {{ heroSubtitle }}</p>
+        <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
+                    Selamat datang, <span class="text-[var(--color-primary)]">{{ teacherName }}</span>. {{ heroSubtitle }}
+                </p>
       </div>
       
       <button

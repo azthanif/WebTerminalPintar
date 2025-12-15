@@ -12,6 +12,7 @@ class ScheduleController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('Guru/Jadwal', [
+            'title' => 'Jadwal dan Materi',
             'filters' => [
                 'status' => $request->get('status'),
             ],
