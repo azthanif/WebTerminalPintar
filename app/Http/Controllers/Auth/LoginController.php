@@ -49,7 +49,7 @@ class LoginController extends Controller
 
         if (! Hash::check($credentials['password'], $user->password)) {
             return back()->withErrors([
-                'password' => 'Password yang Anda masukkan salah.',
+                'password' => 'Email atau password yang Anda masukkan salah.',
             ])->onlyInput('email');
         }
 
