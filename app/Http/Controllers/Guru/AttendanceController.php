@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Guru\Concerns\BuildsAttendanceData;
 use App\Http\Requests\Guru\StoreAttendanceRequest;
 use App\Models\Attendance;
 use App\Models\Schedule;
@@ -13,62 +14,11 @@ use Illuminate\Support\Carbon;
 
 class AttendanceController extends Controller
 {
+    use BuildsAttendanceData;
     public function index(Request $request)
     {
-        $teacher = $request->user();
-        $subjectFilter = $request->filled('subject') && $request->subject !== 'Semua'
-            ? $request->subject
-            : null;
-        try {
-            $scheduleDate = $request->filled('schedule_date')
-                ? Carbon::parse($request->input('schedule_date'))->toDateString()
-                : now()->toDateString();
-        } catch (\Throwable $e) {
-            $scheduleDate = now()->toDateString();
-        }
-
-        $baseQuery = Attendance::forTeacher($teacher);
-        $filteredQuery = $this->applyAttendanceFilters($baseQuery, $request, $subjectFilter, $scheduleDate);
-
-        $records = (clone $filteredQuery)
-            ->with(['student', 'schedule'])
-            ->latest('attendance_date')
-            ->paginate($request->integer('per_page', 10));
-
-        $summary = (clone $filteredQuery)
-            ->selectRaw('status, COUNT(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
-
-        $subjectsFromSchedule = Schedule::forTeacher($teacher)
-            ->whereDate('start_time', $scheduleDate)
-            ->get(['subject', 'topic'])
-            ->map(fn ($row) => $this->buildSubjectLabel($row->subject, $row->topic))
-            ->filter();
-
-        $subjectsFromAttendance = Attendance::forTeacher($teacher)
-            ->whereDate('attendance_date', $scheduleDate)
-            ->whereHas('schedule', fn ($query) => $query->whereNull('deleted_at'))
-            ->with('schedule')
-            ->get(['session_topic', 'schedule_id'])
-            ->map(function ($row) {
-                return $this->buildSubjectLabel(
-                    optional($row->schedule)->subject,
-                    optional($row->schedule)->topic
-                ) ?? $row->session_topic;
-            })
-            ->filter();
-
-        $subjects = $subjectsFromSchedule
-            ->merge($subjectsFromAttendance)
-            ->filter()
-            ->unique()
-            ->sort()
-            ->values();
-
-        $scheduleWindow = $subjectFilter
-            ? $this->buildScheduleWindow($teacher->id, $subjectFilter, $scheduleDate)
-            : null;
+        $dataset = $this->buildAttendanceDataset($request);
+        $records = $dataset['records'];
 
         return response()->json([
             'data' => $records->items(),
@@ -78,10 +28,10 @@ class AttendanceController extends Controller
                 'per_page' => $records->perPage(),
                 'total' => $records->total(),
             ],
-            'summary' => $summary,
-            'subjects' => $subjects,
-            'schedule_date' => $scheduleDate,
-            'schedule_window' => $scheduleWindow,
+            'summary' => $dataset['summary'],
+            'subjects' => $dataset['subjects'],
+            'schedule_date' => $dataset['schedule_date'],
+            'schedule_window' => $dataset['schedule_window'],
         ]);
     }
 
@@ -99,6 +49,7 @@ class AttendanceController extends Controller
             })
             ->when($request->filled('status') && $request->status !== 'Semua', fn ($builder) => $builder->where('status', $request->status))
             ->when($scheduleDate, fn ($builder) => $builder->whereDate('attendance_date', $scheduleDate))
+            ->when($request->filled('schedule_id'), fn ($builder) => $builder->where('schedule_id', $request->schedule_id))
             ->when($subjectFilter, function ($builder) use ($subjectFilter) {
                 $labelExpression = $this->subjectLabelExpression();
                 $builder->where(function ($inner) use ($subjectFilter, $labelExpression) {
@@ -120,12 +71,32 @@ class AttendanceController extends Controller
         $schedule = Schedule::findOrFail($payload['schedule_id']);
         $this->authorizeSchedule($schedule, $request->user()->id);
 
+        if ($this->scheduleInputLocked($schedule)) {
+            $message = 'Presensi hanya tersedia ketika jadwal sudah dimulai.';
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
+
         $payload['recorded_by'] = $request->user()->id;
         $payload['recorded_at'] = $payload['recorded_at'] ?? now();
-        $payload['attendance_date'] = $payload['attendance_date'] ?? $schedule->start_time?->toDateString();
+        $payload['attendance_date'] = Carbon::parse(
+            $payload['attendance_date']
+                ?? $schedule->start_time?->toDateString()
+                ?? now()->toDateString()
+        )->toDateString();
         $payload['session_topic'] = $payload['session_topic']
             ?? $this->buildSubjectLabel($schedule->subject, $schedule->topic)
             ?? $schedule->topic;
+        $payload['session_time'] = $payload['session_time']
+            ?? (optional($schedule->start_time)?->format('H:i') && optional($schedule->end_time)?->format('H:i')
+                ? optional($schedule->start_time)?->format('H:i') . ' - ' . optional($schedule->end_time)?->format('H:i')
+                : null);
+        $payload['input_channel'] = $payload['input_channel'] ?? 'web';
+        $payload['status'] = $this->normalizeStatus($payload['status'] ?? $request->input('status'));
 
         $attendance = Attendance::updateOrCreate(
             [
@@ -134,19 +105,46 @@ class AttendanceController extends Controller
                 'attendance_date' => $payload['attendance_date'],
             ],
             $payload
-        )->load(['student', 'schedule']);
+        );
+
+        // Force status to persist (handles legacy null rows and enum drift)
+        if ($attendance->status !== $payload['status']) {
+            $attendance->status = $payload['status'];
+            $attendance->save();
+        }
+
+        $attendance->load(['student', 'schedule']);
 
         $this->syncAttendanceTeacherNote($attendance, $schedule, $request->user()->id);
 
-        return response()->json($attendance, 201);
+        if ($request->wantsJson()) {
+            return response()->json($attendance, 201);
+        }
+
+        return redirect()->back()->with('success', 'Data kehadiran berhasil disimpan.');
     }
 
     public function destroy(Request $request, Attendance $attendance)
     {
         $this->authorizeSchedule($attendance->schedule, $request->user()->id);
+
+        if ($this->scheduleInputLocked($attendance->schedule)) {
+            $message = 'Anda belum dapat mengubah presensi untuk jadwal yang belum dimulai.';
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
+
         $attendance->delete();
 
-        return response()->noContent();
+        if ($request->wantsJson()) {
+            return response()->noContent();
+        }
+
+        return redirect()->back()->with('success', 'Data kehadiran dihapus.');
     }
 
     protected function authorizeSchedule(?Schedule $schedule, int $teacherId): void
@@ -180,20 +178,6 @@ class AttendanceController extends Controller
         );
     }
 
-    protected function subjectLabelExpression(): string
-    {
-        return "TRIM(BOTH '-' FROM CONCAT_WS('-', subject, topic))";
-    }
-
-    protected function buildSubjectLabel(?string $subject, ?string $topic): ?string
-    {
-        $parts = collect([$subject, $topic])
-            ->map(fn ($value) => is_string($value) ? trim($value) : $value)
-            ->filter(fn ($value) => filled($value));
-
-        return $parts->isEmpty() ? null : $parts->values()->implode('-');
-    }
-
     protected function buildAttendanceNoteTitle(Attendance $attendance, Schedule $schedule): string
     {
         $dateLabel = $attendance->attendance_date
@@ -212,25 +196,19 @@ class AttendanceController extends Controller
         return trim('Catatan Kehadiran ' . $dateLabel . ($sessionLabel ? ' · ' . $sessionLabel : ''));
     }
 
-    protected function buildScheduleWindow(int $teacherId, string $subjectLabel, string $scheduleDate): ?array
+    protected function scheduleInputLocked(?Schedule $schedule): bool
     {
-        $matchingSchedule = Schedule::query()
-            ->where('teacher_id', $teacherId)
-            ->whereNull('deleted_at')
-            ->whereDate('start_time', $scheduleDate)
-            ->get()
-            ->first(fn ($schedule) => $this->buildSubjectLabel($schedule->subject, $schedule->topic) === $subjectLabel);
-
-        if (! $matchingSchedule || ! $matchingSchedule->start_time) {
-            return null;
+        if (! $schedule) {
+            return false;
         }
 
-        $secondsUntil = now()->diffInSeconds($matchingSchedule->start_time, false);
+        if ($schedule->start_time?->isFuture()) {
+            return true;
+        }
 
-        return [
-            'starts_at' => $matchingSchedule->start_time->toIso8601String(),
-            'seconds_until' => $secondsUntil > 0 ? $secondsUntil : 0,
-            'schedule_label' => $this->buildSubjectLabel($matchingSchedule->subject, $matchingSchedule->topic),
-        ];
+        $statusLabel = strtolower((string) ($schedule->status_badge ?? $schedule->status ?? ''));
+
+        return $statusLabel !== '' && in_array($statusLabel, ['akan datang', 'upcoming'], true);
     }
+
 }

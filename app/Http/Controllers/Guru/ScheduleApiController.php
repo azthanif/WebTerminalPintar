@@ -225,21 +225,32 @@ SQL;
 
         $attendanceDate = optional($schedule->start_time)?->toDateString() ?? now()->toDateString();
 
+        $sessionTopic = $this->buildSessionTopicLabel($schedule);
+        $sessionTime = $this->buildSessionTimeLabel($schedule);
+
         foreach ($ids as $studentId) {
-            Attendance::updateOrCreate(
-                [
-                    'student_id' => $studentId,
-                    'schedule_id' => $schedule->id,
-                ],
-                [
-                    'attendance_date' => $attendanceDate,
-                    'recorded_by' => $teacherId,
-                    'recorded_at' => $schedule->start_time ?? now(),
-                    'status' => null,
-                    'session_topic' => $this->buildSessionTopicLabel($schedule),
-                    'session_time' => $this->buildSessionTimeLabel($schedule),
-                ]
-            );
+            $attendance = Attendance::firstOrNew([
+                'student_id' => $studentId,
+                'schedule_id' => $schedule->id,
+            ]);
+
+            if (! $attendance->exists) {
+                $attendance->attendance_date = $attendanceDate;
+                $attendance->recorded_by = $teacherId;
+                $attendance->recorded_at = $schedule->start_time ?? now();
+                $attendance->status = null;
+            } else {
+                if (! $attendance->attendance_date) {
+                    $attendance->attendance_date = $attendanceDate;
+                }
+                if (! $attendance->recorded_at) {
+                    $attendance->recorded_at = $schedule->start_time ?? now();
+                }
+            }
+
+            $attendance->session_topic = $sessionTopic;
+            $attendance->session_time = $sessionTime;
+            $attendance->save();
         }
     }
 

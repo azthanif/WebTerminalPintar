@@ -3,6 +3,7 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { route } from 'ziggy-js';
 import Modal from '@/Components/Modal.vue';
 import {
     ClockIcon, PlusIcon, MagnifyingGlassIcon, FunnelIcon, CalendarIcon,
@@ -353,19 +354,36 @@ const closeEditMateri = () => showEditMateriModal.value = false;
 const submitEditMateri = async () => {
     scheduleActionState.submitting = true;
     try {
-        // Update existing materials
+        // Update existing materials (handle optional file replacement)
         for (const material of materiForm.existing) {
-            await axios.put(route('guru.api.materials.update', material.id), {
-                title: material.judul,
-                description: material.deskripsi
+            // If no new file, keep lightweight JSON update
+            if (!material.newFile) {
+                await axios.put(route('guru.api.materials.update', material.id), {
+                    title: material.judul,
+                    description: material.deskripsi,
+                });
+                continue;
+            }
+
+            // When replacing file, use multipart + _method override so backend receives the upload
+            const formData = new FormData();
+            formData.append('title', material.judul);
+            formData.append('description', material.deskripsi || '');
+            formData.append('file', material.newFile);
+            formData.append('_method', 'PUT');
+
+            await axios.post(route('guru.api.materials.update', material.id), formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
         }
-        
+
         // Upload new materials
         if (materiForm.materi_uploads.length && materiForm.schedule_id) {
             for (const file of materiForm.materi_uploads) {
                 const formData = new FormData();
                 formData.append('title', file.name);
+                formData.append('description', '');
+                formData.append('status', 'Terunggah');
                 formData.append('file', file);
                 await axios.post(route('guru.api.materials.store', materiForm.schedule_id), formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
@@ -458,7 +476,12 @@ const restoreSchedule = async (schedule) => {
 };
 
 const goToAttendance = (schedule) => {
-    router.visit(route('guru.attendance', { schedule_id: schedule.id }));
+    const subjectLabel = [schedule?.subject, schedule?.topik || schedule?.topic]
+        .filter(Boolean)
+        .join('-')
+        .replace(/^[-\s]+|[-\s]+$/g, '') || undefined;
+    const date = schedule?.waktu_mulai ? String(schedule.waktu_mulai).slice(0, 10) : undefined;
+    router.visit(route('guru.attendance', { subject: subjectLabel, date, schedule_id: schedule?.id }));
 };
 
 const openMaterialPreview = (f) => {
@@ -467,6 +490,8 @@ const openMaterialPreview = (f) => {
 
 const handleMaterialFiles = (e, form) => {
     form.materi_uploads.push(...Array.from(e.target.files));
+    // Reset input value to allow uploading the same file again if needed
+    e.target.value = '';
 };
 
 const removeMaterialFile = (form, file) => {

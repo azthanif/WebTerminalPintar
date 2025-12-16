@@ -1,9 +1,9 @@
 <script setup>
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import GuruLayout from '@/Layouts/GuruLayout.vue'
 import Modal from '@/Components/Modal.vue'
-import axios from 'axios'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { route } from 'ziggy-js'
 import {
   DocumentTextIcon,
   FunnelIcon,
@@ -28,15 +28,54 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  initialScheduleId: {
+    type: [String, Number],
+    default: null,
+  },
+  attendance: {
+    type: Object,
+    default: () => ({ data: [], meta: {} }),
+  },
+  summary: {
+    type: Object,
+    default: () => ({}),
+  },
+  subjects: {
+    type: Array,
+    default: () => [],
+  },
+  scheduleWindow: {
+    type: [Object, null],
+    default: null,
+  },
+  filters: {
+    type: Object,
+    default: () => ({
+      query: '',
+      status: 'Semua',
+      subject: 'Semua',
+      page: 1,
+      scheduleDate: null,
+      scheduleId: null,
+    }),
+  },
 })
 
 const perPage = 10
 const attendanceStatusOptions = ['Semua', 'Hadir', 'Izin', 'Sakit', 'Alpha']
 const attendanceInputStatuses = ['Hadir', 'Izin', 'Sakit', 'Alpha']
 
-const normalizedInitialSubject =
-  typeof props.initialSubject === 'string' && props.initialSubject.trim().length ? props.initialSubject.trim() : 'Semua'
-const normalizedScheduleDate = props.initialScheduleDate ?? new Date().toISOString().slice(0, 10)
+const normalizedInitialSubject = (() => {
+  if (typeof props.filters?.subject === 'string' && props.filters.subject.trim().length) {
+    return props.filters.subject.trim()
+  }
+  if (typeof props.initialSubject === 'string' && props.initialSubject.trim().length) {
+    return props.initialSubject.trim()
+  }
+  return 'Semua'
+})()
+const normalizedScheduleDate = props.filters?.scheduleDate ?? props.initialScheduleDate ?? new Date().toISOString().slice(0, 10)
+const normalizedScheduleId = props.filters?.scheduleId ?? props.initialScheduleId ?? null
 
 const attendanceFilters = reactive({
   query: '',
@@ -44,11 +83,16 @@ const attendanceFilters = reactive({
   subject: normalizedInitialSubject,
   page: 1,
   scheduleDate: normalizedScheduleDate,
+  scheduleId: normalizedScheduleId,
 })
 
 const attendanceSummary = reactive({ Hadir: 0, Izin: 0, Sakit: 0, Alpha: 0 })
+const adjustSummaryCount = (status, delta) => {
+  if (!status || !Object.prototype.hasOwnProperty.call(attendanceSummary, status)) return
+  attendanceSummary[status] = Math.max(0, Number(attendanceSummary[status] || 0) + delta)
+}
 const attendanceRecords = ref([])
-const pagination = reactive({ total: 0, lastPage: 1, currentPage: 1 })
+const pagination = reactive({ total: 0, lastPage: 1, currentPage: 1, perPage })
 const isLoadingAttendance = ref(false)
 const successMessage = ref('')
 const subjectOptions = ref([])
@@ -61,9 +105,117 @@ const scheduleLock = reactive({
 })
 let countdownTimer = null
 
+const wallClock = ref(Date.now())
+let wallClockTimer = null
+
+const startWallClockTimer = () => {
+  if (wallClockTimer) return
+  wallClockTimer = setInterval(() => {
+    wallClock.value = Date.now()
+  }, 1000)
+}
+
+const stopWallClockTimer = () => {
+  if (!wallClockTimer) return
+  clearInterval(wallClockTimer)
+  wallClockTimer = null
+}
+
+onMounted(() => {
+  startWallClockTimer()
+})
+
 const showNoteModal = ref(false)
 const activeNoteRecord = ref(null)
 const noteForm = reactive({ description: '' })
+
+let filtersAreSyncing = false
+
+const syncFiltersFromProps = () => {
+  const incoming = props.filters ?? {}
+  filtersAreSyncing = true
+  attendanceFilters.query = incoming.query ?? ''
+  attendanceFilters.status = incoming.status ?? 'Semua'
+  attendanceFilters.subject = incoming.subject ?? normalizedInitialSubject
+  attendanceFilters.page = incoming.page ?? 1
+  attendanceFilters.scheduleDate = incoming.scheduleDate ?? normalizedScheduleDate
+  attendanceFilters.scheduleId = incoming.scheduleId ?? normalizedScheduleId
+  filtersAreSyncing = false
+}
+
+const syncAttendanceDataFromProps = () => {
+  const attendancePayload = props.attendance ?? { data: [], meta: {} }
+  const rows = Array.isArray(attendancePayload.data) ? attendancePayload.data : []
+  attendanceRecords.value = rows.map(normalizeRecord)
+
+  const meta = attendancePayload.meta ?? {}
+  pagination.total = meta.total ?? rows.length
+  pagination.lastPage = meta.last_page ?? 1
+  pagination.currentPage = meta.current_page ?? attendanceFilters.page
+  pagination.perPage = meta.per_page ?? perPage
+
+  const summary = props.summary ?? {}
+  attendanceSummary.Hadir = summary.Hadir ?? 0
+  attendanceSummary.Izin = summary.Izin ?? 0
+  attendanceSummary.Sakit = summary.Sakit ?? 0
+  attendanceSummary.Alpha = summary.Alpha ?? 0
+
+  subjectOptions.value = Array.isArray(props.subjects) ? [...props.subjects] : []
+  if (attendanceFilters.subject !== 'Semua' && attendanceFilters.subject && !subjectOptions.value.includes(attendanceFilters.subject)) {
+    subjectOptions.value.unshift(attendanceFilters.subject)
+  }
+
+  applyScheduleWindow(props.scheduleWindow ?? null)
+}
+
+syncFiltersFromProps()
+syncAttendanceDataFromProps()
+
+watch(
+  () => [props.attendance, props.summary, props.subjects, props.scheduleWindow, props.filters],
+  () => {
+    syncFiltersFromProps()
+    syncAttendanceDataFromProps()
+  },
+  { deep: true, immediate: true }
+)
+
+const buildQueryParams = () => {
+  const params = {}
+  if (attendanceFilters.query?.trim()) {
+    params.search = attendanceFilters.query
+  }
+  if (attendanceFilters.status && attendanceFilters.status !== 'Semua') {
+    params.status = attendanceFilters.status
+  }
+  if (attendanceFilters.subject && attendanceFilters.subject !== 'Semua') {
+    params.subject = attendanceFilters.subject
+  }
+  if (attendanceFilters.scheduleDate) {
+    params.schedule_date = attendanceFilters.scheduleDate
+  }
+  if (attendanceFilters.scheduleId) {
+    params.schedule_id = attendanceFilters.scheduleId
+  }
+  if (attendanceFilters.page && attendanceFilters.page > 1) {
+    params.page = attendanceFilters.page
+  }
+  return params
+}
+
+const refreshAttendance = (options = {}) => {
+  isLoadingAttendance.value = true
+  router.get(route('guru.attendance'), buildQueryParams(), {
+    preserveScroll: true,
+    preserveState: true,
+    replace: true,
+    only: ['attendance', 'summary', 'subjects', 'scheduleWindow', 'filters'],
+    onFinish: () => {
+      isLoadingAttendance.value = false
+    },
+    ...options,
+  })
+}
 
 const attendanceSummaryCards = computed(() => [
   {
@@ -128,7 +280,7 @@ const attendanceSummaryCards = computed(() => [
   },
 ])
 
-const attendanceStartIndex = computed(() => (attendanceFilters.page - 1) * perPage + 1)
+const attendanceStartIndex = computed(() => (attendanceFilters.page - 1) * (pagination.perPage ?? perPage) + 1)
 
 const attendanceRangeLabel = computed(() => {
   if (!pagination.total) {
@@ -166,14 +318,14 @@ const setSuccessMessage = (message) => {
   }, 3000)
 }
 
-const clearCountdownTimer = () => {
+function clearCountdownTimer() {
   if (countdownTimer) {
     clearInterval(countdownTimer)
     countdownTimer = null
   }
 }
 
-const startCountdownTimer = () => {
+function startCountdownTimer() {
   clearCountdownTimer()
   if (scheduleLock.secondsRemaining <= 0) return
   countdownTimer = setInterval(() => {
@@ -181,14 +333,14 @@ const startCountdownTimer = () => {
       scheduleLock.secondsRemaining = 0
       scheduleLock.isLocked = false
       clearCountdownTimer()
-      fetchAttendance()
+      refreshAttendance()
     } else {
       scheduleLock.secondsRemaining -= 1
     }
   }, 1000)
 }
 
-const applyScheduleWindow = (windowData) => {
+function applyScheduleWindow(windowData) {
   if (!windowData) {
     clearCountdownTimer()
     scheduleLock.isLocked = false
@@ -235,10 +387,45 @@ const scheduleStartTimeLabel = computed(() => {
   })
 })
 
-const normalizeRecord = (record) => {
+const upcomingStatusLabels = ['akan datang', 'upcoming', 'belum mulai']
+
+const parseScheduleStart = (value) => {
+  if (!value) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+const hasFutureStart = (record) => {
+  const start = parseScheduleStart(record?.schedule?.start_time)
+  if (!start) return false
+  return start.getTime() > wallClock.value
+}
+
+const isRecordLocked = (record) => {
+  if (isScheduleLocked.value) {
+    return true
+  }
+
+  if (!record?.schedule) {
+    return false
+  }
+
+  const statusLabel = String(record.schedule.status_badge ?? record.schedule.status ?? '')
+    .trim()
+    .toLowerCase()
+
+  if (statusLabel && upcomingStatusLabels.includes(statusLabel)) {
+    return true
+  }
+
+  return hasFutureStart(record)
+}
+
+function normalizeRecord(record) {
   const sessionSubject = record.session_subject ?? record.schedule?.subject ?? ''
   const sessionTopic = record.session_topic ?? record.schedule?.topic ?? ''
   const sessionLabel = [sessionSubject, sessionTopic].filter(Boolean).join(' - ') || 'Sesi tanpa judul'
+  const statusValue = record.status ?? ''
 
   return {
     id: record.id,
@@ -247,8 +434,8 @@ const normalizeRecord = (record) => {
     schedule_id: record.schedule_id ?? record.schedule?.id,
     student_id: record.student_id ?? record.student?.id,
     attendance_date: record.attendance_date,
-    status: record.status ?? null,
-    draftStatus: record.status ?? '',
+    status: statusValue,
+    draftStatus: statusValue,
     notes: record.notes ?? '',
     noteDraft: record.notes ?? '',
     session_label: sessionLabel,
@@ -257,80 +444,47 @@ const normalizeRecord = (record) => {
   }
 }
 
-const fetchAttendance = async () => {
-  isLoadingAttendance.value = true
-  try {
-    const { data } = await axios.get(route('guru.api.attendance.index'), {
-      params: {
-        search: attendanceFilters.query,
-        status: attendanceFilters.status,
-        subject: attendanceFilters.subject === 'Semua' ? undefined : attendanceFilters.subject,
-        schedule_date: attendanceFilters.scheduleDate,
-        page: attendanceFilters.page,
-        per_page: perPage,
-      },
-    })
-
-    attendanceRecords.value = data.data.map(normalizeRecord)
-    pagination.total = data.meta.total || 0
-    pagination.lastPage = data.meta.last_page || 1
-    pagination.currentPage = data.meta.current_page || attendanceFilters.page
-
-    const summary = data.summary || {}
-    attendanceSummary.Hadir = summary.Hadir ?? 0
-    attendanceSummary.Izin = summary.Izin ?? 0
-    attendanceSummary.Sakit = summary.Sakit ?? 0
-    attendanceSummary.Alpha = summary.Alpha ?? 0
-
-    subjectOptions.value = data.subjects ?? []
-    if (data.schedule_date) {
-      attendanceFilters.scheduleDate = data.schedule_date
-    }
-    if (attendanceFilters.subject !== 'Semua' && !subjectOptions.value.includes(attendanceFilters.subject)) {
-      attendanceFilters.subject = 'Semua'
-    }
-    applyScheduleWindow(data.schedule_window ?? null)
-  } finally {
-    isLoadingAttendance.value = false
-  }
-}
-
 const changeAttendancePage = (direction) => {
   const next = attendanceFilters.page + direction
   if (next < 1 || next > pagination.lastPage) return
   attendanceFilters.page = next
-  fetchAttendance()
+  refreshAttendance()
 }
 
 let searchTimer
 watch(
   () => attendanceFilters.query,
   () => {
+    if (filtersAreSyncing) return
     clearTimeout(searchTimer)
     attendanceFilters.page = 1
-    searchTimer = setTimeout(fetchAttendance, 350)
+    searchTimer = setTimeout(() => refreshAttendance(), 350)
   }
 )
 
 watch(
   () => attendanceFilters.status,
   () => {
+    if (filtersAreSyncing) return
     attendanceFilters.page = 1
-    fetchAttendance()
+    refreshAttendance()
   }
 )
 
 watch(
   () => attendanceFilters.subject,
   () => {
+    if (filtersAreSyncing) return
     attendanceFilters.page = 1
     applyScheduleWindow(null)
-    fetchAttendance()
+    refreshAttendance()
   }
 )
 
-const saveAttendance = async (record, overrides = {}) => {
-  if (isScheduleLocked.value) return
+const saveAttendance = (record, overrides = {}) => {
+  if (isRecordLocked(record)) {
+    return
+  }
   if (!record?.schedule_id || !record?.student_id) {
     return
   }
@@ -339,34 +493,90 @@ const saveAttendance = async (record, overrides = {}) => {
     setSuccessMessage('Pilih status kehadiran terlebih dahulu.')
     return
   }
-  record.saving = true
-  try {
-    const payload = {
-      schedule_id: record.schedule_id,
-      student_id: record.student_id,
-      attendance_date: record.attendance_date,
-      status: nextStatus,
-      notes: overrides.notes ?? record.noteDraft ?? record.notes ?? '',
-    }
 
-    const { data } = await axios.post(route('guru.api.attendance.store'), payload)
-    Object.assign(record, normalizeRecord(data))
-    setSuccessMessage('Kehadiran berhasil diperbarui.')
-    await fetchAttendance()
-  } finally {
-    record.saving = false
+  const normalizedAttendanceDate = attendanceFilters.scheduleDate || new Date().toISOString().slice(0, 10)
+
+  const sessionSubject = record.schedule?.subject || ''
+  const sessionTopic = record.schedule?.topic || ''
+  const sessionLabel = [sessionSubject, sessionTopic].filter(Boolean).join('-') || record.session_label
+
+  const payload = {
+    schedule_id: record.schedule_id,
+    student_id: record.student_id,
+    attendance_date: normalizedAttendanceDate,
+    status: nextStatus,
+    notes: overrides.notes ?? record.noteDraft ?? record.notes ?? '',
+    session_topic: sessionLabel,
+    session_time: record.session_time || record.schedule?.start_time || '',
+    input_channel: 'web',
   }
+
+  const previousStatus = normalizeStatusValue(record.status)
+  const previousNotes = record.notes
+  const previousDraftNotes = record.noteDraft
+  record.draftStatus = nextStatus
+  record.status = nextStatus
+  record.attendance_date = normalizedAttendanceDate
+  record.noteDraft = payload.notes
+  record.notes = payload.notes
+  if (previousStatus !== nextStatus) {
+    if (previousStatus) adjustSummaryCount(previousStatus, -1)
+    adjustSummaryCount(nextStatus, 1)
+  }
+
+  record.saving = true
+  router.post(route('guru.api.attendance.store'), payload, {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: () => {
+      setSuccessMessage('Kehadiran berhasil diperbarui.')
+      refreshAttendance()
+    },
+    onError: () => {
+      if (previousStatus !== nextStatus) {
+        adjustSummaryCount(nextStatus, -1)
+        if (previousStatus) adjustSummaryCount(previousStatus, 1)
+      }
+      record.status = previousStatus
+      record.draftStatus = previousStatus
+      record.notes = previousNotes
+      record.noteDraft = previousDraftNotes
+    },
+    onFinish: () => {
+      record.saving = false
+    },
+  })
 }
 
-const removeAttendance = async (record) => {
-  if (isScheduleLocked.value || !record?.id) return
-  await axios.delete(route('guru.api.attendance.destroy', record.id))
-  setSuccessMessage('Data kehadiran dihapus.')
-  fetchAttendance()
+const removeAttendance = (record) => {
+  if (isRecordLocked(record) || !record?.id) return
+
+  const previousStatus = normalizeStatusValue(record.status)
+  if (previousStatus) {
+    adjustSummaryCount(previousStatus, -1)
+  }
+
+  record.saving = true
+  router.delete(route('guru.api.attendance.destroy', record.id), {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: () => {
+      setSuccessMessage('Data kehadiran dihapus.')
+      refreshAttendance()
+    },
+    onError: () => {
+      if (previousStatus) {
+        adjustSummaryCount(previousStatus, 1)
+      }
+    },
+    onFinish: () => {
+      record.saving = false
+    },
+  })
 }
 
 const openNoteModal = (record) => {
-  if (isScheduleLocked.value) return
+  if (isRecordLocked(record)) return
   activeNoteRecord.value = record
   noteForm.description = record.noteDraft ?? record.notes ?? ''
   showNoteModal.value = true
@@ -378,18 +588,16 @@ const closeNoteModal = () => {
   noteForm.description = ''
 }
 
-const saveNote = async () => {
+const saveNote = () => {
   if (!activeNoteRecord.value) return
-  await saveAttendance(activeNoteRecord.value, { notes: noteForm.description })
+  saveAttendance(activeNoteRecord.value, { notes: noteForm.description })
   closeNoteModal()
 }
 
-onMounted(() => {
-  fetchAttendance()
-})
 onBeforeUnmount(() => {
   clearTimeout(searchTimer)
   clearCountdownTimer()
+  stopWallClockTimer()
 })
 </script>
 
@@ -565,7 +773,7 @@ onBeforeUnmount(() => {
                                  <div class="relative">
                                     <select
                                         v-model="record.draftStatus"
-                                        :disabled="isScheduleLocked"
+                                      :disabled="isRecordLocked(record)"
                                         class="appearance-none rounded-xl border border-slate-200 bg-white pl-3 pr-8 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 transition-shadow cursor-pointer hover:border-orange-300 shadow-sm"
                                         :class="record.draftStatus ? 'text-slate-700' : 'text-slate-400'"
                                     >
@@ -576,8 +784,8 @@ onBeforeUnmount(() => {
                                          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                  </div>
-                                <span v-if="record.draftStatus" :class="['rounded-full px-2.5 py-1 text-[10px] font-bold border shadow-sm', statusBadgeClass(record.draftStatus)]">
-                                    {{ record.draftStatus }}
+                                <span v-if="record.status" :class="['rounded-full px-2.5 py-1 text-[10px] font-bold border shadow-sm', statusBadgeClass(record.status)]">
+                                  {{ record.status }}
                                 </span>
                             </div>
                         </td>
@@ -585,7 +793,7 @@ onBeforeUnmount(() => {
                              <div class="flex items-start gap-3">
                                 <button
                                     class="group/note inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2.5 text-xs font-bold text-blue-700 hover:from-blue-100 hover:to-indigo-100 hover:text-blue-800 transition-all border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md active:scale-95"
-                                    :disabled="isScheduleLocked"
+                                  :disabled="isRecordLocked(record)"
                                     @click="openNoteModal(record)"
                                 >
                                     <DocumentTextIcon class="h-4 w-4 transition-transform group-hover/note:scale-110" />
@@ -601,7 +809,7 @@ onBeforeUnmount(() => {
                              <div class="flex items-center justify-end gap-2">
                                 <button
                                     class="inline-flex items-center gap-1.5 rounded-xl bg-[#84994f] px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-[#84994f]/30 transition-all hover:bg-[#6b7a3f] hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                    :disabled="isScheduleLocked || record.saving || !isRecordDirty(record)"
+                                  :disabled="isRecordLocked(record) || record.saving || !isRecordDirty(record)"
                                     @click="saveAttendance(record)"
                                 >
                                     <span v-if="record.saving" class="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
@@ -609,13 +817,14 @@ onBeforeUnmount(() => {
                                 </button>
                                 <button
                                     class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600 transition-all border border-rose-100 hover:scale-110 active:scale-95"
-                                    :disabled="isScheduleLocked"
+                                  :disabled="isRecordLocked(record)"
                                     title="Hapus Data"
                                     @click="removeAttendance(record)"
                                 >
                                     <TrashIcon class="h-4 w-4" />
                                 </button>
                              </div>
+                               <p v-if="!isScheduleLocked && isRecordLocked(record)" class="mt-2 text-[11px] font-semibold text-amber-500">Presensi terbuka setelah jadwal dimulai.</p>
                         </td>
                     </tr>
                 </tbody>

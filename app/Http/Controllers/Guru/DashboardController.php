@@ -51,6 +51,8 @@ class DashboardController extends Controller
             ->pluck('total', 'status')
             ->all();
 
+        $attendanceStats = $this->normalizeSummary($attendanceStats);
+
         $notes = TeacherNote::where('teacher_id', $teacher->id)
             ->latest('recorded_at')
             ->limit(5)
@@ -69,5 +71,31 @@ class DashboardController extends Controller
             'attendanceStats' => $attendanceStats,
             'recentNotes' => $notes,
         ];
+    }
+
+    protected function normalizeSummary($rawSummary): array
+    {
+        $allowed = ['Hadir', 'Izin', 'Sakit', 'Alpha'];
+        $normalized = array_fill_keys($allowed, 0);
+
+        foreach ($rawSummary as $status => $total) {
+            $clean = trim((string) $status);
+
+            if ($clean === '' || ! in_array($clean, $allowed, true)) {
+                continue;
+            }
+
+            $normalized[$clean] = ($normalized[$clean] ?? 0) + (int) $total;
+        }
+
+        return $normalized;
+    }
+
+    protected function normalizeStatus(?string $status): string
+    {
+        $clean = trim((string) $status);
+        $allowed = ['Hadir', 'Izin', 'Sakit', 'Alpha'];
+
+        return in_array($clean, $allowed, true) ? $clean : 'Hadir';
     }
 }
