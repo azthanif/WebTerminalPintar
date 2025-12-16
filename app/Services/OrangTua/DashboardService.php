@@ -8,6 +8,7 @@ use App\Repositories\Contracts\ParentPortalRepositoryInterface;
 use App\Http\Resources\OrangTua\ScheduleResource; // Pastikan ini ada jika dipakai
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Session;
 
 class DashboardService
 {
@@ -16,11 +17,19 @@ class DashboardService
     ) {
     }
 
-    // UBAH BAGIAN INI: Tambahkan parameter $studentId
     public function resolveStudent(User $user, ?int $studentId = null): ?Student
     {
-        // Teruskan ID tersebut ke repository
-        return $this->repository->findStudentFor($user, $studentId);
+        $student = $this->repository->findStudentFor($user, $studentId);
+
+        if (! $student && $studentId) {
+            $student = $this->repository->findStudentFor($user);
+        }
+
+        if ($student && $studentId !== $student->id) {
+            Session::put('parent_portal_student_id', $student->id);
+        }
+
+        return $student;
     }
 
     public function buildSummary(Student $student): array

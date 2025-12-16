@@ -210,7 +210,7 @@ watch(
             <div class="flex-1 lg:pl-72 bg-[#F5F5F4] transition-all duration-300">
                 <!-- Header (Glassmorphism Scroll Effect) -->
                 <header 
-                    class="sticky top-0 z-40 flex items-center justify-between px-8 py-5 transition-all duration-300"
+                    class="sticky top-0 z-1 flex items-center justify-between px-8 py-5 transition-all duration-300"
                     :class="isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-4 border-b border-slate-100' : 'bg-transparent border-transparent'"
                 >
                     <div class="flex items-center gap-4">

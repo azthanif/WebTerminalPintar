@@ -15,11 +15,17 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
 {
     public function findStudentFor(User $user, ?int $studentId = null): ?Student
     {
-        return $user->students()
-            ->when($studentId, fn ($query) => $query->where('id', $studentId))
-            ->with(['attendances' => fn ($query) => $query->latest('attendance_date')->limit(10)])
-            ->with(['teacherNotes' => fn ($query) => $query->latest('recorded_at')->limit(10)])
-            ->first();
+        $query = $user->students()
+            ->with(['attendances' => fn ($q) => $q->latest('attendance_date')->limit(10)])
+            ->with(['teacherNotes' => fn ($q) => $q->latest('recorded_at')->limit(10)]);
+
+        if ($studentId) {
+            $query->where('id', $studentId);
+        } else {
+            $query->orderBy('name');
+        }
+
+        return $query->first();
     }
 
     public function latestAttendances(Student $student, int $limit = 5): Collection

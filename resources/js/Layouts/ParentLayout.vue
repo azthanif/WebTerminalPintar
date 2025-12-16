@@ -313,44 +313,27 @@ const userInitials = computed(() => userName.value.charAt(0).toUpperCase())
 // PENTING: Data ada di auth.user, bukan langsung di auth
 const myStudents = computed(() => {
   const students = page.props.auth?.user?.students ?? []
-  console.log('📚 Students Data:', students) // Debug
   return Array.isArray(students) ? students : []
 })
 
 const activeStudentId = computed(() => {
-  const id = page.props.auth?.user?.active_student_id
-  console.log('✅ Active Student ID:', id) // Debug
-  return id
+  return page.props.auth?.user?.active_student_id
 })
 
 // Cari nama anak yang sedang aktif
 const activeStudentName = computed(() => {
   if (!myStudents.value.length) {
-    console.log('⚠️ Tidak ada siswa')
     return 'Belum ada siswa'
   }
   
   // Gunakan == untuk perbandingan yang lebih fleksibel (number vs string)
   const active = myStudents.value.find(s => s.id == activeStudentId.value) 
                  ?? myStudents.value[0]
-  
-  console.log('👤 Active Student:', active)
   return active?.name ?? 'Siswa'
 })
 
-// Watch untuk debugging
-watch([myStudents, activeStudentId], ([students, activeId]) => {
-  console.log('🔄 Data berubah:', { 
-    studentsCount: students.length, 
-    activeId,
-    students 
-  })
-}, { immediate: true })
-
 // Fungsi Ganti Siswa
 const switchStudent = (studentId) => {
-  console.log('🔀 Switching to student:', studentId)
-  
   // Tutup menu
   studentMenuOpen.value = false
   
@@ -359,12 +342,7 @@ const switchStudent = (studentId) => {
     student_id: studentId
   }, {
     preserveScroll: true,
-    onSuccess: () => {
-      console.log('✅ Switch berhasil')
-    },
-    onError: (errors) => {
-      console.error('❌ Switch gagal:', errors)
-    }
+    onSuccess: () => {},
   })
 }
 
