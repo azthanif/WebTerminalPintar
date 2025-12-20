@@ -8,14 +8,8 @@ class UserResource extends JsonResource
 {
     public function toArray($request): array
     {
-        $role = $this->whenLoaded('roles', function () {
-            return $this->roles->first();
-        });
-
-        if (! $role && isset($this->role)) {
-            $role = $this->role;
-        }
-
+        $role = $this->roles->first();
+        
         $roleData = $role ? [
             'id'           => $role->id,
             'name'         => $role->name,

@@ -3,6 +3,7 @@
 namespace App\Services\Public;
 
 use App\Models\News;
+use App\Models\Student;
 use Illuminate\Support\Collection;
 
 class HomePublicService
@@ -17,5 +18,13 @@ class HomePublicService
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get();
+    }
+
+    public function getHeroStats(): array
+    {
+        return [
+            'students_count' => Student::count(),
+            'news_count' => News::count(),
+        ];
     }
 }

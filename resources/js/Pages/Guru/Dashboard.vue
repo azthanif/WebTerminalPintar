@@ -13,17 +13,29 @@
             <span>Portal Guru</span>
         </div>
         <p class="text-2xl font-bold text-slate-700 mt-0.5" style="font-family: 'Poppins', sans-serif;">
-                    Selamat datang, <span class="text-[var(--color-primary)]">{{ teacherName }}</span>. {{ heroSubtitle }}
+                    Selamat datang, <span class="text-[var(--color-primary)]">{{ teacherName }}</span>.
                 </p>
       </div>
       
-      <button
-        class="group inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:shadow-xl hover:-translate-y-1 active:scale-95 border border-emerald-500"
-        @click="fetchSummary"
-      >
-        <ArrowPathIcon class="h-5 w-5 transition-transform group-hover:rotate-180 text-emerald-100" :class="{ 'animate-spin': isSyncingSummary }" />
-        <span>Sinkron Data</span>
-      </button>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 p-1.5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <div class="p-2.5 bg-slate-50 rounded-xl text-[var(--color-primary)]">
+                 <ClockIcon class="h-6 w-6" />
+              </div>
+              <div class="pr-3">
+                  <p class="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-[#84994F] uppercase tracking-wider">Hari ini</p>
+                  <p class="text-sm font-bold text-slate-700">{{ heroSubtitle }}</p>
+              </div>
+         </div>
+         
+        <button
+          class="group inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:shadow-xl hover:-translate-y-1 active:scale-95 border border-emerald-500"
+          @click="fetchSummary"
+        >
+          <ArrowPathIcon class="h-5 w-5 transition-transform group-hover:rotate-180 text-emerald-100" :class="{ 'animate-spin': isSyncingSummary }" />
+          <span>Sinkron Data</span>
+        </button>
+      </div>
     </section>
 
     <!-- Stats Grid (Fresh & Elegant Colors) -->
@@ -159,7 +171,7 @@
               </div>
             </header>
     
-            <div class="overflow-hidden rounded-2xl border border-slate-200 shadow-sm flex-1">
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm flex-1 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
               <table class="min-w-full">
                 <thead class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200">
                   <tr>

@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'is_active',
         'last_login_at',
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -28,11 +29,16 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'last_login_at' => 'datetime',
-        'is_active' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
+            'must_change_password' => 'boolean',
+        ];
+    }
 
     public function getNamaRoleAttribute()
     {
@@ -93,6 +99,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeGuru($query)
     {
         return $query->role('guru');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
     }
 
     public function scopeActive($query)

@@ -45,7 +45,7 @@ class DashboardService
             ->whereYear('start_time', Carbon::now()->year)
             ->count();
 
-        $presentCount = $attendances->where('status', 'present')->count();
+        $presentCount = $attendances->where('status', 'Hadir')->count();
         $attendanceRate = $attendances->count() ? round(($presentCount / $attendances->count()) * 100, 1) : 0;
 
         $nextSchedule = $this->repository->upcomingSchedules($student, 1)->first();

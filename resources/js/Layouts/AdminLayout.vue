@@ -157,24 +157,25 @@ watch(
 	<div class="min-h-screen bg-[#F5F5F4] font-sans text-slate-900">
 		<div class="flex min-h-screen">
 			<!-- Off-canvas backdrop -->
-			<div v-if="sidebarOpen" class="fixed inset-0 z-30 bg-black/20 lg:hidden" @click="closeSidebar" />
+			<div v-if="sidebarOpen" class="fixed inset-0 z-40 bg-black/20 lg:hidden" @click="closeSidebar" />
 
 			<!-- Sidebar -->
 			<aside :class="[
-				'fixed inset-y-0 left-0 z-40 w-72 h-screen bg-[var(--color-primary)] border-r-0 transition-transform duration-300 ease-in-out flex flex-col overflow-hidden',
+				'fixed inset-y-0 left-0 z-50 w-72 h-screen bg-[var(--color-primary)] border-r-0 transition-transform duration-300 ease-in-out flex flex-col overflow-hidden',
 				sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
 			]">
 				<!-- Section A: Brand & Profile (Top) -->
 				<div class="flex flex-col gap-6 px-8 py-8 text-white">
 					<!-- Brand -->
 					<div class="flex items-center gap-3">
-						<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white backdrop-blur-md shadow-inner">
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75v-4.5m0 4.5h4.5m-4.5 0l6-6m-9.75 5.25v1.5h1.5m-1.5-1.5l-6-6m16.5 7.5v6a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-							</svg>
+						<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-lg p-1">
+							<img 
+								:src="'/images/logo-terminal-pintar.png'" 
+								alt="Logo Terminal Pintar" 
+								class="h-full w-full object-contain"
+							/>
 						</div>
 						<div>
-							<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Terminal Pintar</p>
 							<p class="text-xl font-extrabold tracking-tight">Panel Admin</p>
 						</div>
 						<button class="ml-auto lg:hidden text-white/70 hover:text-white" @click="closeSidebar">
@@ -227,7 +228,7 @@ watch(
 						<span>Keluar Aplikasi</span>
 					</button>
                     <p class="mt-4 text-center text-[10px] text-white/30">
-                        &copy; 2024 Terminal Pintar v1.0
+                        &copy; 2025 Terminal Pintar. Semua Hak Dilindungi.
                     </p>
 				</div>
 			</aside>
@@ -236,8 +237,8 @@ watch(
 			<div class="flex-1 lg:pl-72 bg-[#F5F5F4] transition-all duration-300">
 				<!-- Header (Glassmorphism Scroll Effect) -->
 				<header 
-                    class="sticky top-0 z-40 flex items-center justify-between px-8 py-5 transition-all duration-300"
-                    :class="isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-4 border-b border-slate-100' : 'bg-transparent border-transparent'"
+                    class="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-3 sm:py-5 transition-all duration-300"
+                    :class="isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-2 sm:py-4 border-b border-slate-100' : 'bg-transparent border-transparent'"
                 >
 					<div class="flex items-center gap-4">
 						<button class="rounded-xl border border-slate-200 p-2 text-slate-600 shadow-sm hover:bg-slate-50 lg:hidden hover:scale-105 active:scale-95 transition-transform"
@@ -245,7 +246,7 @@ watch(
 							<Bars3Icon class="h-5 w-5" />
 						</button>
 						<div>
-						<h2 class="page-title text-3xl font-bold tracking-tight leading-tight bg-gradient-to-r from-slate-800 via-[var(--color-primary)] to-slate-800 bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient-shift hover:scale-105 transition-transform duration-300 cursor-default">
+						<h2 class="page-title text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-tight bg-gradient-to-r from-slate-800 via-[var(--color-primary)] to-slate-800 bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient-shift hover:scale-105 transition-transform duration-300 cursor-default">
 							{{ page.props.title || 'Dashboard' }}
 						</h2>
 					</div>
@@ -253,7 +254,7 @@ watch(
 				</header>
 
 				<!-- Content -->
-				<main class="flex-1 overflow-y-auto px-8 pb-8 pt-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+				<main class="flex-1 overflow-y-auto px-4 sm:px-8 pb-8 pt-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                     <Transition name="page" mode="out-in">
                         <div :key="$page.url">
                             <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 -translate-y-2"
@@ -261,17 +262,17 @@ watch(
                                 leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
                                 <div v-if="flashVisible && (flash.success || flash.error)"
                                     :class="[
-                                        'mb-8 flex items-start gap-4 rounded-3xl border px-6 py-4 shadow-sm backdrop-blur-sm',
+                                        'mb-6 sm:mb-8 flex items-start gap-3 sm:gap-4 rounded-2xl sm:rounded-3xl border px-4 sm:px-6 py-3 sm:py-4 shadow-sm backdrop-blur-sm',
                                         flash.success
                                             ? 'border-emerald-100 bg-emerald-50/80 text-emerald-800'
                                             : 'border-rose-100 bg-rose-50/80 text-rose-800',
                                     ]">
-                                    <component :is="flash.success ? CheckCircleIcon : ExclamationCircleIcon" class="h-6 w-6 shrink-0" />
+                                    <component :is="flash.success ? CheckCircleIcon : ExclamationCircleIcon" class="h-5 sm:h-6 w-5 sm:w-6 shrink-0" />
                                     <div>
-                                        <p class="font-bold text-base">
+                                        <p class="font-bold text-sm sm:text-base">
                                             {{ flash.success ? 'Berhasil' : 'Terjadi Kesalahan' }}
                                         </p>
-                                        <p class="mt-1 text-sm opacity-90">{{ flash.success || flash.error }}</p>
+                                        <p class="mt-0.5 sm:mt-1 text-xs sm:text-sm opacity-90">{{ flash.success || flash.error }}</p>
                                     </div>
                                 </div>
                             </transition>

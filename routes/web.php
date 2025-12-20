@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\{
     SettingController
 };
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\CaptchaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Public\HomeController;
@@ -102,6 +103,18 @@ Route::get('/login', [LoginController::class, 'create'])
 
 // Proses login
 Route::post('/login', [LoginController::class, 'store']);
+
+// Captcha
+Route::get('/captcha/generate', [CaptchaController::class, 'generate'])->name('captcha.generate');
+Route::post('/captcha/verify', [CaptchaController::class, 'verify'])->name('captcha.verify');
+
+// Ganti Password (Pertama kali login)
+Route::middleware('auth')->group(function () {
+    Route::get('/change-password', [App\Http\Controllers\Auth\PasswordChangeController::class, 'show'])
+        ->name('auth.change-password');
+    Route::post('/change-password', [App\Http\Controllers\Auth\PasswordChangeController::class, 'update'])
+        ->name('auth.change-password.update');
+});
 
 // Logout
 Route::post('/logout', [LoginController::class, 'destroy'])

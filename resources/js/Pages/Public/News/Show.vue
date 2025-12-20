@@ -118,7 +118,7 @@ const handleImageError = (event) => {
 </script>
 
 <template>
-  <PublicLayout :show-navbar="false" :show-footer="false">
+  <PublicLayout :show-navbar="false" :show-footer="true">
     <Head :title="berita?.judul ?? 'Detail Berita'" />
 
     <div class="font-sans bg-gray-50 min-h-screen">
@@ -129,11 +129,8 @@ const handleImageError = (event) => {
               <img
                 :src="assets.logo"
                 alt="Logo Terminal Pintar"
-                class="h-10 w-10 mr-3 rounded-full transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110"
+                class="h-14 w-auto object-contain transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110"
               >
-              <span class="text-2xl font-bold text-[#76B340] tracking-tight transition-colors duration-300 group-hover:text-[#5a8a30]">
-                Terminal Pintar
-              </span>
             </Link>
 
             <nav class="hidden lg:flex items-center space-x-8">
@@ -207,7 +204,7 @@ const handleImageError = (event) => {
       </header>
 
       <main class="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-20">
           <div v-if="isLoading" class="p-8 md:p-12 animate-pulse">
             <div class="h-6 bg-gray-200 rounded w-1/4 mb-4" />
             <div class="h-10 bg-gray-200 rounded w-3/4 mb-8" />
@@ -224,7 +221,7 @@ const handleImageError = (event) => {
 
           <article v-else class="relative">
             <!-- Breadcrumb -->
-            <div class="px-8 md:px-12 pt-8 pb-4">
+            <div class="px-5 sm:px-8 md:px-12 pt-6 sm:pt-8 pb-4">
               <nav class="flex items-center gap-2 text-sm text-slate-600">
                 <Link :href="route('public.home')" class="hover:text-[#76B340] transition-colors">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -245,7 +242,7 @@ const handleImageError = (event) => {
             </div>
 
             <!-- Article Header -->
-            <div class="px-8 md:px-12 pb-8">
+            <div class="px-5 sm:px-8 md:px-12 pb-6 sm:pb-8">
               <!-- Category Badge -->
               <div class="inline-flex items-center gap-2 px-4 py-2 mb-6 text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-[#76B340] to-emerald-600 text-white rounded-full shadow-lg">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -255,7 +252,7 @@ const handleImageError = (event) => {
               </div>
 
               <!-- Title -->
-              <h1 class="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-6 leading-tight">
+              <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-5 sm:mb-6 leading-tight">
                 {{ berita.judul }}
               </h1>
 
@@ -267,23 +264,6 @@ const handleImageError = (event) => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span class="text-sm font-medium text-slate-700">{{ formattedDate }}</span>
-                </div>
-
-                <!-- Reading Time -->
-                <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl">
-                  <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="text-sm font-medium text-slate-700">5 min read</span>
-                </div>
-
-                <!-- Views -->
-                <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl">
-                  <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <span class="text-sm font-medium text-slate-700">{{ Math.floor(Math.random() * 500) + 100 }} views</span>
                 </div>
 
                 <!-- Share Button -->
@@ -298,13 +278,13 @@ const handleImageError = (event) => {
               </div>
 
               <!-- Subtitle -->
-              <p v-if="subtitle" class="text-xl md:text-2xl text-slate-600 leading-relaxed mb-8 font-light">
+              <p v-if="subtitle" class="text-lg sm:text-xl md:text-2xl text-slate-600 leading-relaxed mb-6 sm:mb-8 font-light">
                 {{ subtitle }}
               </p>
             </div>
 
             <!-- Image Gallery -->
-            <div class="px-8 md:px-12 mb-12">
+            <div class="px-5 sm:px-8 md:px-12 mb-8 sm:mb-12">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div
                   v-for="(gambar, index) in heroImages"
@@ -417,16 +397,8 @@ const handleImageError = (event) => {
             </div>
           </article>
         </div>
-      </main>
 
-      <Link
-        :href="route('public.news.index')"
-        class="fixed bottom-8 right-8 bg-white text-[#76B340] border-2 border-[#76B340] p-3 rounded-full shadow-lg z-40 transform transition-all duration-300 hover:-translate-y-1 hover:bg-[#76B340] hover:text-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#76B340]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-      </Link>
+      </main>
     </div>
   </PublicLayout>
 </template>

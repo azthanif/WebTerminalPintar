@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             HandleInertiaRequests::class,
+            \App\Http\Middleware\CheckMustChangePassword::class,
         ]);
         $middleware->alias([
             'role'               => SpatieRoleMiddleware::class,

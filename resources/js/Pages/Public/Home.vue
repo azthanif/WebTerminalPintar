@@ -9,6 +9,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  heroStats: {
+    type: Object,
+    default: () => ({
+      students_count: 0,
+      news_count: 0,
+    }),
+  },
 })
 
 const isMobileMenuOpen = ref(false)
@@ -152,13 +159,13 @@ const handleImageError = (event) => {
       <header class="bg-white border-b border-gray-200 py-4 sticky top-0 z-50 shadow-sm transition-all duration-300">
         <div class="px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center">
-            <a href="#" class="flex items-center group" @click.prevent="closeMobileMenu">
+            <a href="#" class="flex items-center group shrink-0" @click.prevent="closeMobileMenu">
               <img
                 :src="assets.logo"
                 alt="Logo Terminal Pintar"
-                class="h-10 w-10 mr-3 rounded-full transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110"
+                class="h-10 sm:h-12 md:h-14 w-auto object-contain transition-transform duration-500 group-hover:rotate-12 group-hover:scale-105 mr-2 sm:mr-3"
               >
-              <span class="text-2xl font-bold text-[#76B340] tracking-tight transition-colors duration-300 group-hover:text-[#5a8a30]">
+              <span class="text-lg sm:text-xl md:text-2xl font-bold text-[#76B340] tracking-tight transition-colors duration-300 group-hover:text-[#5a8a30]">
                 Terminal Pintar
               </span>
             </a>
@@ -265,10 +272,10 @@ const handleImageError = (event) => {
 
       <section
         ref="heroRef"
-        class="hero-section relative bg-cover bg-center min-h-[600px] flex items-center text-white overflow-hidden"
+        class="hero-section relative bg-cover bg-center min-h-[500px] md:min-h-[600px] flex items-center text-white overflow-hidden"
         :style="{ backgroundImage: `url('${assets.hero}')` }"
       >
-        <div class="absolute inset-0 bg-gradient-to-r from-[#76B340]/80 via-[#76B340]/70 to-[#76B340]/60" />
+        <div class="absolute inset-0 bg-gradient-to-r from-[#76B340]/90 via-[#76B340]/80 to-[#76B340]/70 md:from-[#76B340]/80 md:via-[#76B340]/70 md:to-[#76B340]/60" />
         
         <!-- Animated background elements -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -280,12 +287,12 @@ const handleImageError = (event) => {
           <!-- Headline with staggered animation -->
           <h1 
             :class="[
-              'text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-lg transition-all duration-1000',
+              'text-3xl sm:text-4xl md:text-6xl font-extrabold mb-4 sm:mb-6 drop-shadow-lg transition-all duration-1000',
               heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             ]"
           >
             Halo, Selamat Datang di <br>
-            <span class="inline-block mt-2 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
+            <span class="inline-block mt-1 sm:mt-2 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
               Terminal Pintar!
             </span>
           </h1>
@@ -293,7 +300,7 @@ const handleImageError = (event) => {
           <!-- Subheadline -->
           <p 
             :class="[
-              'text-lg md:text-xl font-light max-w-3xl mx-auto mb-10 leading-relaxed transition-all duration-1000 delay-100',
+              'text-base sm:text-lg md:text-xl font-light max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed transition-all duration-1000 delay-100 px-2 sm:px-0',
               heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             ]"
           >
@@ -327,24 +334,23 @@ const handleImageError = (event) => {
             ]"
           >
             <div class="text-center group cursor-default">
-              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">100+</div>
-              <div class="text-sm text-white/80 font-medium">Siswa Terdampak</div>
+              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">
+                {{ heroStats.students_count }}+
+              </div>
+              <div class="text-sm text-white/80 font-medium">Siswa Binaan</div>
             </div>
             <div class="hidden sm:block w-px h-12 bg-white/30"></div>
             <div class="text-center group cursor-default">
-              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">5+</div>
-              <div class="text-sm text-white/80 font-medium">Relawan Aktif</div>
-            </div>
-            <div class="hidden sm:block w-px h-12 bg-white/30"></div>
-            <div class="text-center group cursor-default">
-              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">3+</div>
-              <div class="text-sm text-white/80 font-medium">Tahun Berdampak</div>
+              <div class="text-3xl md:text-4xl font-extrabold text-white group-hover:scale-110 transition-transform">
+                {{ heroStats.news_count }}+
+              </div>
+              <div class="text-sm text-white/80 font-medium">Kegiatan Terlaksana</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="kegiatan" class="py-24 bg-slate-50">
+      <section id="kegiatan" class="py-16 md:py-24 bg-slate-50">
         <div ref="featuresRef" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 
             :class="[
@@ -432,27 +438,6 @@ const handleImageError = (event) => {
                     {{ item.judul }}
                   </h3>
                   
-                  <!-- Meta Info Row -->
-                  <div class="flex items-center gap-3 mb-4 text-xs text-slate-500">
-                    <!-- Read Time Estimate -->
-                    <div class="flex items-center gap-1.5 group/meta">
-                      <svg class="w-4 h-4 text-slate-400 group-hover/meta:text-[#76B340] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span class="font-medium">5 min read</span>
-                    </div>
-                    
-                    <span class="text-slate-300">•</span>
-                    
-                    <!-- View Count (simulated) -->
-                    <div class="flex items-center gap-1.5 group/meta">
-                      <svg class="w-4 h-4 text-slate-400 group-hover/meta:text-[#76B340] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      <span class="font-medium">{{ Math.floor(Math.random() * 500) + 100 }}</span>
-                    </div>
-                  </div>
                   
                   <!-- Description -->
                   <p class="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-6 flex-grow">
@@ -530,7 +515,7 @@ const handleImageError = (event) => {
         </div>
       </section>
 
-      <section ref="aboutRef" id="tentang" class="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
+      <section ref="aboutRef" id="tentang" class="py-16 md:py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
         <!-- Animated Background Elements -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-gradient-to-br from-[#76B340]/10 to-transparent rounded-full blur-3xl opacity-60 animate-float"></div>
@@ -545,7 +530,7 @@ const handleImageError = (event) => {
               aboutVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
             ]"
           >
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4">
               <span class="bg-gradient-to-r from-[#76B340] via-emerald-600 to-[#76B340] bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_100%]">
                 Tentang Kami
               </span>
@@ -755,7 +740,7 @@ const handleImageError = (event) => {
         </div>
       </section>
 
-      <section ref="teamRef" class="py-24 bg-gradient-to-br from-white via-slate-50 to-emerald-50/20 relative overflow-hidden">
+      <section ref="teamRef" class="py-16 md:py-24 bg-gradient-to-br from-white via-slate-50 to-emerald-50/20 relative overflow-hidden">
         <!-- Animated Background -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-[#76B340]/5 rounded-full blur-3xl animate-float"></div>
@@ -770,7 +755,7 @@ const handleImageError = (event) => {
               teamVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
             ]"
           >
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4">
               <span class="bg-gradient-to-r from-[#76B340] via-emerald-600 to-[#76B340] bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_100%]">
                 Tim Pengurus
               </span>
@@ -950,7 +935,7 @@ const handleImageError = (event) => {
 
                 <!-- Corner Decoration -->
                 <div class="absolute top-0 left-0 w-24 h-24 overflow-hidden rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div class="absolute -top-12 -left-12 w-24 h-24 bg-gradient-to-br from-orange-300/20 to-transparent rounded-full blur-xl"></div>
+                  <div class="absolute -top-12 -left-12 w-24 h-24 bg-gradient-to-br from-orange-300/20 to-transparent rounded-full blur-2xl"></div>
                 </div>
               </div>
             </article>
@@ -1036,7 +1021,7 @@ const handleImageError = (event) => {
         </div>
       </section>
 
-      <section ref="ctaRef" class="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 relative overflow-hidden">
+      <section ref="ctaRef" class="py-16 md:py-24 bg-white relative overflow-hidden">
         <!-- Animated Background Elements -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-[#76B340]/10 rounded-full blur-3xl animate-float"></div>
@@ -1293,7 +1278,25 @@ const handleImageError = (event) => {
       </section>
 
       <footer id="kontak" class="bg-[#76B340] text-white pt-20 pb-10">
-        <div class="max-w-7xl mx-auto px-8 md:pl-40 grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div class="max-w-7xl mx-auto px-8 md:pl-20 grid grid-cols-1 md:grid-cols-4 gap-12">
+          <!-- GMaps Embed -->
+          <div class="md:col-span-1 group">
+            <h4 class="font-bold text-xl mb-6 flex items-center gap-2">
+              Lokasi Kami
+            </h4>
+            <div class="rounded-2xl overflow-hidden border-4 border-white/20 shadow-xl group-hover:border-white/40 transition-all duration-500 h-48">
+              <iframe 
+                src="https://maps.google.com/maps?q=Wanda, Jakarta Timur RT.11/RW.6 gg Anggrek No 18 Rambutan, Kec. Ciracas, Kota Jakarta Timur&t=&z=17&ie=UTF8&iwloc=&output=embed" 
+                class="w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Lokasi Terminal Pintar"
+              ></iframe>
+            </div>
+          </div>
+
           <div class="group">
             <h4 class="font-bold text-xl mb-6 flex items-center gap-2">
               Alamat
@@ -1307,7 +1310,7 @@ const handleImageError = (event) => {
                 <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
               </svg>
               <span>
-                Gang Anggrek No 18, RT.11/RW.6, Rambutan, Kec. Ciracas, Kota Jakarta Timur, DKI Jakarta 13830
+                Wanda, Jakarta Timur RT.11/RW.6 gg Anggrek No 18 (Patokan gg depan Sutet), Rambutan, Kec. Ciracas, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13830
               </span>
             </a>
           </div>
@@ -1375,7 +1378,7 @@ const handleImageError = (event) => {
         </div>
 
         <div class="mt-16 border-t border-green-700 pt-8 text-center text-sm text-white/80">
-          © {{ new Date().getFullYear() }} Terminal Pintar. All rights reserved.
+          © 2025 Terminal Pintar. Semua Hak Dilindungi.
         </div>
       </footer>
     </div>

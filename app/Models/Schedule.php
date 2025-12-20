@@ -82,10 +82,10 @@ class Schedule extends Model
     public function getStatusColorAttribute(): string
     {
         return match ($this->status_badge) {
-            'Berlangsung' => '#10b981',
-            'Selesai' => '#0ea5e9',
-            'Dibatalkan' => '#ef4444',
-            default => '#f97316',
+            'Berlangsung', 'ongoing' => '#10b981',
+            'Selesai', 'completed' => '#0ea5e9',
+            'Dibatalkan', 'canceled' => '#ef4444',
+            default => '#f97316', // Akan Datang / upcoming
         };
     }
 

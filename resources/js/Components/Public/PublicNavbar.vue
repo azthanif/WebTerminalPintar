@@ -19,17 +19,13 @@ const user = page.props.auth?.user ?? null
         <!-- Logo -->
         <Link 
           :href="route('public.home')" 
-          class="group flex items-center gap-2"
+          class="group flex items-center gap-3"
         >
-          <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-[#84994F] to-[#6B7D3F] flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-            <span class="text-white font-bold text-xl">TP</span>
-          </div>
-          <div>
-            <span class="text-xl font-bold bg-gradient-to-r from-slate-800 to-[#84994F] bg-clip-text text-transparent">
-              Terminal Pintar
-            </span>
-            <div class="text-[10px] text-slate-500 font-medium -mt-0.5">Learning Platform</div>
-          </div>
+          <img 
+            :src="'/images/logo-terminal-pintar.png'" 
+            alt="Logo Terminal Pintar" 
+            class="h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          />
         </Link>
 
         <!-- Desktop Navigation -->
@@ -99,64 +95,60 @@ const user = page.props.auth?.user ?? null
 
     <!-- Mobile menu -->
     <Transition
-      enter-active-class="transition ease-out duration-200"
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-2"
+      enter-active-class="transition ease-out duration-300 transform"
+      enter-from-class="opacity-0 -translate-y-4 scale-95"
+      enter-to-class="opacity-100 translate-y-0 scale-100"
+      leave-active-class="transition ease-in duration-200 transform"
+      leave-from-class="opacity-100 translate-y-0 scale-100"
+      leave-to-class="opacity-0 -translate-y-4 scale-95"
     >
-      <div v-if="isMobileMenuOpen" class="md:hidden border-t bg-white shadow-lg">
-        <div class="px-4 py-3 space-y-1">
-          <Link
-            :href="route('public.home')"
-            class="block px-4 py-3 text-slate-700 hover:text-[#84994F] hover:bg-[#84994F]/10 rounded-lg font-medium transition-all duration-200"
-            @click="isMobileMenuOpen = false"
-          >
-            Beranda
-          </Link>
-          <Link
-            :href="route('public.news.index')"
-            class="block px-4 py-3 text-slate-700 hover:text-[#84994F] hover:bg-[#84994F]/10 rounded-lg font-medium transition-all duration-200"
-            @click="isMobileMenuOpen = false"
-          >
-            Berita & Dokumentasi
-          </Link>
-          <Link
-            :href="route('public.about')"
-            class="block px-4 py-3 text-slate-700 hover:text-[#84994F] hover:bg-[#84994F]/10 rounded-lg font-medium transition-all duration-200"
-            @click="isMobileMenuOpen = false"
-          >
-            Tentang Kami
-          </Link>
-          <Link
-            :href="route('public.contact')"
-            class="block px-4 py-3 text-slate-700 hover:text-[#84994F] hover:bg-[#84994F]/10 rounded-lg font-medium transition-all duration-200"
-            @click="isMobileMenuOpen = false"
-          >
-            Kontak
-          </Link>
+      <div v-if="isMobileMenuOpen" class="md:hidden border-t bg-white shadow-2xl relative overflow-hidden">
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-[#84994F]/5 rounded-full blur-2xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-32 h-32 bg-[#84994F]/10 rounded-full blur-2xl"></div>
+
+        <div class="px-5 py-6 space-y-2 relative z-10">
+          <div class="flex flex-col gap-1">
+            <Link
+              v-for="item in [
+                { name: 'Beranda', route: 'public.home' },
+                { name: 'Berita & Dokumentasi', route: 'public.news.index' },
+                { name: 'Tentang Kami', route: 'public.about' },
+                { name: 'Kontak', route: 'public.contact' }
+              ]"
+              :key="item.name"
+              :href="route(item.route)"
+              class="flex items-center px-4 py-3.5 text-slate-700 hover:text-[#84994F] hover:bg-[#84994F]/5 rounded-xl font-bold transition-all duration-200 group"
+              @click="isMobileMenuOpen = false"
+            >
+              <span class="w-1.5 h-6 bg-[#84994F] rounded-full mr-3 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"></span>
+              {{ item.name }}
+            </Link>
+          </div>
           
           <!-- User info or login -->
-          <div class="pt-3 border-t">
-            <div v-if="user" class="px-4 py-3 bg-slate-50 rounded-lg">
-              <div class="flex items-center gap-2">
-                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-[#84994F] to-[#6B7D3F] flex items-center justify-center text-sm font-bold text-white">
+          <div class="pt-4 mt-2 border-t border-slate-100">
+            <div v-if="user" class="px-4 py-4 bg-slate-50/80 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+              <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-full bg-gradient-to-br from-[#84994F] to-[#6B7D3F] flex items-center justify-center text-lg font-bold text-white shadow-lg ring-4 ring-white">
                   {{ user.name?.charAt(0).toUpperCase() }}
                 </div>
                 <div>
-                  <div class="font-semibold text-slate-900">{{ user.name }}</div>
-                  <div class="text-xs text-slate-500">{{ user.nama_role || 'Pengguna' }}</div>
+                  <div class="font-extrabold text-slate-900 leading-tight">{{ user.name }}</div>
+                  <div class="text-xs font-bold text-[#84994F] mt-0.5 uppercase tracking-wider">{{ user.nama_role || 'Pengguna' }}</div>
                 </div>
               </div>
             </div>
             <Link
               v-else
               :href="route('login')"
-              class="block px-4 py-3 text-[#84994F] font-semibold text-center bg-[#84994F]/10 hover:bg-[#84994F] hover:text-white rounded-lg transition-all duration-200"
+              class="flex items-center justify-center gap-2 w-full px-6 py-4 mt-2 text-white font-extrabold bg-gradient-to-r from-[#84994F] to-[#6B7D3F] rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 focus:ring-4 focus:ring-[#84994F]/30 active:scale-95"
               @click="isMobileMenuOpen = false"
             >
-              Masuk
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              Masuk ke Aplikasi
             </Link>
           </div>
         </div>

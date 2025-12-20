@@ -9,7 +9,7 @@ class UserRepository
 {
     public function paginateWithFilters(array $filters, int $perPage = 10): LengthAwarePaginator
     {
-        $query = User::query()->with('role');
+        $query = User::query()->with('roles');
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -21,7 +21,7 @@ class UserRepository
         }
 
         if (!empty($filters['role'])) {
-            $query->whereHas('role', function ($q) use ($filters) {
+            $query->whereHas('roles', function ($q) use ($filters) {
                 $q->where('name', $filters['role']);
             });
         }

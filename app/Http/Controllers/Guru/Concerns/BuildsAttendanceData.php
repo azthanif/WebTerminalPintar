@@ -156,9 +156,15 @@ trait BuildsAttendanceData
 
         $secondsUntil = now()->diffInSeconds($matchingSchedule->start_time, false);
 
+        // If the schedule has already started or passed, don't return a window
+        // This allows the attendance form to be unlocked
+        if ($secondsUntil <= 0) {
+            return null;
+        }
+
         return [
             'starts_at' => $matchingSchedule->start_time->toIso8601String(),
-            'seconds_until' => $secondsUntil > 0 ? $secondsUntil : 0,
+            'seconds_until' => $secondsUntil,
             'schedule_label' => $this->buildSubjectLabel($matchingSchedule->subject, $matchingSchedule->topic),
         ];
     }

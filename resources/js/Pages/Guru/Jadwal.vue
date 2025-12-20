@@ -119,7 +119,7 @@ const computeScheduleStatus = (schedule) => {
 
 const mapSchedule = (schedule) => ({
     id: schedule.id,
-    status: schedule.status_badge || computeScheduleStatus(schedule),
+    status: computeScheduleStatus(schedule),
     is_deleted: !!schedule.deleted_at,
     waktu_mulai: schedule.start_time,
     waktu_selesai: schedule.end_time,

@@ -402,23 +402,26 @@ const hasFutureStart = (record) => {
 }
 
 const isRecordLocked = (record) => {
+  // If there's an active global schedule lock (countdown), everything is locked
   if (isScheduleLocked.value) {
     return true
   }
 
+  // If no schedule data, allow editing
   if (!record?.schedule) {
     return false
   }
 
-  const statusLabel = String(record.schedule.status_badge ?? record.schedule.status ?? '')
-    .trim()
-    .toLowerCase()
-
-  if (statusLabel && upcomingStatusLabels.includes(statusLabel)) {
+  // Check the actual start time instead of relying on status_badge
+  // which might be outdated and not refreshed
+  const start = parseScheduleStart(record.schedule.start_time)
+  if (start && start.getTime() > wallClock.value) {
+    // Schedule hasn't started yet
     return true
   }
 
-  return hasFutureStart(record)
+  // Schedule has started or no valid start time - allow editing
+  return false
 }
 
 function normalizeRecord(record) {
@@ -732,7 +735,7 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Table -->
-        <div class="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+        <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
              <table class="min-w-full divide-y divide-slate-100">
                 <thead class="bg-gradient-to-r from-orange-50 to-amber-50">
                     <tr>

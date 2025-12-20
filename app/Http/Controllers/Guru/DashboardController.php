@@ -32,7 +32,13 @@ class DashboardController extends Controller
 
         $upcoming = (clone $scheduleQuery)
             ->whereNull('deleted_at')
-            ->where('start_time', '>=', now())
+            ->where(function ($query) {
+                $query->where('start_time', '>=', now())
+                    ->orWhere(function ($q) {
+                        $q->where('start_time', '<=', now())
+                            ->where('end_time', '>=', now());
+                    });
+            })
             ->orderBy('start_time')
             ->limit(5)
             ->get()

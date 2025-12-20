@@ -49,6 +49,7 @@ class UserService
         unset($data['role_id']);
 
         $data['password'] = bcrypt($data['password']);
+        $data['must_change_password'] = true;
 
         $user = $this->users->create($data);
 

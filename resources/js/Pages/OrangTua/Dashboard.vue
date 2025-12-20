@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import ParentLayout from '@/Layouts/ParentLayout.vue'
 import { useParentDashboard } from '@/Composables/useParentDashboard'
@@ -44,7 +44,42 @@ const formatDate = (isoString) => {
     year: 'numeric'
   })
 }
-// -----------------------------------------
+
+// --- REAL-TIME STATUS LOGIC ---
+const currentTime = ref(new Date())
+let timeUpdateInterval = null
+
+onMounted(() => {
+  timeUpdateInterval = setInterval(() => {
+    currentTime.value = new Date()
+  }, 1000)
+})
+
+onBeforeUnmount(() => {
+  if (timeUpdateInterval) clearInterval(timeUpdateInterval)
+})
+
+const computeScheduleStatus = (schedule) => {
+  if (!schedule || !schedule.start_time) return 'Akan Datang'
+  
+  const now = currentTime.value
+  const start = new Date(schedule.start_time)
+  const end = schedule.end_time ? new Date(schedule.end_time) : null
+  
+  if (now < start) return 'Akan Datang'
+  if (end && now >= start && now <= end) return 'Berlangsung'
+  if (!end && now >= start) return 'Berlangsung' // Fallback jika tidak ada end_time
+  return 'Selesai'
+}
+
+const statusBadgeClass = (status) => {
+  switch (status) {
+    case 'Berlangsung': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
+    case 'Selesai': return 'bg-slate-100 text-slate-700 border-slate-200'
+    default: return 'bg-amber-100 text-amber-700 border-amber-200'
+  }
+}
+// -----------------------------
 
 const noteFallback = computed(() => props.notes.length ? props.notes : [
   {
@@ -238,14 +273,26 @@ const stats = computed(() => [
                   class="group/schedule rounded-xl border border-slate-200 bg-slate-50/50 p-4 transition-all hover:bg-white hover:shadow-md hover:border-[#84994F]/30 hover:-translate-y-0.5 cursor-pointer">
               <div class="flex items-start justify-between">
                   <span class="rounded-md bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase group-hover/schedule:bg-[#84994F] group-hover/schedule:text-white transition-all group-hover/schedule:scale-105">{{ schedule.subject }}</span>
-                  <span v-if="schedule.status === 'scheduled'" class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)] group-hover/schedule:bg-[#84994F] group-hover/schedule:shadow-[0_0_8px_rgba(132,153,79,0.6)] transition-all"></span>
+                  <div class="flex items-center gap-2">
+                      <span v-if="computeScheduleStatus(schedule) === 'Berlangsung'" class="relative flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                      </span>
+                      <span v-else-if="computeScheduleStatus(schedule) === 'Akan Datang'" class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                      <span v-else class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                  </div>
               </div>
               
               <h4 class="mt-2 text-sm font-bold text-slate-900 leading-tight line-clamp-1 group-hover/schedule:text-[#84994F] transition-colors">{{ schedule.topic }}</h4>
               
-              <div class="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
-                  <ClockIcon class="h-3 w-3 group-hover/schedule:text-[#84994F] transition-colors" />
-                  <span class="text-emerald-600 font-bold group-hover/schedule:text-[#84994F] transition-colors">{{ schedule.start_time ? formatTime(schedule.start_time) : '-' }}</span>
+              <div class="mt-2 flex items-center justify-between">
+                  <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
+                    <ClockIcon class="h-3 w-3 group-hover/schedule:text-[#84994F] transition-colors" />
+                    <span class="text-slate-600 font-bold group-hover/schedule:text-[#84994F] transition-colors">{{ schedule.start_time ? formatTime(schedule.start_time) : '-' }}</span>
+                  </div>
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider" :class="statusBadgeClass(computeScheduleStatus(schedule))">
+                      {{ computeScheduleStatus(schedule) }}
+                  </span>
               </div>
             </article>
           </div>
@@ -276,8 +323,13 @@ const stats = computed(() => [
             >
               <div class="flex items-center justify-between mb-2">
                  <span class="rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide border shadow-sm"
-                    :class="attendance.status === 'present' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'">
-                    {{ attendance.status === 'present' ? 'HADIR' : attendance.status }}
+                    :class="{
+                      'bg-emerald-50 text-emerald-700 border-emerald-100': attendance.status === 'Hadir',
+                      'bg-blue-50 text-blue-700 border-blue-100': attendance.status === 'Izin',
+                      'bg-amber-50 text-amber-700 border-amber-100': attendance.status === 'Sakit',
+                      'bg-rose-50 text-rose-700 border-rose-100': attendance.status === 'Alpha',
+                    }">
+                    {{ attendance.status }}
                  </span>
                  <div class="flex items-center gap-1 text-[10px] font-medium text-slate-500">
                      <ClockIcon class="h-3 w-3" />

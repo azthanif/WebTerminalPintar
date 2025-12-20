@@ -202,13 +202,13 @@ class AttendanceController extends Controller
             return false;
         }
 
+        // Only check the actual start time
+        // Don't rely on status_badge which might be outdated
         if ($schedule->start_time?->isFuture()) {
             return true;
         }
 
-        $statusLabel = strtolower((string) ($schedule->status_badge ?? $schedule->status ?? ''));
-
-        return $statusLabel !== '' && in_array($statusLabel, ['akan datang', 'upcoming'], true);
+        return false;
     }
 
 }

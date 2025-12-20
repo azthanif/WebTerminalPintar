@@ -1,7 +1,7 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3'
 import axios from 'axios'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import ParentLayout from '@/Layouts/ParentLayout.vue'
 import {
   ClockIcon,
@@ -141,6 +141,39 @@ const calendarLoading = ref(false)
 const calendarHasCustomRange = ref(false)
 const calendarDetailActive = ref(true)
 const agendaSection = ref(null)
+
+// --- REAL-TIME STATUS LOGIC ---
+const currentTime = ref(new Date())
+let timeUpdateInterval = null
+
+onMounted(() => {
+  timeUpdateInterval = setInterval(() => {
+    currentTime.value = new Date()
+  }, 1000)
+})
+
+onBeforeUnmount(() => {
+  if (timeUpdateInterval) clearInterval(timeUpdateInterval)
+})
+
+const computeScheduleStatus = (schedule) => {
+  if (!schedule) return 'Akan Datang'
+  
+  const startTime = schedule.start_time || schedule.date || schedule.day
+  const endTime = schedule.end_time
+  
+  if (!startTime) return 'Akan Datang'
+  
+  const now = currentTime.value
+  const start = new Date(startTime)
+  const end = endTime ? new Date(endTime) : null
+  
+  if (now < start) return 'Akan Datang'
+  if (end && now >= start && now <= end) return 'Berlangsung'
+  if (!end && now >= start) return 'Berlangsung'
+  return 'Selesai'
+}
+// -----------------------------
 
 const statusDictionary = {
   'Akan Datang': {
@@ -582,6 +615,11 @@ onMounted(() => {
                 >
                   <span class="truncate mr-2">{{ event.topic }}</span>
                   <span class="opacity-80 text-[10px]">{{ formatTimeRange(event.start_time).split(' - ')[0] }}</span>
+                  <div class="h-1 w-1 rounded-full ml-1" :class="{
+                    'bg-emerald-400 animate-pulse': computeScheduleStatus(event) === 'Berlangsung',
+                    'bg-amber-400': computeScheduleStatus(event) === 'Akan Datang',
+                    'bg-slate-400': computeScheduleStatus(event) === 'Selesai'
+                  }"></div>
                 </div>
                 <p v-if="cell.events.length > 3" class="text-[10px] font-bold text-center mt-1" :class="cell.key === selectedDate ? 'text-white/80' : 'text-emerald-600'">
                   + {{ cell.events.length - 3 }} Lainnya
@@ -632,8 +670,8 @@ onMounted(() => {
                     <CalendarDaysIcon class="h-4 w-4 text-[#84994F]" />
                     <p class="text-sm font-bold text-slate-700">{{ formatFullDate(schedule.start_time) }}</p>
                  </div>
-                <span class="rounded-lg px-3 py-1.5 text-xs font-bold border shadow-sm" :class="badgeClass(schedule.status)">
-                  {{ statusLabel(schedule.status) }}
+                <span class="rounded-lg px-3 py-1.5 text-xs font-bold border shadow-sm" :class="badgeClass(computeScheduleStatus(schedule))">
+                  {{ statusLabel(computeScheduleStatus(schedule)) }}
                 </span>
                  <span class="rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 px-3 py-1.5 text-xs font-bold text-purple-700">
                     {{ schedule.subject }}

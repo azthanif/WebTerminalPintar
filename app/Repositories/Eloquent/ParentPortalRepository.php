@@ -31,6 +31,7 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
     public function latestAttendances(Student $student, int $limit = 5): Collection
     {
         return $student->attendances()
+            ->whereNotNull('status')
             ->latest('attendance_date')
             ->limit($limit)
             ->get();
@@ -52,7 +53,13 @@ class ParentPortalRepository implements ParentPortalRepositoryInterface
     public function upcomingSchedules(Student $student, int $limit = 3): Collection
     {
         return $student->schedules()
-            ->where('start_time', '>=', Carbon::now())
+            ->where(function ($query) {
+                $query->where('start_time', '>=', Carbon::now())
+                    ->orWhere(function ($q) {
+                        $q->where('start_time', '<=', Carbon::now())
+                            ->where('end_time', '>=', Carbon::now());
+                    });
+            })
             ->orderBy('start_time')
             ->with(['teacher', 'materials'])
             ->limit($limit)
