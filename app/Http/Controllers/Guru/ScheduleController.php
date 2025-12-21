@@ -18,7 +18,7 @@ class ScheduleController extends Controller
             ],
             'statusOptions' => ['Semua', 'Akan Datang', 'Berlangsung', 'Selesai'],
             'timezone' => config('app.timezone', 'Asia/Jakarta'),
-            'students' => Student::orderBy('name')->get(['id', 'name']),
+            'students' => Student::orderBy('name')->get(['id', 'name', 'education_level']),
         ]);
     }
 }

@@ -31,7 +31,7 @@ class UpdateStudentRequest extends FormRequest
             'new_parent_email'      => ['nullable', 'required_if:create_parent_account,true', 'email', 'max:150', 'unique:users,email'],
             'new_parent_phone'      => ['nullable', 'string', 'max:30'],
             'status'          => ['required', 'in:active,inactive'],
-            'date_of_birth'   => ['nullable', 'date'],
+            'date_of_birth'   => ['nullable', 'date', 'before:today'],
             'school_name'     => ['nullable', 'string', 'max:150'],
             'address'         => ['nullable', 'string'],
         ];

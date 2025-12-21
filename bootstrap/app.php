@@ -10,6 +10,7 @@ use App\Http\Middleware\EnsureParentHasStudent;
 use Spatie\Permission\Middleware\RoleMiddleware as SpatieRoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use App\Http\Middleware\CheckMustChangePassword;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'parent.student'     => EnsureParentHasStudent::class,
+            'must.change.password' => CheckMustChangePassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -111,7 +111,7 @@ const logoUrl = '/images/logo-terminal-pintar.png'
         <!-- Bottom copyright -->
         <div class="absolute bottom-4 lg:bottom-6 left-4 lg:left-6 text-xs text-slate-500">
           © 2025 Terminal Pintar. Semua Hak Dilindungi.<br/>
-          Powered by Innovation
+          
         </div>
       </div>
 
@@ -143,7 +143,7 @@ const logoUrl = '/images/logo-terminal-pintar.png'
                 id="email"
                 v-model="form.email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Masukkan email Anda"
                 class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg bg-[#4a7028]/40 border border-[#76B340]/30 text-white placeholder-amber-100/40 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
                 required
               />
@@ -163,7 +163,7 @@ const logoUrl = '/images/logo-terminal-pintar.png'
                   id="password"
                   v-model="form.password"
                   :type="showPassword ? 'text' : 'password'"
-                  placeholder="Enter your password"
+                  placeholder="Masukkan password Anda"
                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 text-sm sm:text-base rounded-lg bg-[#4a7028]/40 border border-[#76B340]/30 text-white placeholder-amber-100/40 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
                   required
                 />
@@ -194,14 +194,14 @@ const logoUrl = '/images/logo-terminal-pintar.png'
                     v-model="form.remember" 
                     class="w-4 h-4 text-amber-400 border-[#76B340] rounded focus:ring-amber-400 bg-[#4a7028]/40 cursor-pointer"
                   />
-                  <span class="text-xs sm:text-sm text-amber-100 group-hover:text-amber-50 transition-colors">Remember me</span>
+                  <span class="text-xs sm:text-sm text-amber-100 group-hover:text-amber-50 transition-colors">Ingat Saya</span>
                 </label>
                 <button
                   type="button"
                   @click="openForgotPasswordModal"
                   class="text-xs sm:text-sm text-amber-200 hover:text-amber-100 transition-colors font-medium text-left xs:text-right"
                 >
-                  Forgot Password?
+                  Lupa Password?
                 </button>
               </div>
             </div>

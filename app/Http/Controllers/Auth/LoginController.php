@@ -43,7 +43,7 @@ class LoginController extends Controller
 
         if (! $user) {
             return back()->withErrors([
-                'email' => 'Email atau nama pengguna tidak ditemukan.',
+                'email' => 'Email atau password yang Anda masukkan salah.',
             ])->onlyInput('email');
         }
 

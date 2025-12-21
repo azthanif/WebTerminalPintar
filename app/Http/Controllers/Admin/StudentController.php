@@ -165,7 +165,9 @@ class StudentController extends Controller
             return null;
         }
 
-        $plainPassword = Str::random(10);
+        $plainPassword = !empty($data['new_parent_password']) 
+            ? $data['new_parent_password'] 
+            : Str::random(10);
 
         $parentUser = User::create([
             'name'      => $data['new_parent_name'],
@@ -173,6 +175,7 @@ class StudentController extends Controller
             'phone'     => $data['new_parent_phone'] ?? null,
             'is_active' => true,
             'password'  => Hash::make($plainPassword),
+            'must_change_password' => true,
         ]);
 
         $parentUser->assignRole('ortu');
@@ -194,6 +197,7 @@ class StudentController extends Controller
             $data['new_parent_name'],
             $data['new_parent_email'],
             $data['new_parent_phone'],
+            $data['new_parent_password']
         );
     }
 
@@ -202,7 +206,7 @@ class StudentController extends Controller
         $message = "Data siswa berhasil {$action}.";
 
         if ($parentAccount) {
-            $message .= ' Akun orang tua ' . $parentAccount['email'] . ' dibuat dengan password: ' . $parentAccount['password'] . '.';
+            $message .= ' Akun orang tua ' . $parentAccount['email'] . ' berhasil dibuat.';
         }
 
         return $message;

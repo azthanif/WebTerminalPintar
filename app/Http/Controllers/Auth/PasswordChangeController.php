@@ -26,9 +26,13 @@ class PasswordChangeController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok dengan password baru.',
             'password.min' => 'Password minimal harus :min karakter.',
         ]);
-
-        $user = Auth::user();
         
+        $request->user()->update([
+            'password' => Hash::make($request->password),
+            'must_change_password' => false // <--- PENTING: Ubah jadi false setelah sukses
+        ]);
+        $user = Auth::user();
+
         /** @var User $user */
         $user->forceFill([
             'password' => Hash::make($request->password),

@@ -526,6 +526,40 @@ const onReplaceFile = (e, material) => {
         material.newFile = file;
     }
 };
+
+// 1. Hitung tingkatan pendidikan yang tersedia dari data siswa
+const availableLevels = computed(() => {
+    const levels = props.students
+        .map(s => s.education_level)
+        .filter(l => l); // Ambil yang tidak null
+    return [...new Set(levels)].sort(); // Unique dan urutkan
+});
+
+// 2. Cek apakah semua siswa di level tersebut sudah terpilih
+const isLevelSelected = (level) => {
+    const studentsInLevel = props.students.filter(s => s.education_level === level);
+    if (!studentsInLevel.length) return false;
+    // Return true jika semua ID siswa di level ini ada di form
+    return studentsInLevel.every(s => addForm.student_ids.includes(s.id));
+};
+
+// 3. Fungsi untuk memilih/membatalkan semua siswa di level tertentu
+const toggleLevel = (level) => {
+    const studentsInLevel = props.students.filter(s => s.education_level === level);
+    const idsInLevel = studentsInLevel.map(s => s.id);
+    const allSelected = isLevelSelected(level);
+
+    if (allSelected) {
+        // Jika sudah terpilih semua, batalkan seleksi (hapus ID dari array)
+        addForm.student_ids = addForm.student_ids.filter(id => !idsInLevel.includes(id));
+    } else {
+        // Jika belum, masukkan semua ID ke array (hindari duplikat)
+        const currentIds = new Set(addForm.student_ids);
+        idsInLevel.forEach(id => currentIds.add(id));
+        addForm.student_ids = Array.from(currentIds);
+    }
+};
+
 </script>
 <template>
   <div class="space-y-8">
@@ -786,7 +820,7 @@ const onReplaceFile = (e, material) => {
          <template #description>Jadwalkan kegiatan belajar mengajar baru.</template>
          <form class="space-y-6" @submit.prevent="submitAddSchedule">
              <div class="space-y-5">
-                 <div class="p-4 rounded-xl bg-[#84994f]/10 border border-[#84994f]/20">
+                <!-- <div class="p-4 rounded-xl bg-[#84994f]/10 border border-[#84994f]/20">
                     <label class="block text-sm font-bold text-slate-700 mb-2">Pilih Siswa <span class="text-rose-500">*</span></label>
                     <p v-if="!hasStudents" class="text-xs font-bold text-rose-500 bg-rose-50 p-2 rounded">Belum ada data siswa.</p>
                      <div v-else class="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar">
@@ -805,7 +839,49 @@ const onReplaceFile = (e, material) => {
                             <span>{{ student.name }}</span>
                         </label>
                     </div>
-                 </div>
+                </div> -->
+                <div class="p-4 rounded-xl bg-[#84994f]/10 border border-[#84994f]/20">
+    <label class="block text-sm font-bold text-slate-700 mb-2">Pilih Siswa <span class="text-rose-500">*</span></label>
+    
+    <p v-if="!hasStudents" class="text-xs font-bold text-rose-500 bg-rose-50 p-2 rounded">Belum ada data siswa.</p>
+    
+    <div v-else>
+        <div v-if="availableLevels.length" class="mb-3 flex flex-wrap gap-2 pb-3 border-b border-[#84994f]/20">
+            <span class="text-xs font-bold text-slate-500 self-center mr-1">Pilih Cepat:</span>
+            <button
+                v-for="level in availableLevels"
+                :key="level"
+                type="button"
+                @click="toggleLevel(level)"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold border transition-all shadow-sm"
+                :class="isLevelSelected(level)
+                    ? 'bg-[#84994f] text-white border-[#84994f] ring-2 ring-[#84994f]/20'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-white hover:text-[#84994f] hover:border-[#84994f]'"
+            >
+                {{ isLevelSelected(level) ? 'Batal ' : 'Pilih Semua ' }} {{ level }}
+            </button>
+        </div>
+        <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar">
+            <label
+                v-for="student in props.students"
+                :key="student.id"
+                class="inline-flex cursor-pointer select-none items-center gap-2 rounded-xl border bg-white px-3 py-1.5 text-xs font-bold transition-all hover:bg-slate-50 hover:shadow-xs"
+                :class="addForm.student_ids.includes(student.id) ? 'border-[#84994f] bg-[#84994f]/10 text-[#84994f] ring-1 ring-[#84994f]/30' : 'border-slate-200 text-slate-600'"
+            >
+                <input
+                    v-model="addForm.student_ids"
+                    :value="student.id"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-[#84994f] focus:ring-[#84994f]"
+                />
+                <span>
+                    {{ student.name }} 
+                    <span v-if="student.education_level" class="text-[10px] opacity-60 uppercase">({{ student.education_level }})</span>
+                </span>
+            </label>
+        </div>
+    </div>
+</div>
 
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

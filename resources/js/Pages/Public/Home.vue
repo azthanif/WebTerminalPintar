@@ -1244,7 +1244,7 @@ const handleImageError = (event) => {
           </div>
 
           <!-- Bottom Encouragement -->
-          <div 
+          <!-- <div 
             :class="[
               'mt-16 text-center transition-all duration-1000 delay-700',
               ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
@@ -1273,7 +1273,7 @@ const handleImageError = (event) => {
                 <span class="font-medium">Berdampak</span>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </section>
 

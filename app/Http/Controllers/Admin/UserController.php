@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Admin\UserService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -51,6 +52,14 @@ class UserController extends Controller
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'Pengguna berhasil ditambahkan.');
+        // Di method store()
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password), // Password default
+            'role' => $request->role,
+            'must_change_password' => true, // <--- TAMBAHKAN INI agar wajib ganti password saat login pertama
+        ]);
     }
 
     public function edit(User $user)

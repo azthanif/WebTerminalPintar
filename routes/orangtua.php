@@ -6,7 +6,7 @@ use App\Http\Controllers\OrangTua\StudentSwitcherController; // <--- Import Cont
 use App\Http\Controllers\OrangTua\TeacherNoteController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified', 'role:ortu', 'parent.student'])
+Route::middleware(['auth', 'verified', 'role:ortu', 'parent.student', 'must.change.password'])
     ->prefix('orang-tua')
     ->name('orang-tua.')
     ->group(function () {

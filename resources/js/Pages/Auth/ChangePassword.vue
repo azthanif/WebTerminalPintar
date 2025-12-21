@@ -36,13 +36,13 @@ const logoUrl = '/images/logo-terminal-pintar.png'
                 </svg>
                 
                 <div class="relative z-10 flex flex-col items-center justify-center w-full p-8 lg:p-12 text-center">
-                    <div class="mb-8 p-4 bg-white rounded-3xl shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                    <div class="mb-8 p-4 bg-white rounded-3xl shadow-xl transform transition-transform duration-500">
                         <img :src="logoUrl" alt="Logo" class="w-48 lg:w-60 h-48 lg:h-60 object-contain" />
                     </div>
                     
-                    <h2 class="text-3xl lg:text-4xl font-black bg-gradient-to-r from-[#76B340] to-[#5a8a30] bg-clip-text text-transparent leading-tight mb-4">
+                    <!-- <h2 class="text-3xl lg:text-4xl font-black bg-gradient-to-r from-[#76B340] to-[#5a8a30] bg-clip-text text-transparent leading-tight mb-4">
                         Keamanan Akun Utama
-                    </h2>
+                    </h2> -->
                     
                     <div class="max-w-xs space-y-4">
                         <div class="p-4 bg-white/60 backdrop-blur rounded-2xl border border-white shadow-sm flex items-start gap-3 text-left">
@@ -61,10 +61,10 @@ const logoUrl = '/images/logo-terminal-pintar.png'
                 </div>
 
                 <!-- Bottom accent -->
-                <div class="absolute bottom-10 left-10 flex items-center gap-2">
+                <!-- <div class="absolute bottom-10 left-10 flex items-center gap-2">
                     <div class="h-2 w-2 rounded-full bg-[#76B340]"></div>
                     <span class="text-xs font-bold text-[#76B340] tracking-widest uppercase">Safe & Secure</span>
-                </div>
+                </div> -->
             </div>
 
             <!-- Right Side - Form -->

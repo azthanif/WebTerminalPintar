@@ -13,7 +13,10 @@ import {
     UserPlusIcon, 
     ShieldCheckIcon,
     MagnifyingGlassIcon,
-    XMarkIcon
+    XMarkIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    LockClosedIcon
 } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
@@ -103,6 +106,7 @@ const form = useForm({
     new_parent_name: '',
     new_parent_email: '',
     new_parent_phone: '',
+    new_parent_password: '',
 })
 
 const findParentById = (id) => parentsList.value.find((parent) => String(parent.id) === String(id))
@@ -154,11 +158,13 @@ const useExistingParent = () => {
     form.new_parent_name = ''
     form.new_parent_email = ''
     form.new_parent_phone = ''
+    form.new_parent_password = ''
 }
 
 const useNewParent = () => {
     form.create_parent_account = true
     clearParentSelection()
+    form.new_parent_password = ''
 }
 
 watch(
@@ -181,6 +187,15 @@ const submit = () => {
         form.post(route('admin.students.store'))
     }
 }
+
+const showParentPassword = ref(false)
+
+const toggleParentPasswordVisibility = () => {
+    showParentPassword.value = !showParentPassword.value
+}
+
+const maxDate = new Date().toISOString().split('T')[0];
+
 </script>
 
 <template>
@@ -228,13 +243,13 @@ const submit = () => {
                         </div>
                         <p class="mt-1.5 text-xs font-semibold text-slate-400">ID dibuat otomatis oleh sistem.</p>
                     </div>
-                    <div v-else class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 flex items-start gap-3">
+                    <!-- <div v-else class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 flex items-start gap-3">
                          <ShieldCheckIcon class="h-6 w-6 text-emerald-600 shrink-0 mt-0.5" />
                         <div>
                              <p class="text-sm font-bold text-emerald-800">ID Siswa Otomatis</p>
                              <p class="text-xs text-emerald-600 mt-1 leading-relaxed">Sistem akan men-generate ID unik (misal: <strong>SW001</strong>) setelah data disimpan. Anda tidak perlu mengisinya.</p>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div>
                          <label class="block text-sm font-bold text-slate-700 mb-2">Tanggal Lahir</label>
@@ -242,7 +257,7 @@ const submit = () => {
                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                                 <CalendarIcon class="h-5 w-5" />
                             </div>
-                            <input v-model="form.date_of_birth" type="date"
+                            <input v-model="form.date_of_birth" type="date" :max="maxDate"
                                 class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50 hover:bg-white"
                                 :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.date_of_birth }" />
                         </div>
@@ -400,6 +415,40 @@ const submit = () => {
                                             class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-white"
                                             :class="{ 'border-rose-400': form.errors.new_parent_phone }" />
                                     </div>
+                                    <div class="grid gap-4 sm:grid-cols-2">
+                                    </div>
+                                </div>
+                                    <div class="mt-4">
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Password Akun <span class="text-rose-500">*</span></label>
+
+                                    <div class="relative">
+                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                            <LockClosedIcon class="h-5 w-5" />
+                                        </div>
+                                    
+                                        <input 
+                                            v-model="form.new_parent_password" 
+                                            :type="showParentPassword ? 'text' : 'password'" 
+                                            placeholder="Masukan password akun"
+                                            class="w-full rounded-2xl border border-slate-200 pl-11 pr-12 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-white"
+                                            :class="{ 'border-rose-400': form.errors.new_parent_password }" 
+                                        />
+                                    
+                                        <button 
+                                            type="button" 
+                                            @click="toggleParentPasswordVisibility"
+                                            class="absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 hover:text-slate-600 transition-colors"
+                                            tabindex="-1"
+                                        >
+                                            <EyeIcon v-if="showParentPassword" class="h-5 w-5" />
+                                            <EyeSlashIcon v-else class="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                
+                                    <p v-if="form.errors.new_parent_password" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
+                                        <ShieldCheckIcon class="h-3 w-3" />
+                                        {{ form.errors.new_parent_password }}
+                                    </p>
                                 </div>
                             </div>
                         </div>

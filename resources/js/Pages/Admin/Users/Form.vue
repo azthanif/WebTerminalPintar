@@ -200,6 +200,7 @@ const togglePasswordVisibility = () => {
 				<div class="grid gap-8 md:grid-cols-2 border-t border-slate-100 pt-8">
 					<div>
 						<label class="block text-sm font-bold text-slate-700 mb-2">Role Pengguna <span class="text-rose-500">*</span></label>
+						
                         <div class="relative">
                              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                                 <BriefcaseIcon class="h-5 w-5" />
@@ -218,6 +219,7 @@ const togglePasswordVisibility = () => {
                                 </svg>
                             </div>
                         </div>
+						<label class="block text-sm text-slate-600 mb-2">* Akun Orang tua dibuat di menu Kelola Siswa</label>
 						<p v-if="form.errors.role_id" class="mt-1.5 text-xs font-bold text-rose-500 flex items-center gap-1">
                              <ShieldCheckIcon class="h-3 w-3" />
                             {{ form.errors.role_id }}
@@ -251,16 +253,16 @@ const togglePasswordVisibility = () => {
 					</div>
 				</div>
 
-				<div v-if="!isOrtu" class="rounded-2xl border border-sky-200 bg-sky-50 p-4 flex items-start gap-3">
+				<!-- <div v-if="!isOrtu" class="rounded-2xl border border-sky-200 bg-sky-50 p-4 flex items-start gap-3">
                     <ShieldCheckIcon class="h-6 w-6 text-sky-600 shrink-0 mt-0.5" />
                     <div>
                         <p class="text-sm font-bold text-sky-800">Informasi Penting</p>
                         <p class="text-xs text-sky-600 mt-1 leading-relaxed">
-                            Akun orang tua sebaiknya dibuat melalui menu <strong>Kelola Siswa</strong> agar terhubung otomatis. 
-                            Menu ini lebih cocok untuk membuat akun <strong>Admin</strong> atau <strong>Guru</strong>.
+                            Akun orang tua dibuat melalui menu <strong>Kelola Siswa</strong> agar dengan siswa secara otomatis. 
+                            Halaman ini digunakan untuk membuat akun <strong>Admin</strong> atau <strong>Guru</strong>.
                         </p>
                     </div>
-				</div>
+				</div> -->
 
                 <!-- Password Info Box (Edit Mode Only) -->
 				<div v-if="isEdit" class="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
