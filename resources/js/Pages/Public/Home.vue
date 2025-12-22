@@ -136,7 +136,7 @@ const formatTanggal = (dateString) => {
 
 const assets = {
   logo: '/images/logo-terminal-pintar.png',
-  hero: '/images/hero.jpg',
+  hero: '/images/hero.jpeg',
   pengurus: '/images/pengurus.jpg',
   donasi: '/images/donasi.jpg',
   relawan: '/images/relawan.jpg',
@@ -651,6 +651,7 @@ const handleImageError = (event) => {
                     <p class="text-slate-600 leading-relaxed text-center">
                       Menjadi <span class="font-semibold text-orange-500">teman perjalanan</span> bagi anak-anak untuk menemukan kembali arti <span class="font-semibold text-amber-600">rumah, pendidikan, dan harapan</span>.
                     </p>
+                    <p class="text-white">...</p>
 
                     
                   </div>
