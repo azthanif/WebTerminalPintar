@@ -302,15 +302,6 @@ const handleImageError = (event) => {
 
             <!-- Image Container -->
             <div class="relative w-full md:w-44 h-56 md:h-36 shrink-0 overflow-hidden rounded-xl">
-              <!-- Category Badge -->
-              <div class="absolute top-3 left-3 z-10">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white/95 backdrop-blur-sm text-[#76B340] shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                  </svg>
-                  Kegiatan
-                </span>
-              </div>
 
               <!-- Image -->
               <img
@@ -322,15 +313,6 @@ const handleImageError = (event) => {
               
               <!-- Gradient Overlay -->
               <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-              <!-- Play Icon Overlay -->
-              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
-                <div class="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl">
-                  <svg class="w-6 h-6 text-[#76B340] ml-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                  </svg>
-                </div>
-              </div>
 
               <!-- Corner Decoration -->
               <div class="absolute bottom-0 right-0 w-20 h-20 overflow-hidden rounded-br-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
