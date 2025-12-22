@@ -1,59 +1,56 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Terminal Pintar — Struktur Proyek
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Ringkasan anatomi repo agar mudah dinavigasi dan dikembangkan.
 
-## About Laravel
+## Tech Stack
+- Laravel 10 + PHP 8.x
+- Inertia + Vue 3 (Vite)
+- Tailwind/CSS utility di [resources/css](resources/css)
+- Spatie Permission (peran admin, guru, ortu)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Struktur Direktori
+- [app](app): kode backend Laravel
+	- [Http/Controllers](app/Http/Controllers): controller admin/guru/orangtua; modul siswa di [app/Http/Controllers/Admin/StudentController.php](app/Http/Controllers/Admin/StudentController.php)
+	- [Http/Requests](app/Http/Requests): validasi request (mis. siswa di [app/Http/Requests/Admin/Student](app/Http/Requests/Admin/Student))
+	- [Models](app/Models): model Eloquent (Student, User, Book, Loan, dll.)
+	- [Policies](app/Policies): kebijakan akses
+	- [Repositories](app/Repositories): lapisan data (Admin/Public/Orangtua)
+	- [Services](app/Services): logika domain terpisah per modul
+	- [Providers](app/Providers): service providers & binding
+- [bootstrap](bootstrap): bootstrap Laravel & cache konfigurasi
+- [config](config): konfigurasi aplikasi (app, auth, queue, permission, dll.)
+- [database](database): migrasi, seeder, factory
+	- [migrations](database/migrations): skema tabel (users, students, books, loans, permissions, dll.)
+	- [seeders](database/seeders): seeder data; `DatabaseSeeder` membuat admin `admin@example.com`
+	- [factories](database/factories): factory Book, Student, News, User
+- [public](public): entry `index.php`, aset build Vite di [public/build](public/build)
+- [resources](resources): sumber front-end
+	- [js/Pages](resources/js/Pages): halaman Inertia (Admin, Guru, Orangtua, Public)
+	- [js/Components](resources/js/Components): komponen UI bersama
+	- [css](resources/css): gaya global
+	- [views](resources/views): blade minimal untuk Inertia root
+- [routes](routes): rute per peran ([web.php](routes/web.php), [guru.php](routes/guru.php), [orangtua.php](routes/orangtua.php), [console.php](routes/console.php))
+- [storage](storage): log, cache, upload (butuh izin tulis)
+- [tests](tests): kerangka pengujian
+- [vite.config.js](vite.config.js): konfigurasi Vite + alias
+- [package.json](package.json) & [composer.json](composer.json): dependensi FE/BE
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Modul Utama
+- Siswa: controller di [app/Http/Controllers/Admin/StudentController.php](app/Http/Controllers/Admin/StudentController.php); UI di [resources/js/Pages/Admin/Students](resources/js/Pages/Admin/Students)
+- Buku/Perpustakaan: controller di [app/Http/Controllers/Admin/BookController.php](app/Http/Controllers/Admin/BookController.php); UI di [resources/js/Pages/Admin/Books](resources/js/Pages/Admin/Books)
+- Kehadiran Guru: helper di [app/Http/Controllers/Guru/Concerns/BuildsAttendanceData.php](app/Http/Controllers/Guru/Concerns/BuildsAttendanceData.php); UI di [resources/js/Pages/Guru](resources/js/Pages/Guru)
+- Orang Tua: rute di [routes/orangtua.php](routes/orangtua.php); UI di [resources/js/Pages/Orangtua](resources/js/Pages/Orangtua)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Peran & Seeder
+- Role: admin, guru, ortu (Spatie)
+- Seeder awal: [database/seeders/DatabaseSeeder.php](database/seeders/DatabaseSeeder.php) membuat admin `admin@example.com` (password `pass1234`). Buka komentar seeder lain jika diperlukan.
 
-## Learning Laravel
+## Build & Pengembangan
+- Install deps: `composer install` dan `npm install`
+- Jalankan dev server: `php artisan serve` + `npm run dev`
+- Build produksi: `npm run build`
+- Migrasi + seed: `php artisan migrate --seed` atau `php artisan migrate:fresh --seed`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Catatan
+- Aset hasil build berada di [public/build](public/build)
+- Pastikan `storage` dapat ditulis (`php artisan storage:link` jika perlu)
