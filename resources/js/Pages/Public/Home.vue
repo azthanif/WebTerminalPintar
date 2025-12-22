@@ -320,9 +320,6 @@ const handleImageError = (event) => {
               class="inline-flex items-center gap-2 bg-white text-[#76B340] px-8 py-4 rounded-full text-base font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 group"
             >
               Jelajah Lebih Lanjut
-              <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
             </a>
           </div>
 
@@ -455,9 +452,7 @@ const handleImageError = (event) => {
                     <!-- Button Content -->
                     <span class="relative flex items-center gap-2">
                       Baca Selengkapnya
-                      <svg class="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
+                    
                     </span>
                   </Link>
                 </div>
@@ -507,9 +502,7 @@ const handleImageError = (event) => {
               class="group inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-bold rounded-xl bg-gradient-to-r from-[#76B340] to-emerald-600 text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:scale-105 active:scale-95"
             >
               Lihat Semua Kegiatan
-              <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
+              
             </Link>
           </div>
         </div>
@@ -610,14 +603,7 @@ const handleImageError = (event) => {
                     </p>
 
                     <!-- Stats Badge -->
-                    <div class="mt-6 flex justify-center">
-                      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#76B340]/10 border border-[#76B340]/20 group-hover:bg-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-300">
-                        <svg class="w-4 h-4 text-[#76B340]" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                        </svg>
-                        <span class="text-sm font-bold text-[#76B340]">Sejak 2019</span>
-                      </div>
-                    </div>
+                    
                   </div>
 
                   <!-- Corner Decoration -->
@@ -681,24 +667,10 @@ const handleImageError = (event) => {
 
                     <!-- Description -->
                     <p class="text-slate-600 leading-relaxed text-center">
-                      Menjadi <span class="font-semibold text-orange-500">teman perjalanan</span> anak-anak untuk menemukan kembali arti <span class="font-semibold text-amber-600">rumah, pendidikan, dan harapan</span>.
+                      Menjadi <span class="font-semibold text-orange-500">teman perjalanan</span> bagi anak-anak untuk menemukan kembali arti <span class="font-semibold text-amber-600">rumah, pendidikan, dan harapan</span>.
                     </p>
 
-                    <!-- Mission Points -->
-                    <div class="mt-6 space-y-2">
-                      <div class="flex items-center justify-center gap-2 text-sm text-slate-600">
-                        <svg class="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="font-medium">Pendidikan Berkualitas</span>
-                      </div>
-                      <div class="flex items-center justify-center gap-2 text-sm text-slate-600">
-                        <svg class="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="font-medium">Lingkungan Aman</span>
-                      </div>
-                    </div>
+                    
                   </div>
 
                   <!-- Corner Decoration -->
@@ -732,9 +704,7 @@ const handleImageError = (event) => {
               class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#76B340] to-emerald-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
             >
               Hubungi Kami
-              <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
+              
             </a>
           </div>
         </div>
@@ -829,18 +799,7 @@ const handleImageError = (event) => {
                   </p>
 
                   <!-- Social Links -->
-                  <div class="flex justify-center gap-3">
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
-                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                      </svg>
-                    </a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
-                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
-                    </a>
-                  </div>
+                  
                 </div>
 
                 <!-- Corner Decoration -->
@@ -919,18 +878,7 @@ const handleImageError = (event) => {
                   </p>
 
                   <!-- Social Links -->
-                  <div class="flex justify-center gap-3">
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-orange-400 flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
-                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                      </svg>
-                    </a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-orange-400 flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
-                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
-                    </a>
-                  </div>
+                  
                 </div>
 
                 <!-- Corner Decoration -->
@@ -997,18 +945,7 @@ const handleImageError = (event) => {
                   </p>
 
                   <!-- Social Links -->
-                  <div class="flex justify-center gap-3">
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
-                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                      </svg>
-                    </a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#76B340] flex items-center justify-center transition-all duration-300 group/social hover:scale-110 hover:shadow-lg">
-                      <svg class="w-5 h-5 text-slate-600 group-hover/social:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
-                    </a>
-                  </div>
+                  
                 </div>
 
                 <!-- Corner Decoration -->
@@ -1021,15 +958,17 @@ const handleImageError = (event) => {
         </div>
       </section>
 
-      <section ref="ctaRef" class="py-16 md:py-24 bg-white relative overflow-hidden">
+      
         <!-- Animated Background Elements -->
+
+      <section ref="ctaRef" class="py-24 bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 relative overflow-hidden">
+
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-[#76B340]/10 rounded-full blur-3xl animate-float"></div>
           <div class="absolute bottom-1/3 left-1/4 w-80 h-80 bg-orange-200/10 rounded-full blur-3xl animate-float-delayed"></div>
         </div>
 
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <!-- Section Header -->
           <div 
             :class="[
               'text-center mb-16 transition-all duration-1000',
@@ -1051,42 +990,29 @@ const handleImageError = (event) => {
             </div>
           </div>
 
-          <!-- CTA Cards Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-            <!-- Donasi Card -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+            
             <article 
               :class="[
-                'group relative transition-all duration-700 delay-300',
+                'group relative transition-all duration-700 delay-300 h-full',
                 ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
               ]"
             >
-              <!-- 3D Card Container -->
-              <div class="relative bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-[#76B340]/50 hover:-translate-y-4 transform perspective-1000">
-                <!-- Gradient Overlay on Hover -->
+              <div class="relative bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-[#76B340]/50 hover:-translate-y-4 transform perspective-1000 h-full flex flex-col">
                 <div class="absolute inset-0 bg-gradient-to-br from-[#76B340]/5 via-emerald-50/50 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
-                <!-- Content -->
-                <div class="relative z-10 text-center">
-                  <!-- Icon Container with Advanced Animation -->
+                <div class="relative z-10 text-center flex-1 flex flex-col">
                   <div class="relative mb-8 flex justify-center">
-                    <!-- Animated Rings -->
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="w-32 h-32 rounded-full border-4 border-[#76B340]/20 group-hover:border-[#76B340]/40 transition-all duration-700 group-hover:scale-110 group-hover:rotate-180"></div>
                       <div class="absolute w-36 h-36 rounded-full border-2 border-[#76B340]/10 group-hover:border-[#76B340]/30 transition-all duration-1000 group-hover:scale-125 group-hover:-rotate-180"></div>
                     </div>
                     
-                    <!-- Icon Circle -->
                     <div class="relative w-28 h-28 bg-gradient-to-br from-[#76B340] to-emerald-600 rounded-full flex items-center justify-center shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 overflow-hidden">
-                      <img
-                        :src="assets.donasi"
-                        alt="Donasi"
-                        class="h-20 w-20 rounded-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-500"
-                      >
-                      <!-- Pulse Effect -->
+                      <img :src="assets.donasi" alt="Donasi" class="h-20 w-20 rounded-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-500">
                       <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 group-hover:scale-150 transition-all duration-1000"></div>
                     </div>
 
-                    <!-- Floating Badge -->
                     <div class="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-br from-emerald-400 to-[#76B340] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
                       <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -1095,34 +1021,20 @@ const handleImageError = (event) => {
                     </div>
                   </div>
 
-                  <!-- Title -->
                   <h3 class="font-extrabold text-3xl mb-4 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-[#76B340] group-hover:to-emerald-600 transition-all duration-500">
                     DONASI
                   </h3>
 
-                  <!-- Decorative Line -->
                   <div class="flex items-center justify-center gap-2 mb-6">
                     <div class="h-px w-16 bg-gradient-to-r from-transparent to-[#76B340]/50"></div>
                     <div class="h-1.5 w-1.5 rounded-full bg-[#76B340]"></div>
                     <div class="h-px w-16 bg-gradient-to-l from-transparent to-[#76B340]/50"></div>
                   </div>
 
-                  <!-- Description -->
-                  <p class="text-slate-600 leading-relaxed mb-8">
+                  <p class="text-slate-600 leading-relaxed mb-8 flex-1">
                     Mari ikut berdonasi untuk membantu mereka yang membutuhkan. <span class="font-semibold text-[#76B340]">Dukungan Anda sangat berarti</span> untuk masa depan mereka.
                   </p>
 
-                  <!-- Impact Stats -->
-                  <div class="mb-8 p-4 bg-[#76B340]/5 rounded-xl border border-[#76B340]/20 group-hover:bg-[#76B340]/10 group-hover:border-[#76B340]/30 transition-all duration-300">
-                    <div class="flex items-center justify-center gap-2 text-sm">
-                      <svg class="w-5 h-5 text-[#76B340]" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                      </svg>
-                      <span class="font-bold text-[#76B340]">100+ anak terbantu</span>
-                    </div>
-                  </div>
-
-                  <!-- CTA Button -->
                   <a
                     href="https://forms.gle/CJAebiE78GAQN62E6"
                     target="_blank"
@@ -1131,57 +1043,39 @@ const handleImageError = (event) => {
                   >
                     <span class="relative flex items-center gap-2">
                       Lihat Cara Berdonasi
-                      <svg class="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
+                      
                     </span>
                   </a>
                 </div>
 
-                <!-- Corner Decoration -->
                 <div class="absolute top-0 right-0 w-32 h-32 overflow-hidden rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <div class="absolute -top-16 -right-16 w-32 h-32 bg-gradient-to-br from-[#76B340]/20 to-transparent rounded-full blur-2xl"></div>
                 </div>
-
-                <!-- Bottom Accent Line -->
                 <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#76B340] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-3xl"></div>
               </div>
             </article>
 
-            <!-- Relawan Card -->
             <article 
               :class="[
-                'group relative md:mt-8 transition-all duration-700 delay-500',
+                'group relative md:mt-0 transition-all duration-700 delay-500 h-full',
                 ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
               ]"
             >
-              <!-- 3D Card Container -->
-              <div class="relative bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-orange-400/50 hover:-translate-y-4 transform perspective-1000">
-                <!-- Gradient Overlay on Hover -->
+              <div class="relative bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-slate-100 hover:border-orange-400/50 hover:-translate-y-4 transform perspective-1000 h-full flex flex-col">
                 <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
-                <!-- Content -->
-                <div class="relative z-10 text-center">
-                  <!-- Icon Container with Advanced Animation -->
+                <div class="relative z-10 text-center flex-1 flex flex-col">
                   <div class="relative mb-8 flex justify-center">
-                    <!-- Animated Rings -->
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="w-32 h-32 rounded-full border-4 border-orange-400/20 group-hover:border-orange-400/40 transition-all duration-700 group-hover:scale-110 group-hover:rotate-180"></div>
                       <div class="absolute w-36 h-36 rounded-full border-2 border-orange-300/10 group-hover:border-orange-300/30 transition-all duration-1000 group-hover:scale-125 group-hover:-rotate-180"></div>
                     </div>
                     
-                    <!-- Icon Circle -->
                     <div class="relative w-28 h-28 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500 overflow-hidden">
-                      <img
-                        :src="assets.relawan"
-                        alt="Relawan"
-                        class="h-20 w-20 rounded-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-500"
-                      >
-                      <!-- Pulse Effect -->
+                      <img :src="assets.relawan" alt="Relawan" class="h-20 w-20 rounded-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-500">
                       <div class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 group-hover:scale-150 transition-all duration-1000"></div>
                     </div>
 
-                    <!-- Floating Badge -->
                     <div class="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
                       <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
@@ -1189,34 +1083,20 @@ const handleImageError = (event) => {
                     </div>
                   </div>
 
-                  <!-- Title -->
                   <h3 class="font-extrabold text-3xl mb-4 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent group-hover:from-orange-500 group-hover:to-amber-600 transition-all duration-500">
                     RELAWAN
                   </h3>
 
-                  <!-- Decorative Line -->
                   <div class="flex items-center justify-center gap-2 mb-6">
                     <div class="h-px w-16 bg-gradient-to-r from-transparent to-orange-400/50"></div>
                     <div class="h-1.5 w-1.5 rounded-full bg-orange-400"></div>
                     <div class="h-px w-16 bg-gradient-to-l from-transparent to-orange-400/50"></div>
                   </div>
 
-                  <!-- Description -->
-                  <p class="text-slate-600 leading-relaxed mb-8">
+                  <p class="text-slate-600 leading-relaxed mb-8 flex-1">
                     Mari ikut menjadi relawan untuk membantu mereka yang membutuhkan. <span class="font-semibold text-orange-500">Bantuan Anda sangat dinanti</span> untuk perubahan nyata.
                   </p>
 
-                  <!-- Impact Stats -->
-                  <div class="mb-8 p-4 bg-orange-400/5 rounded-xl border border-orange-400/20 group-hover:bg-orange-400/10 group-hover:border-orange-400/30 transition-all duration-300">
-                    <div class="flex items-center justify-center gap-2 text-sm">
-                      <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                      </svg>
-                      <span class="font-bold text-orange-500">5+ relawan aktif</span>
-                    </div>
-                  </div>
-
-                  <!-- CTA Button -->
                   <a
                     href="https://forms.gle/1hgE5aW6Qwpd9Jg29"
                     target="_blank"
@@ -1225,23 +1105,19 @@ const handleImageError = (event) => {
                   >
                     <span class="relative flex items-center gap-2">
                       Lihat Cara Mendaftar
-                      <svg class="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
+                      
                     </span>
                   </a>
                 </div>
 
-                <!-- Corner Decoration -->
                 <div class="absolute top-0 left-0 w-32 h-32 overflow-hidden rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <div class="absolute -top-16 -left-16 w-32 h-32 bg-gradient-to-br from-orange-300/20 to-transparent rounded-full blur-2xl"></div>
                 </div>
-
-                <!-- Bottom Accent Line -->
                 <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-3xl"></div>
               </div>
             </article>
           </div>
+
 
           <!-- Bottom Encouragement -->
           <!-- <div 
@@ -1274,6 +1150,7 @@ const handleImageError = (event) => {
               </div>
             </div>
           </div> -->
+
         </div>
       </section>
 

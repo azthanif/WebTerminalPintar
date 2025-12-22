@@ -267,30 +267,7 @@ const handleImageError = (event) => {
               <div class="h-1 w-20 bg-gradient-to-r from-transparent via-[#76B340] to-transparent rounded-full"></div>
             </div>
 
-            <!-- Stats Row -->
-            <div class="flex flex-wrap items-center justify-center gap-6 text-sm">
-              <div class="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-slate-100">
-                <svg class="w-5 h-5 text-[#76B340]" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                </svg>
-                <span class="font-bold text-[#76B340]">{{ totalItems }}</span>
-                <span class="text-slate-600">Total Berita</span>
-              </div>
-
-              <div class="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-slate-100">
-                <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <span class="font-medium text-slate-600">Update Rutin</span>
-              </div>
-
-              <div class="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-slate-100">
-                <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span class="font-medium text-slate-600">Terpercaya</span>
-              </div>
-            </div>
+            
           </div>
         </div>
       </section>
@@ -393,9 +370,7 @@ const handleImageError = (event) => {
                   <!-- Button Content -->
                   <span class="relative flex items-center gap-2">
                     Baca Selengkapnya
-                    <svg class="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
+                    
                   </span>
                 </Link>
               </div>
