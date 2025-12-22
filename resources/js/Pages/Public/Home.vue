@@ -138,6 +138,8 @@ const assets = {
   logo: '/images/logo-terminal-pintar.png',
   hero: '/images/hero.jpeg',
   pengurus: '/images/pengurus.jpg',
+  pengurus1: '/images/pengurus1.jpg',
+  pengurus2: '/images/pengurus2.jpg', 
   donasi: '/images/donasi.jpg',
   relawan: '/images/relawan.jpg',
 }
@@ -750,7 +752,7 @@ const handleImageError = (event) => {
                     <!-- Avatar Image -->
                     <div class="relative">
                       <img
-                        :src="assets.pengurus"
+                        :src="assets.pengurus2"
                         alt="Nabila Nurshani"
                         class="w-40 h-40 rounded-full object-cover shadow-xl relative z-10 group-hover:scale-105 transition-all duration-500 border-4 border-white group-hover:border-[#76B340]"
                       >
@@ -896,7 +898,7 @@ const handleImageError = (event) => {
                     <!-- Avatar Image -->
                     <div class="relative">
                       <img
-                        :src="assets.pengurus"
+                        :src="assets.pengurus1"
                         alt="Hanifah Ahmad"
                         class="w-40 h-40 rounded-full object-cover shadow-xl relative z-10 group-hover:scale-105 transition-all duration-500 border-4 border-white group-hover:border-[#76B340]"
                       >
