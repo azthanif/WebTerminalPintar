@@ -21,6 +21,14 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    recentUsers: {
+        type: Array,
+        default: () => [],
+    },
+    recentBooks: {
+        type: Array,
+        default: () => [],
+    },
     recentStudents: {
         type: Array,
         default: () => [],
@@ -40,7 +48,9 @@ const user = computed(() => page.props.auth?.user ?? null)
 
 const summaryStats = computed(() => ({
     totalSiswa: props.stats?.students?.total ?? 0,
+    siswaGrowth: props.stats?.students?.growth ?? 0,
     totalBerita: props.stats?.news?.total ?? 0,
+    beritaMingguIni: props.stats?.news?.thisWeek ?? 0,
     koleksiBuku: props.stats?.books?.total ?? 0,
     totalUsers: props.stats?.users?.total ?? 0,
     kategoriBuku: props.stats?.books?.categories ?? 0,
@@ -107,6 +117,7 @@ const daftarAktivitas = computed(() => {
             waktu: student.joined_at || 'Baru saja',
             color: 'text-blue-600',
             bg: 'bg-blue-100',
+            createdAt: student.created_at ? new Date(student.created_at).getTime() : 0,
         })
     })
 
@@ -118,10 +129,37 @@ const daftarAktivitas = computed(() => {
             waktu: news.activity_at || news.event_date,
             color: 'text-orange-600',
             bg: 'bg-orange-100',
+            createdAt: news.created_at ? new Date(news.created_at).getTime() : 0,
         })
     })
 
-    return activities.length ? activities.slice(0, 6) : fallbackActivities
+    props.recentUsers.forEach((user) => {
+        activities.push({
+            id: `user-${user.id}`,
+            icon: UsersIcon,
+            deskripsi: `${user.name} ditambahkan sebagai pengguna baru`,
+            waktu: user.joined_at || 'Baru saja',
+            color: 'text-purple-600',
+            bg: 'bg-purple-100',
+            createdAt: user.created_at ? new Date(user.created_at).getTime() : 0,
+        })
+    })
+
+    props.recentBooks.forEach((book) => {
+        activities.push({
+            id: `book-${book.id}`,
+            icon: BookOpenIcon,
+            deskripsi: `Buku "${book.title}" ditambahkan${book.category ? ` (${book.category})` : ''}`,
+            waktu: book.added_at || 'Baru saja',
+            color: 'text-emerald-600',
+            bg: 'bg-emerald-100',
+            createdAt: book.created_at ? new Date(book.created_at).getTime() : 0,
+        })
+    })
+
+    const sorted = activities.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
+
+    return sorted.length ? sorted.slice(0, 6) : fallbackActivities
 })
 </script>
 
@@ -148,7 +186,7 @@ const daftarAktivitas = computed(() => {
                         <p class="text-sm font-semibold uppercase tracking-wider text-slate-400">Total Siswa</p>
                         <h3 class="mt-2 text-4xl font-extrabold text-slate-800">{{ summaryStats.totalSiswa }}</h3>
                         <div class="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
-                            <span>+{{ summaryStats.totalSiswa ? 12 : 0 }}%</span>
+                            <span>+{{ summaryStats.siswaGrowth ?? 0 }}%</span>
                             <span class="font-medium text-emerald-600/70">bulan ini</span>
                         </div>
                     </div>
@@ -166,7 +204,7 @@ const daftarAktivitas = computed(() => {
                         <p class="text-sm font-semibold uppercase tracking-wider text-slate-400">Artikel & Berita</p>
                         <h3 class="mt-2 text-4xl font-extrabold text-slate-800">{{ summaryStats.totalBerita }}</h3>
                          <div class="mt-3 inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-bold text-orange-700">
-                            <span>+{{ summaryStats.totalBerita ? 3 : 0 }}</span>
+                            <span>+{{ summaryStats.beritaMingguIni ?? 0 }}</span>
                             <span class="font-medium text-orange-600/70">minggu ini</span>
                         </div>
                     </div>

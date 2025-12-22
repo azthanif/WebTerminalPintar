@@ -15,6 +15,30 @@ class DashboardController extends Controller
 {
 	public function index()
 	{
+		// Hitung pertumbuhan siswa bulan ini (ikuti total siswa yang ditampilkan di kartu)
+		$thisMonthStudents = Student::whereBetween('created_at', [
+			Carbon::now()->startOfMonth(),
+			Carbon::now()->endOfMonth(),
+		])->count();
+
+		$lastMonthStudents = Student::whereBetween('created_at', [
+			Carbon::now()->subMonth()->startOfMonth(),
+			Carbon::now()->subMonth()->endOfMonth(),
+		])->count();
+
+		// Logika: jika ada siswa bulan lalu hitung persentase, jika tidak ada hitung dari 0 ke bulan ini (100%)
+		if ($lastMonthStudents > 0) {
+			$studentGrowthPercentage = round((($thisMonthStudents - $lastMonthStudents) / $lastMonthStudents) * 100);
+		} else {
+			$studentGrowthPercentage = $thisMonthStudents > 0 ? 100 : 0;
+		}
+
+		// Hitung artikel yang ditambah minggu ini secara dinamis
+		$newsThisWeek = News::whereBetween('created_at', [
+			Carbon::now()->startOfWeek(),
+			Carbon::now()->endOfWeek(),
+		])->count();
+
 		$bookStats = [
 			'total'      => Schema::hasTable('books') ? Book::count() : 0,
 			'categories' => Schema::hasTable('books')
@@ -28,20 +52,21 @@ class DashboardController extends Controller
 				'active' => User::where('is_active', true)->count(),
 			],
 			'students' => [
-				'total'   => Student::count(),
-				'active'  => Student::where('status', 'Aktif')->count(),
-				'alumni'  => Student::where('status', '!=', 'Aktif')->count(),
+				'total'      => Student::count(),
+				'active'     => Student::where('status', 'Aktif')->count(),
+				'alumni'     => Student::where('status', '!=', 'Aktif')->count(),
+				'growth'     => $studentGrowthPercentage,
 			],
 			'news' => [
-				'total'     => News::count(),
-				'published' => News::where('is_published', true)->count(),
+				'total'      => News::count(),
+				'published'  => News::where('is_published', true)->count(),
+				'thisWeek'   => $newsThisWeek,
 			],
 			'books' => $bookStats,
 		];
 
 		$recentNews = News::query()
-			->latest('event_date')
-			->latest()
+			->latest() // prioritize most recently created news for activity feed
 			->take(5)
 			->get(['id', 'title', 'event_date', 'is_published', 'created_at'])
 			->map(fn ($news) => [
@@ -50,6 +75,30 @@ class DashboardController extends Controller
 				'event_date'  => optional($news->event_date)->format('d M Y') ?? Carbon::parse($news->created_at)->format('d M Y'),
 				'isPublished' => (bool) $news->is_published,
 				'activity_at' => Carbon::parse($news->created_at)->diffForHumans(),
+				'created_at'  => Carbon::parse($news->created_at)->toIso8601String(),
+			])->values()->all();
+
+		$recentUsers = User::query()
+			->latest()
+			->take(5)
+			->get(['id', 'name', 'created_at'])
+			->map(fn ($user) => [
+				'id'         => $user->id,
+				'name'       => $user->name,
+				'joined_at'  => Carbon::parse($user->created_at)->diffForHumans(),
+				'created_at' => Carbon::parse($user->created_at)->toIso8601String(),
+			])->values()->all();
+
+		$recentBooks = Book::query()
+			->latest()
+			->take(5)
+			->get(['id', 'title', 'category', 'created_at'])
+			->map(fn ($book) => [
+				'id'        => $book->id,
+				'title'     => $book->title,
+				'category'  => $book->category,
+				'added_at'  => Carbon::parse($book->created_at)->diffForHumans(),
+				'created_at'=> Carbon::parse($book->created_at)->toIso8601String(),
 			])->values()->all();
 
 		$recentStudents = Student::query()
@@ -63,6 +112,7 @@ class DashboardController extends Controller
 				'education_level' => $student->education_level,
 				'status'          => $student->status,
 				'joined_at'       => Carbon::parse($student->created_at)->diffForHumans(),
+				'created_at'      => Carbon::parse($student->created_at)->toIso8601String(),
 			])->values()->all();
 
 		$growth = [
@@ -86,6 +136,8 @@ class DashboardController extends Controller
 		return Inertia::render('Admin/Dashboard/Index', [
 			'stats'          => $stats,
 			'recentNews'     => $recentNews,
+			'recentUsers'    => $recentUsers,
+			'recentBooks'    => $recentBooks,
 			'recentStudents' => $recentStudents,
 			'growth'         => $growth,
 			'title'          => 'Dashboard Admin',

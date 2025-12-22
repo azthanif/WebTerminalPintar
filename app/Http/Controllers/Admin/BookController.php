@@ -144,7 +144,11 @@ class BookController extends Controller
 
 	private function editFormStatuses(Book $book): array
 	{
-		$statuses = Arr::only($this->statuses(), [Book::STATUS_MAINTENANCE, Book::STATUS_LOST]);
+		$statuses = Arr::only($this->statuses(), [
+			Book::STATUS_AVAILABLE,
+			Book::STATUS_MAINTENANCE,
+			Book::STATUS_LOST,
+		]);
 
 		return $statuses;
 	}
