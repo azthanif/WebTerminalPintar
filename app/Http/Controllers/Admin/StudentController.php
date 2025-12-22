@@ -80,7 +80,6 @@ class StudentController extends Controller
             'SD',
             'SMP',
             'SMA/SMK',
-            'Lainnya',
         ];
 
         return Inertia::render('Admin/Students/Form', [
@@ -114,7 +113,6 @@ class StudentController extends Controller
             'SD',
             'SMP',
             'SMA/SMK',
-            'Lainnya',
         ];
 
         return Inertia::render('Admin/Students/Form', [

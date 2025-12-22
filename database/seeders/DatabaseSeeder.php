@@ -18,15 +18,15 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Buat role dasar
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $guruRole  = Role::firstOrCreate(['name' => 'guru']);
-        $ortuRole  = Role::firstOrCreate(['name' => 'ortu']);
+        Role::firstOrCreate(['name' => 'guru']);
+        Role::firstOrCreate(['name' => 'ortu']);
 
-        // 2. Buat user admin awal
+        // 2. Buat user admin awal saja
         $admin = User::firstOrCreate(
-            ['email' => 'admin@example.com'], // key unik
+            ['email' => 'admin@example.com'],
             [
                 'name'      => 'Admin Default',
-                'password'  => bcrypt('pass1234'), // ganti nanti kalau perlu
+                'password'  => bcrypt('pass1234'),
                 'is_active' => true,
             ],
         );
@@ -34,19 +34,13 @@ class DatabaseSeeder extends Seeder
         // kasih role admin ke user ini
         $admin->assignRole($adminRole);
 
-        // 3. (Opsional tapi bagus) buat beberapa user orang tua supaya StudentFactory bisa dapat parent
-        $parents = User::factory()->count(5)->create();
-        foreach ($parents as $parent) {
-            $parent->assignRole($ortuRole);
-        }
-
-        // 4. Panggil seeder lain (yang sudah kamu punya)
-        $this->call([
-            StudentSeeder::class,
-            BookSeeder::class,
-            NewsSeeder::class,
-            ParentModuleSeeder::class,
-            GuruModuleSeeder::class,
-        ]);
+        // 3. Seeder lain (opsional): aktifkan jika diperlukan
+        // $this->call([
+        //     StudentSeeder::class,
+        //     BookSeeder::class,
+        //     NewsSeeder::class,
+        //     ParentModuleSeeder::class,
+        //     GuruModuleSeeder::class,
+        // ]);
     }
 }
