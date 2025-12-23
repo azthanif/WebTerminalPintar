@@ -76,11 +76,6 @@ class User extends Authenticatable
         return $this->hasMany(Loan::class, 'issued_by');
     }
 
-    public function teachingSchedules(): HasMany
-    {
-        return $this->hasMany(Schedule::class, 'teacher_id');
-    }
-
     public function recordedAttendances(): HasMany
     {
         return $this->hasMany(Attendance::class, 'recorded_by');

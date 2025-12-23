@@ -35,12 +35,16 @@ class DatabaseSeeder extends Seeder
         $admin->assignRole($adminRole);
 
         // 3. Seeder lain (opsional): aktifkan jika diperlukan
-        // $this->call([
-        //     StudentSeeder::class,
-        //     BookSeeder::class,
-        //     NewsSeeder::class,
-        //     ParentModuleSeeder::class,
-        //     GuruModuleSeeder::class,
-        // ]);
+        $this->call([
+            GuruModuleSeeder::class,   // Membuat Role Guru & User Guru Spesifik
+            ParentModuleSeeder::class, // Membuat Role Ortu & User Ortu Spesifik
+        ]);
+
+        // 2. Baru jalankan yang sifatnya Massal / Random
+        $this->call([
+            StudentSeeder::class,      // Akan mengambil Ortu dari step sebelumnya
+            BookSeeder::class,
+            NewsSeeder::class,
+        ]);
     }
 }
