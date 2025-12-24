@@ -114,13 +114,13 @@ class BookController extends Controller
 	private function validateData(Request $request, ?int $bookId = null): array
 	{
 		return $request->validate([
-			'code'            => ['nullable', 'string', 'max:30', Rule::unique('books', 'code')->ignore($bookId)],
+			'code'            => ['required', 'string', 'max:30', Rule::unique('books', 'code')->ignore($bookId)],
 			'title'           => ['required', 'string', 'max:255'],
 			'author'          => ['nullable', 'string', 'max:150'],
 			'category'        => ['nullable', 'string', 'max:100'],
 			'status'          => ['required', Rule::in(array_keys($this->statuses()))],
 			'published_year'  => ['nullable', 'integer', 'digits:4'],
-			'total_pages'     => ['nullable', 'integer', 'min:1'],
+			'total_pages'     => ['required', 'integer', 'min:1'],
 			'total_stock'     => ['required', 'integer', 'min:1'],
 			'available_stock' => ['nullable', 'integer', 'min:0', 'lte:total_stock'],
 			'description'     => ['nullable', 'string'],

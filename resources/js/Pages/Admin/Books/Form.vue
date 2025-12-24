@@ -86,7 +86,7 @@ const form = useForm({
     category: props.book?.category ?? props.categories[0] ?? 'Umum',
     status: props.book?.status ?? 'available',
     published_year: props.book?.published_year ?? new Date().getFullYear(),
-    total_pages: props.book?.total_pages ?? 0,
+    total_pages: props.book?.total_pages ?? 1,
     total_stock: props.book?.total_stock ?? 1,
     available_stock: props.book?.available_stock ?? 1,
     description: props.book?.description ?? '',
@@ -183,7 +183,7 @@ const submit = () => {
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                                         <HashtagIcon class="h-5 w-5" />
                                     </div>
-                                    <input v-model="form.code" type="text" placeholder="BK-001"
+                                    <input v-model="form.code" type="text" placeholder="BK-001" required
                                         class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 transition-all bg-slate-50 hover:bg-white"
                                         :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.code }" />
                                 </div>
@@ -297,18 +297,20 @@ const submit = () => {
 
                                     <div class="grid gap-6 sm:grid-cols-2">
                                         <div>
-                                            <label class="block text-sm font-bold text-slate-700 mb-2 font-mono">JUMLAH HALAMAN</label>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2 font-mono">JUMLAH HALAMAN <span class="text-rose-500">*</span></label>
                                             <div class="relative">
                                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                                                     <DocumentTextIcon class="h-5 w-5" />
                                                 </div>
-                                                <input v-model.number="form.total_pages" type="number" min="0"
-                                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-bold focus:border-sky-500 focus:bg-white focus:outline-none transition-all bg-white" />
+                                                <input v-model.number="form.total_pages" type="number" min="1" required
+                                                    class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-bold focus:border-sky-500 focus:bg-white focus:outline-none transition-all bg-white"
+                                                    :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.total_pages }" />
                                             </div>
+                                            <p v-if="form.errors.total_pages" class="mt-1.5 text-xs font-bold text-rose-500">{{ form.errors.total_pages }}</p>
                                         </div>
 
                                         <div>
-                                            <label class="block text-sm font-bold text-slate-700 mb-2 font-mono">TOTAL STOK</label>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2 font-mono">TOTAL STOK <span class="text-rose-500">*</span></label>
                                             <div class="relative">
                                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                                                     <ArchiveBoxIcon class="h-5 w-5" />
