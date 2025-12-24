@@ -17,7 +17,7 @@ class StoreMaterialRequest extends FormRequest
             'title' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'status' => ['nullable', 'string', 'max:30'],
-            'file' => ['nullable', 'file', 'max:5120'],
+            'file' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpeg,jpg,png'],
             'download_url' => ['nullable', 'string', 'max:255'],
             'visibility' => ['nullable', 'string', 'max:20'],
             'labels' => ['nullable', 'array'],

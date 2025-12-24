@@ -36,6 +36,9 @@ const props = defineProps({
     }
 });
 
+const MAX_MATERIAL_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_MATERIAL_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
+
 const filters = reactive({
     search: '',
     status: props.filters?.status || 'Semua',
@@ -46,6 +49,8 @@ const schedulesList = ref([]);
 const isLoadingJadwal = ref(false);
 const successMessage = ref(null);
 const errorMessage = ref(null);
+const addMaterialError = ref('');
+const editMaterialError = ref('');
 const currentTime = ref(new Date());
 
 const showAddModal = ref(false);
@@ -231,6 +236,7 @@ const resetAddForm = () => {
         materi_uploads: []
     });
     addTimeError.value = '';
+    addMaterialError.value = '';
 };
 
 const openAddSchedule = () => {
@@ -252,6 +258,7 @@ const submitAddSchedule = async () => {
     scheduleActionState.submitting = true;
     addTimeError.value = '';
     
+    let createdScheduleId = null;
     try {
         const payload = {
             student_ids: addForm.student_ids,
@@ -262,27 +269,37 @@ const submitAddSchedule = async () => {
             end_time: combineDateTime(addForm.tanggal, addForm.jam_selesai),
             location: addForm.location || 'Online',
         };
-        
+
         const { data } = await axios.post(route('guru.api.schedules.store'), payload);
-        
-        // Upload materials if any
-        if (addForm.materi_uploads.length && data.id) {
+        createdScheduleId = data.id;
+
+        if (addForm.materi_uploads.length && createdScheduleId) {
             for (const file of addForm.materi_uploads) {
                 const formData = new FormData();
                 formData.append('title', file.name);
                 formData.append('file', file);
-                await axios.post(route('guru.api.materials.store', data.id), formData, {
+                await axios.post(route('guru.api.materials.store', createdScheduleId), formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
         }
-        
+
         setSuccessMessage('Jadwal berhasil dibuat!');
         closeAddSchedule();
         fetchSchedules();
     } catch (error) {
         console.error('Error creating schedule:', error);
-        addTimeError.value = error.response?.data?.message || 'Gagal menyimpan jadwal.';
+
+        // Roll back schedule if material upload failed after creation
+        if (createdScheduleId) {
+            try {
+                await axios.delete(route('guru.api.schedules.destroy', createdScheduleId));
+            } catch (rollbackError) {
+                console.error('Rollback schedule failed:', rollbackError);
+            }
+        }
+
+        addTimeError.value = error.response?.data?.message || 'Gagal menyimpan jadwal atau mengunggah materi (maks 10MB, PDF/PNG/JPEG).';
     } finally {
         scheduleActionState.submitting = false;
     }
@@ -347,6 +364,7 @@ const openEditMateri = (schedule) => {
     materiForm.schedule_id = schedule.id;
     materiForm.existing = JSON.parse(JSON.stringify(schedule.materi || []));
     materiForm.materi_uploads = [];
+    editMaterialError.value = '';
     showEditMateriModal.value = true;
 };
 const closeEditMateri = () => showEditMateriModal.value = false;
@@ -488,8 +506,40 @@ const openMaterialPreview = (f) => {
     if (f.url) window.open(f.url, '_blank');
 };
 
+const validateMaterialFiles = (files) => {
+    const accepted = [];
+    const rejected = [];
+
+    files.forEach((file) => {
+        const isAllowedType = ALLOWED_MATERIAL_TYPES.includes(file.type);
+        const isAllowedSize = file.size <= MAX_MATERIAL_SIZE;
+        if (isAllowedType && isAllowedSize) {
+            accepted.push(file);
+        } else {
+            rejected.push({ name: file.name, reason: !isAllowedType ? 'format' : 'size' });
+        }
+    });
+
+    return { accepted, rejected };
+};
+
 const handleMaterialFiles = (e, form) => {
-    form.materi_uploads.push(...Array.from(e.target.files));
+    const files = Array.from(e.target.files || []);
+    const { accepted, rejected } = validateMaterialFiles(files);
+
+    const targetError = form === addForm ? addMaterialError : editMaterialError;
+
+    if (rejected.length) {
+        const reasons = rejected.map(r => `${r.name} (${r.reason === 'size' ? 'maks 10MB' : 'hanya PDF/PNG/JPEG'})`).join(', ');
+        targetError.value = `file ditolak: ${reasons}`;
+    } else {
+        targetError.value = '';
+    }
+
+    if (accepted.length) {
+        form.materi_uploads.push(...accepted);
+    }
+
     // Reset input value to allow uploading the same file again if needed
     e.target.value = '';
 };
@@ -522,9 +572,18 @@ const deleteExistingMaterial = async () => {
 
 const onReplaceFile = (e, material) => {
     const file = e.target.files[0];
-    if (file) {
-        material.newFile = file;
+    if (!file) return;
+
+    const { accepted, rejected } = validateMaterialFiles([file]);
+    if (rejected.length) {
+        editMaterialError.value = `${file.name} ditolak (${rejected[0].reason === 'size' ? 'maks 10MB' : 'hanya PDF/PNG/JPEG'})`;
+        e.target.value = '';
+        return;
     }
+
+    editMaterialError.value = '';
+    material.newFile = accepted[0];
+    e.target.value = '';
 };
 
 // 1. Hitung tingkatan pendidikan yang tersedia dari data siswa
@@ -927,9 +986,10 @@ const toggleLevel = (level) => {
                     <label class="block text-sm font-bold text-slate-700 mb-2">Upload Materi</label>
                     <label :for="addMaterialInputId" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-[#84994f] hover:bg-white transition-all">
                         <DocumentArrowUpIcon class="h-8 w-8 text-slate-400 mb-2" />
-                        <span class="text-sm font-medium text-slate-600">Klik untuk pilih file</span>
+                        <span class="text-sm font-medium text-slate-600">Klik untuk pilih file (PDF/PNG/JPEG dengan ukuran maks 10 MB)</span>
                         <input :id="addMaterialInputId" type="file" class="hidden" multiple @change="handleMaterialFiles($event, addForm)" />
                     </label>
+                    <p v-if="addMaterialError" class="mt-2 text-xs font-bold text-rose-500">{{ addMaterialError }}</p>
                     
                      <div v-if="addForm.materi_uploads.length" class="mt-4 space-y-2">
                          <div v-for="file in addForm.materi_uploads" :key="file.name" class="flex items-center justify-between p-2 bg-white border border-slate-200 rounded-lg text-xs font-medium shadow-sm">
@@ -1054,6 +1114,7 @@ const toggleLevel = (level) => {
                          <span class="text-sm font-bold text-amber-600">+ Pilih File Baru</span>
                          <input :id="editMaterialInputId" type="file" class="hidden" multiple @change="handleMaterialFiles($event, materiForm)" />
                      </label>
+                     <p v-if="editMaterialError" class="mt-2 text-xs font-bold text-rose-500">{{ editMaterialError }}</p>
                       <div v-if="materiForm.materi_uploads.length" class="mt-3 space-y-2">
                          <div v-for="file in materiForm.materi_uploads" :key="file.name" class="flex justify-between items-center text-xs font-bold bg-white p-3 rounded-lg border border-amber-100 shadow-sm">
                              <span class="text-slate-700">{{ file.name }}</span>
