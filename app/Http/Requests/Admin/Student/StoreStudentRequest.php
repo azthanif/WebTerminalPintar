@@ -31,7 +31,7 @@ class StoreStudentRequest extends FormRequest
             'new_parent_phone'      => ['nullable', 'string', 'max:30'],
             'new_parent_password'   => ['nullable', 'string', 'min:8'],
             'status'          => ['required', 'in:active,inactive'],
-            'date_of_birth'   => ['nullable', 'date', 'before:today'],
+            'date_of_birth'   => ['required', 'date', 'before:today'],
             'school_name'     => ['nullable', 'string', 'max:150'],
             'address'         => ['nullable', 'string'],
         ];

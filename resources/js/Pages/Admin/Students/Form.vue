@@ -252,12 +252,12 @@ const maxDate = new Date().toISOString().split('T')[0];
                     </div> -->
 
                     <div>
-                         <label class="block text-sm font-bold text-slate-700 mb-2">Tanggal Lahir</label>
+                         <label class="block text-sm font-bold text-slate-700 mb-2">Tanggal Lahir <span class="text-rose-500">*</span></label>
                          <div class="relative">
                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                                 <CalendarIcon class="h-5 w-5" />
                             </div>
-                            <input v-model="form.date_of_birth" type="date" :max="maxDate"
+                            <input v-model="form.date_of_birth" type="date" :max="maxDate" required
                                 class="w-full rounded-2xl border border-slate-200 pl-11 pr-4 py-3 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all bg-slate-50 hover:bg-white"
                                 :class="{ 'border-rose-300 ring-4 ring-rose-50': form.errors.date_of_birth }" />
                         </div>
