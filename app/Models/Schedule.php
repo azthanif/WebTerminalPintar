@@ -37,6 +37,8 @@ class Schedule extends Model
     ];
 
     protected $casts = [
+        'teacher_id' => 'integer',
+        'student_id' => 'integer',
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'status_locked_at' => 'datetime',
